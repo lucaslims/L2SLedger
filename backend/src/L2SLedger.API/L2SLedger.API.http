@@ -1,0 +1,6 @@
+@L2SLedger.API_HostAddress = http://localhost:5062
+
+GET {{L2SLedger.API_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
