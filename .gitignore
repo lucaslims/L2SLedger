@@ -1,0 +1,213 @@
+# ========================================
+# L2SLedger - .gitignore
+# ========================================
+
+# ----------------------------------------
+# Operating System
+# ----------------------------------------
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+Desktop.ini
+
+# ----------------------------------------
+# IDEs and Editors
+# ----------------------------------------
+
+# Visual Studio Code
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+!.vscode/*.code-snippets
+.history/
+
+# Visual Studio
+.vs/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# JetBrains (Rider, WebStorm, etc.)
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# ----------------------------------------
+# .NET / C# Backend
+# ----------------------------------------
+bin/
+obj/
+out/
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+[Aa][Rr][Mm]/
+[Aa][Rr][Mm]64/
+bld/
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+[Ll]ogs/
+
+# NuGet
+*.nupkg
+*.snupkg
+.nuget/
+nuget.exe
+packages/
+project.lock.json
+project.fragment.lock.json
+artifacts/
+
+# .NET Core
+*.dotCover
+*.VisualState.xml
+TestResult.xml
+nunit-*.xml
+
+# User-specific files
+*.rsuser
+*.pubxml
+*.publishproj
+
+# Build results
+[Dd]ebugPublic/
+[Rr]eleases/
+[Bb]uild/
+[Pp]ublish/
+PublishScripts/
+
+# ----------------------------------------
+# Node.js / React Frontend
+# ----------------------------------------
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+.pnpm-store/
+
+# Build outputs
+dist/
+build/
+.next/
+.nuxt/
+.output/
+.cache/
+
+# Testing
+coverage/
+.nyc_output/
+*.lcov
+
+# TypeScript
+*.tsbuildinfo
+
+# Vite
+*.local
+
+# Parcel
+.parcel-cache/
+
+# ----------------------------------------
+# Environment & Secrets
+# ----------------------------------------
+.env
+.env.local
+.env.*.local
+.env.development
+.env.test
+.env.production
+.env.staging
+*.env
+!.env.example
+!.env.template
+
+# Firebase
+firebase-debug.log
+firebase-debug.*.log
+.firebase/
+firebaserc
+serviceAccountKey.json
+*-service-account*.json
+
+# Secrets
+*.pem
+*.key
+*.crt
+*.p12
+*.pfx
+secrets/
+credentials/
+
+# ----------------------------------------
+# Docker
+# ----------------------------------------
+docker-compose.override.yml
+docker-compose.*.local.yml
+.docker/
+
+# ----------------------------------------
+# Logs & Temporary Files
+# ----------------------------------------
+logs/
+*.log
+*.tmp
+*.temp
+*.swp
+*.swo
+*~
+
+# ----------------------------------------
+# Testing & Coverage
+# ----------------------------------------
+TestResults/
+*.trx
+coverage/
+coveragereport/
+*.coverage
+*.coveragexml
+
+# ----------------------------------------
+# Database
+# ----------------------------------------
+*.db
+*.sqlite
+*.sqlite3
+*.mdf
+*.ldf
+
+# ----------------------------------------
+# Miscellaneous
+# ----------------------------------------
+*.bak
+*.backup
+*.orig
+*.patch
+
+# Compressed files (if generated)
+*.zip
+*.tar.gz
+*.rar
+
+# ----------------------------------------
+# Project Specific
+# ----------------------------------------
+
+# Local development overrides
+local/
+.local/
+
+# Scratch/temporary work
+scratch/
+temp/
+tmp/
