@@ -1,7 +1,7 @@
 # Status de Desenvolvimento - L2SLedger Backend
 
 > **Última atualização:** 2026-01-11  
-> **Fase atual:** ✅ Fase 1 Concluída
+> **Fase atual:** ✅ Fase 2 Concluída
 
 ---
 
@@ -16,54 +16,7 @@
 - **Serilog 9.0**
 - **AutoMapper 13.0.1**
 - **FluentValidation 12.1.1**
-
-### Estrutura Criada
-
-```
-backend/
-├── L2SLedger.sln
-├── nuget.config
-├── src/
-│   ├── L2SLedger.Domain/
-│   │   ├── Entities/
-│   │   │   └── Entity.cs ✅
-│   │   ├── ValueObjects/
-│   │   ├── Exceptions/
-│   │   │   └── DomainException.cs ✅
-│   │   ├── Events/
-│   │   └── Interfaces/
-│   │
-│   ├── L2SLedger.Application/
-│   │   ├── UseCases/
-│   │   ├── DTOs/
-│   │   ├── Interfaces/
-│   │   ├── Validators/
-│   │   └── Mappers/
-│   │
-│   ├── L2SLedger.Infrastructure/
-│   │   ├── Persistence/
-│   │   │   ├── Configurations/
-│   │   │   ├── Migrations/
-│   │   │   └── Repositories/
-│   │   ├── Identity/
-│   │   ├── Observability/
-│   │   └── Resilience/
-│   │
-│   └── L2SLedger.API/
-│       ├── Controllers/
-│       ├── Middleware/
-│       ├── Filters/
-│       └── Contracts/
-│           ├── ErrorResponse.cs ✅
-│           └── ErrorCodes.cs ✅
-│
-└── tests/
-    ├── L2SLedger.Domain.Tests/
-    ├── L2SLedger.Application.Tests/
-    ├── L2SLedger.Infrastructure.Tests/
-    ├── L2SLedger.API.Tests/
-    └── L2SLedger.Contract.Tests/
-```
+- **Swashbuckle.AspNetCore 7.2.0**
 
 ### Classes Fundamentais Implementadas
 
@@ -74,30 +27,67 @@ backend/
 | `ErrorResponse` | API | Contrato de erro (ADR-021) | ✅ |
 | `ErrorCodes` | API | Catálogo de códigos de erro | ✅ |
 
+---
+
+## ✅ Fase 2: Módulo de Autenticação - CONCLUÍDA
+
+### Componentes Implementados
+
+#### Domain Layer
+- ✅ `User` - Entidade de usuário com Firebase UID, roles, email verification
+- ✅ `AuthenticationException` - Exceção específica para auth
+
+#### Application Layer
+- ✅ DTOs: `LoginRequest`, `LoginResponse`, `UserDto`, `CurrentUserResponse`
+- ✅ Interfaces: `IAuthenticationService`, `IUserRepository`, `IFirebaseAuthService`
+- ✅ `AuthenticationService` - Orquestra login e validação
+- ✅ `AuthProfile` - AutoMapper profile
+
+#### Infrastructure Layer
+- ✅ `FirebaseAuthService` - Valida Firebase ID Token com timeout
+- ✅ `UserRepository` - CRUD de usuários com soft delete
+- ✅ `L2SLedgerDbContext` - DbContext configurado
+- ✅ `UserConfiguration` - EF Core mapping com JSONB para roles
+- ✅ Migration `InitialCreate` - Tabela users criada
+
+#### API Layer
+- ✅ `AuthController` - Endpoints: login, logout, me
+- ✅ `AuthenticationMiddleware` - Valida cookie e popula HttpContext.User
+- ✅ `Program.cs` - Configuração completa: EF, Firebase, Serilog, CORS, AutoMapper
+
+### Endpoints Implementados
+- ✅ `POST /api/v1/auth/login` - Validar Firebase ID Token e criar sessão com cookie
+- ✅ `POST /api/v1/auth/logout` - Encerrar sessão e remover cookie
+- ✅ `GET /api/v1/auth/me` - Retornar dados do usuário autenticado
+
+### ADRs Aplicados
+- **ADR-001**: Firebase como IdP único
+- **ADR-002**: Fluxo completo de autenticação com email_verified
+- **ADR-003/004**: Cookies HttpOnly + Secure + SameSite=Lax
+- **ADR-006**: PostgreSQL com JSONB para roles
+- **ADR-007**: Timeout de 5s para validação de token
+- **ADR-010**: JSON para arrays (roles)
+- **ADR-013**: Serilog estruturado
+- **ADR-016**: RBAC com roles Admin/Financeiro/Leitura
+- **ADR-018**: CORS configurado para frontend
+- **ADR-020**: Clean Architecture respeitada
+- **ADR-021**: Modelo de erros semântico
+- **ADR-029**: Soft delete implementado
+
 ### Compilação
 
 ```bash
 ✅ Build Status: SUCCESS
 ✅ Total de projetos: 9
-✅ Tempo de build: ~4s
+✅ Migrations: InitialCreate criada
 ```
 
 ---
 
-## 🎯 Próxima Fase: Fase 2 - Módulo de Autenticação
+## 🎯 Próxima Fase: Fase 3 - Módulo de Categorias
 
 ### Objetivos
-- [ ] Implementar middleware de autenticação Firebase
-- [ ] Criar contratos de autenticação (Login, Logout, Me)
-- [ ] Implementar casos de uso de autenticação
-- [ ] Configurar cookies HttpOnly + Secure
-- [ ] Implementar validação de `email_verified`
-- [ ] Criar testes unitários e de integração
-- [ ] Criar testes de contrato
-
-### Endpoints Planejados
-- `POST /api/v1/auth/login` - Validar Firebase ID Token e criar sessão
-- `POST /api/v1/auth/logout` - Encerrar sessão e invalidar cookie
+- [ ] Implementar entidade Category (hierarquia de 2 níveis)
 - `GET /api/v1/auth/me` - Retornar usuário autenticado
 
 ---

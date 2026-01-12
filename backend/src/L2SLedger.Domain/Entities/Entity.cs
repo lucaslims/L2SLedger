@@ -31,7 +31,7 @@ public abstract class Entity
         UpdatedAt = DateTime.UtcNow;
     }
 
-    protected void UpdateTimestamp()
+    public void UpdateTimestamp()
     {
         UpdatedAt = DateTime.UtcNow;
     }
