@@ -46,6 +46,11 @@ Você deve coordenar **exclusivamente** os agentes abaixo:
    * Prompt: `L2SLedger-CI-CD.prompt.md`
    * Escopo: Pipelines, Docker, deploy por ambiente
 
+4. **Agente QA**
+
+   * Prompt: `L2SLedger-QA.prompt.md`
+   * Escopo: Testes automatizados (backend e frontend), cobertura, qualidade
+
 ---
 
 ## 📚 Referências Obrigatórias
@@ -82,6 +87,8 @@ Após a execução dos agentes:
 * Validar se o **frontend respeita contratos do backend**
 * Validar se **segurança, auditoria e isolamento de ambientes** não foram violados
 * Validar se **pipelines cobrem código e testes gerados**
+* Validar se **testes criados pelo QA cobrem o código implementado** por Backend/Frontend
+* Validar se **cobertura mínima por camada** foi atingida
 
 ---
 

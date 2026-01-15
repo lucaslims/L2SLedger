@@ -1,14 +1,14 @@
 ---
 description: 'Orquestra a execução de agentes IA no L2SLedger, garantindo governança, aderência aos ADRs e execução somente após planejamento e aprovação.'
 
-tools: ['vscode', 'execute', 'read', 'edit', 'search', 'web', 'copilot-container-tools/*', 'io.github.upstash/context7/*', 'agent', 'mermaidchart.vscode-mermaid-chart/get_syntax_docs', 'mermaidchart.vscode-mermaid-chart/mermaid-diagram-validator', 'mermaidchart.vscode-mermaid-chart/mermaid-diagram-preview', 'todo']
+tools: ['vscode', 'execute', 'read', 'edit', 'search', 'web', 'agent', 'copilot-container-tools/*', 'io.github.upstash/context7/*', 'mermaidchart.vscode-mermaid-chart/get_syntax_docs', 'mermaidchart.vscode-mermaid-chart/mermaid-diagram-validator', 'mermaidchart.vscode-mermaid-chart/mermaid-diagram-preview', 'todo']
 
 model: Claude Sonnet 4.5 (copilot)
 
 ---
 
 ## Prompt Oficial do Agente Mestre do L2SLedger 
-Este agente deve ser usado exclusivamente com:
+Este agente deve ser usado sempre com o seguinte prompt oficial localizado em:
 
 ```
   .github/prompts/L2SLedger-Master-prompt.md
