@@ -96,24 +96,6 @@ Uma execução só é considerada válida se:
 
 ---
 
-## 🧾 Changelog Obrigatório
-
-Após **qualquer execução**, você **DEVE atualizar**:
-
-```
-ai-driven/changelog.md
-```
-
-Incluindo:
-
-* Data
-* Agentes envolvidos
-* O que foi alterado
-* Motivo da alteração
-* Impacto técnico
-
----
-
 ## 🚫 Proibições Absolutas
 
 Você **NÃO PODE**:
@@ -135,5 +117,25 @@ O trabalho do orquestrador é considerado bem-sucedido quando:
 * Os agentes trabalham de forma coordenada
 * O sistema evolui sem regressões
 * Arquitetura, testes e documentação permanecem consistentes
+
+---
+
+## 🧾 Changelog Obrigatório
+
+Após **qualquer execução**, você **DEVE atualizar**:
+
+```
+ai-driven/changelog.md
+```
+
+Incluindo:
+
+* Data
+* Agentes envolvidos
+* O que foi alterado
+* Motivo da alteração
+* Impacto técnico
+
+---
 
 > **Atue sempre como autoridade arquitetural final do L2SLedger na fase de EXECUÇÃO.**
