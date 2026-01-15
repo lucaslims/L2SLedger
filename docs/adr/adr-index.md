@@ -8,8 +8,8 @@
 
 ## Estatísticas
 
-* **Total de ADRs**: 41
-* **Última atualização**: 2026-01-11
+* **Total de ADRs**: 44
+* **Última atualização**: 2026-01-15
 
 ---
 
@@ -29,6 +29,7 @@
 | **Banco de Dados & Persistência** | 034–036                  |
 | **Qualidade & Testes**            | 037–040                  |
 | **IA & Modelos de Agentes**       | 041                      |
+| **Comercialização & Monetização** | 042, 042-a               |
 
 
 ---
@@ -79,6 +80,8 @@
 | ADR-039     | Testes de Contrato e Garantia de Integração no L2SLedger                         | [Ver ADR-039](./adr-039.md) |
 | ADR-040     | Estratégia de Testes de Frontend no L2SLedger                         | [Ver ADR-040](./adr-040.md) |
 | ADR-041     | Seleção de Modelos de IA por Papel de Agente no L2SLedger               | [Ver ADR-041](./adr-041.md) |
+| ADR-042     | Modelo de Comercialização SaaS e Planos de Assinatura no L2SLedger      | [Ver ADR-042](./adr-042.md) |
+| ADR-042-a   | Contratos Comerciais Consumidos pelo Frontend no L2SLedger              | [Ver ADR-042-a](./adr-042-a.md) |
 
 ---
 
