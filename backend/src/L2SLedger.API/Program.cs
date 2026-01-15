@@ -4,9 +4,13 @@ using L2SLedger.API.Middleware;
 using L2SLedger.Application.Interfaces;
 using L2SLedger.Application.Mappers;
 using L2SLedger.Application.UseCases.Auth;
+using L2SLedger.Application.UseCases.Categories;
+using L2SLedger.Application.Validators.Categories;
 using L2SLedger.Infrastructure.Identity;
 using L2SLedger.Infrastructure.Persistence;
 using L2SLedger.Infrastructure.Persistence.Repositories;
+using L2SLedger.Infrastructure.Repositories;
+using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
 
@@ -72,9 +76,20 @@ try
 
     // Registrar repositórios
     builder.Services.AddScoped<IUserRepository, UserRepository>();
+    builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
 
     // Registrar serviços de aplicação
     builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
+
+    // Registrar use cases de categorias
+    builder.Services.AddScoped<CreateCategoryUseCase>();
+    builder.Services.AddScoped<UpdateCategoryUseCase>();
+    builder.Services.AddScoped<GetCategoriesUseCase>();
+    builder.Services.AddScoped<GetCategoryByIdUseCase>();
+    builder.Services.AddScoped<DeactivateCategoryUseCase>();
+
+    // Registrar validadores FluentValidation
+    builder.Services.AddValidatorsFromAssemblyContaining<CreateCategoryRequestValidator>();
 
     // Registrar serviços de infraestrutura
     builder.Services.AddScoped<IFirebaseAuthService, FirebaseAuthService>();
