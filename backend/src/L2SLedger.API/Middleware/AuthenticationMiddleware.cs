@@ -1,6 +1,8 @@
 using System.Security.Claims;
 using L2SLedger.API.Contracts;
 using L2SLedger.Application.Interfaces;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.Extensions.Logging;
 
 namespace L2SLedger.API.Middleware;
@@ -50,8 +52,11 @@ public class AuthenticationMiddleware
                         // Adicionar roles como claims
                         claims.AddRange(user.Roles.Select(role => new Claim(ClaimTypes.Role, role)));
 
-                        var identity = new ClaimsIdentity(claims, "Cookie");
-                        context.User = new ClaimsPrincipal(identity);
+                        var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+                        var principal = new ClaimsPrincipal(identity);
+                        
+                        // Autenticar usando o esquema Cookie
+                        await context.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);
                     }
                     else
                     {

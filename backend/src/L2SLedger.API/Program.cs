@@ -11,6 +11,7 @@ using L2SLedger.Infrastructure.Persistence;
 using L2SLedger.Infrastructure.Persistence.Repositories;
 using L2SLedger.Infrastructure.Repositories;
 using FluentValidation;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
 
@@ -97,8 +98,31 @@ try
     // Configurar Controllers
     builder.Services.AddControllers();
 
-    // Configurar autenticação e autorização
-    builder.Services.AddAuthentication();
+    // Registrar exception handler global
+    builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
+    builder.Services.AddProblemDetails();
+
+    // Configurar autenticação e autorização (ADR-002, ADR-004)
+    builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+        .AddCookie(CookieAuthenticationDefaults.AuthenticationScheme, options =>
+        {
+            options.Cookie.Name = "l2sledger-auth";
+            options.Cookie.HttpOnly = true;
+            options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+            options.Cookie.SameSite = SameSiteMode.Lax;
+            options.ExpireTimeSpan = TimeSpan.FromHours(6);
+            options.SlidingExpiration = true;
+            options.Events.OnRedirectToLogin = context =>
+            {
+                context.Response.StatusCode = 401;
+                return Task.CompletedTask;
+            };
+            options.Events.OnRedirectToAccessDenied = context =>
+            {
+                context.Response.StatusCode = 403;
+                return Task.CompletedTask;
+            };
+        });
     builder.Services.AddAuthorization();
 
     // Configurar OpenAPI/Swagger
@@ -132,11 +156,49 @@ try
     }
 
     // Configure the HTTP request pipeline
+    
+    // Exception handler deve vir primeiro
+    app.UseExceptionHandler();
+    
     if (app.Environment.IsDevelopment())
     {
         app.UseSwagger();
         app.UseSwaggerUI();
     }
+
+    // Status code pages para retornar erros padronizados em JSON
+    app.UseStatusCodePages(async context =>
+    {
+        var response = context.HttpContext.Response;
+        if (response.StatusCode == 401)
+        {
+            response.ContentType = "application/json";
+            await response.WriteAsJsonAsync(new
+            {
+                error = new
+                {
+                    code = "AUTH_UNAUTHORIZED",
+                    message = "Usuário não autenticado",
+                    timestamp = DateTime.UtcNow,
+                    traceId = context.HttpContext.TraceIdentifier
+                }
+            });
+        }
+        else if (response.StatusCode == 403)
+        {
+            response.ContentType = "application/json";
+            await response.WriteAsJsonAsync(new
+            {
+                error = new
+                {
+                    code = "AUTH_FORBIDDEN",
+                    message = "Acesso negado",
+                    timestamp = DateTime.UtcNow,
+                    traceId = context.HttpContext.TraceIdentifier
+                }
+            });
+        }
+    });
 
     app.UseHttpsRedirection();
 
