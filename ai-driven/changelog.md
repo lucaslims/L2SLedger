@@ -159,7 +159,107 @@ Este arquivo documenta as mudanças significativas feitas no projeto com a ajuda
 
 ### Próximos Passos
 - Iniciar Fase 3: Módulo de Categorias
-- Implementar testes unitários e de integração para autenticação
-- Configurar PostgreSQL local para testes manuais
+
+---
+
+## [2026-01-13] - Testes da Fase 2 - ✅ CONCLUÍDOS
+
+### Testes Unitários
+
+#### AuthenticationServiceTests (7 testes) ✅
+- `LoginAsync_WithValidTokenAndVerifiedEmail_ShouldCreateNewUser` - Valida criação de novo usuário
+- `LoginAsync_WithExistingUser_ShouldReturnExistingUser` - Valida retorno de usuário existente
+- `LoginAsync_WithUnverifiedEmail_ShouldThrowAuthenticationException` - Valida rejeição de email não verificado
+- `LoginAsync_WhenFirebaseValidationFails_ShouldPropagateException` - Valida propagação de erros Firebase
+- `LoginAsync_WithUnverifiedExistingUser_ShouldUpdateEmailVerification` - Valida atualização de verificação
+- `GetCurrentUserAsync_WithValidUserId_ShouldReturnUser` - Valida busca de usuário por ID
+- `GetCurrentUserAsync_WithInvalidUserId_ShouldThrowAuthenticationException` - Valida erro para ID inválido
+
+#### UserTests (12 testes) ✅
+- `Constructor_ShouldCreateUserWithDefaultRole` - Valida criação com role "Leitura"
+- `AddRole_ShouldAddNewRole` - Valida adição de role
+- `AddRole_WithDuplicateRole_ShouldNotAddDuplicate` - Valida não duplicação
+- `RemoveRole_ShouldRemoveExistingRole` - Valida remoção de role
+- `RemoveRole_WithNonExistentRole_ShouldDoNothing` - Valida remoção segura
+- `UpdateDisplayName_ShouldUpdateName` - Valida atualização de nome
+- `VerifyEmail_ShouldSetEmailVerifiedToTrue` - Valida verificação de email
+- `HasRole_WithExistingRole_ShouldReturnTrue` - Valida verificação de role existente
+- `HasRole_WithNonExistentRole_ShouldReturnFalse` - Valida verificação de role não existente
+- `IsAdmin_WithAdminRole_ShouldReturnTrue` - Valida detecção de admin
+- `IsAdmin_WithoutAdminRole_ShouldReturnFalse` - Valida não-admin
+- `MarkAsDeleted_ShouldSetIsDeletedToTrue` - Valida soft delete
+
+### Testes de Contrato (18 testes) ✅
+
+#### AuthDtoContractTests (9 testes)
+- `LoginRequest_ShouldHaveRequiredProperties` - Valida estrutura
+- `LoginRequest_ShouldSerializeCorrectly` - Valida serialização JSON
+- `LoginResponse_ShouldHaveRequiredProperties` - Valida estrutura
+- `UserDto_ShouldHaveAllRequiredProperties` - Valida estrutura com 5 propriedades
+- `UserDto_ShouldSerializeCorrectly` - Valida serialização JSON com camelCase
+- `CurrentUserResponse_ShouldHaveRequiredProperties` - Valida estrutura
+
+#### ErrorContractTests (9 testes)
+- `ErrorResponse_ShouldHaveRequiredStructure` - Valida estrutura ErrorDetail
+- `ErrorResponse_ShouldSerializeCorrectly` - Valida serialização JSON
+- `ErrorResponse_WithDetails_ShouldSerializeDetails` - Valida campo opcional details
+- `ErrorCodes_ShouldHaveAuthenticationCodes` - Valida códigos AUTH_*
+- `ErrorCodes_ShouldHaveValidationCodes` - Valida códigos VAL_*
+- `ErrorCodes_ShouldHaveFinancialCodes` - Valida códigos FIN_*
+- `ErrorCodes_ShouldHavePermissionCodes` - Valida códigos PERM_*
+- `ErrorCodes_ShouldHaveSystemCodes` - Valida códigos SYS_*
+- `ErrorCodes_ShouldHaveIntegrationCodes` - Valida códigos INT_*
+- `ErrorCodes_ShouldBeImmutable` - Valida que campos são const/readonly
+
+### Ambiente de Teste Manual ✅
+
+#### Docker Compose
+- **Arquivo criado:** `docker-compose.dev.yml`
+- **Serviço:** PostgreSQL 17 Alpine
+- **Configuração:** 
+  - Database: l2sledger
+  - User/Password: l2sledger/l2sledger
+  - Port: 5432
+  - Volume persistente: postgres-data
+  - Healthcheck configurado
+
+#### Guia de Teste Manual
+- **Arquivo criado:** `MANUAL-TESTING.md`
+- **Conteúdo:** Guia completo com 10 passos:
+  1. Configurar PostgreSQL com Docker
+  2. Configurar Firebase (projeto, authentication, service account)
+  3. Configurar API (appsettings.Development.json)
+  4. Iniciar API
+  5. Obter Firebase ID Token via REST API
+  6. Testar Login
+  7. Testar GET /auth/me
+  8. Testar Logout
+  9. Testar cenários de erro (email não verificado, token inválido)
+  10. Testar roles (atribuição e verificação)
+- **Extras:** 
+  - Seção de troubleshooting
+  - Comandos PowerShell prontos
+  - Validações em banco de dados
+  - Limpeza de ambiente
+
+### Pacotes Adicionados
+- `Moq 4.20.72` - Mocking para testes (Application, Application.Tests)
+- `FluentAssertions 6.12.2` - Assertions expressivas (Application.Tests, Contract.Tests)
+
+### Resultados
+
+```bash
+✅ Total de testes: 37
+✅ Testes passando: 37 (100%)
+✅ Testes falhando: 0
+✅ Cobertura de cenários:
+   - Sucesso: Login, GetCurrentUser, Roles, Soft Delete
+   - Erros: Email não verificado, Token inválido, Usuário não encontrado
+   - Contratos: DTOs, ErrorResponse, ErrorCodes (imutabilidade)
+```
+
+### Próximos Passos
+- Executar testes manuais com PostgreSQL e Firebase
+- Iniciar Fase 3: Módulo de Categorias
 
 <!-- END CHANGELOG -->

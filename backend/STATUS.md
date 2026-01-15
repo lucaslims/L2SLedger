@@ -1,7 +1,7 @@
 # Status de Desenvolvimento - L2SLedger Backend
 
-> **Última atualização:** 2026-01-11  
-> **Fase atual:** ✅ Fase 2 Concluída
+> **Última atualização:** 2026-01-13  
+> **Fase atual:** ✅ Fase 2 Concluída (100%)
 
 ---
 
@@ -74,12 +74,51 @@
 - **ADR-021**: Modelo de erros semântico
 - **ADR-029**: Soft delete implementado
 
+### Testes Implementados
+
+**✅ 37 testes passando (100%)**
+
+#### Application.Tests (7 testes)
+- LoginAsync com token válido cria novo usuário ✅
+- LoginAsync com usuário existente retorna existente ✅
+- LoginAsync com email não verificado lança exceção ✅
+- LoginAsync quando Firebase falha propaga exceção ✅
+- LoginAsync com usuário não verificado atualiza verificação ✅
+- GetCurrentUserAsync com ID válido retorna usuário ✅
+- GetCurrentUserAsync com ID inválido lança exceção ✅
+
+#### Domain.Tests (12 testes)
+- Constructor cria usuário com role padrão ✅
+- AddRole adiciona novo role ✅
+- AddRole com duplicata não adiciona ✅
+- RemoveRole remove role existente ✅
+- RemoveRole com não existente não faz nada ✅
+- UpdateDisplayName atualiza nome ✅
+- VerifyEmail seta EmailVerified como true ✅
+- HasRole com role existente retorna true ✅
+- HasRole com role não existente retorna false ✅
+- IsAdmin com role Admin retorna true ✅
+- IsAdmin sem role Admin retorna false ✅
+- MarkAsDeleted seta IsDeleted como true ✅
+
+#### Contract.Tests (18 testes)
+- DTOs: LoginRequest, LoginResponse, UserDto, CurrentUserResponse ✅ (9 testes)
+- ErrorCodes: AUTH_, VAL_, FIN_, PERM_, SYS_, INT_ ✅ (6 testes)
+- ErrorResponse: Estrutura, serialização, imutabilidade ✅ (3 testes)
+
+### Ambiente de Teste Manual
+
+- ✅ `docker-compose.dev.yml` - PostgreSQL 17
+- ✅ `MANUAL-TESTING.md` - Guia completo com 10 passos
+- ✅ Instruções para Firebase, obtenção de token, testes de API
+
 ### Compilação
 
 ```bash
 ✅ Build Status: SUCCESS
 ✅ Total de projetos: 9
 ✅ Migrations: InitialCreate criada
+✅ Testes: 37/37 passando
 ```
 
 ---
