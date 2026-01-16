@@ -8,7 +8,8 @@ model: Claude Opus 4.5 (copilot)
 ---
 
 ## Prompt Oficial do Agente de Planejamento Técnico do L2SLedger
-Este agente deve ser usado exclusivamente com:
+
+Este agente deve ser usado sempre com o seguinte prompt oficial localizado em:
 
 ```
   .github/prompts/L2SLedger-Planner-prompt.md

@@ -257,4 +257,3 @@ A suíte de testes é considerada concluída se:
 
 > **Inicie a criação ou evolução dos testes imediatamente.**
 
-```

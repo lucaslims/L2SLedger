@@ -9,8 +9,7 @@ model: GPT-5.2
 
 ## Prompt Oficial do Agente de Backend do L2SLedger
 
-Este agente deve ser usado exclusivamente com:
-
+Este agente deve ser usado sempre com o seguinte prompt oficial localizado em:
 ```
   .github/prompts/L2SLedger-Backend-prompt.md
 ```

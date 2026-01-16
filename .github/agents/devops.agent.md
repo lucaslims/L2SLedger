@@ -9,7 +9,7 @@ model: GPT-5 mini
 
 ## Prompt Oficial do Agente DevOps do L2SLedger
 
-Este agente deve ser usado exclusivamente com:
+Este agente deve ser usado sempre com o seguinte prompt oficial localizado em:
 
 ```
   .github/prompts/L2SLedger-CI-CD-prompt.md
