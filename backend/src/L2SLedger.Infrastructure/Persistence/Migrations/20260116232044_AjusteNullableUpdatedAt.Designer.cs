@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using L2SLedger.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -12,9 +13,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace L2SLedger.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(L2SLedgerDbContext))]
-    partial class L2SLedgerDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260116232044_AjusteNullableUpdatedAt")]
+    partial class AjusteNullableUpdatedAt
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
