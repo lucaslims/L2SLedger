@@ -6,6 +6,8 @@ using L2SLedger.Infrastructure.Identity;
 using L2SLedger.Infrastructure.Persistence.Repositories;
 using L2SLedger.Infrastructure.Repositories;
 using FluentValidation;
+using Polly;
+using Polly.Extensions.Http;
 
 namespace L2SLedger.API.Configuration;
 
@@ -51,6 +53,16 @@ public static class DependencyInjectionExtensions
     }
 
     /// <summary>
+    /// Registra use cases de autenticação.
+    /// </summary>
+    public static IServiceCollection AddAuthUseCases(this IServiceCollection services)
+    {
+        services.AddScoped<FirebaseLoginUseCase>();
+
+        return services;
+    }
+
+    /// <summary>
     /// Registra validadores FluentValidation.
     /// </summary>
     public static IServiceCollection AddValidators(this IServiceCollection services)
@@ -67,6 +79,40 @@ public static class DependencyInjectionExtensions
     {
         services.AddScoped<IFirebaseAuthService, FirebaseAuthService>();
 
+        // Configurar HttpClient para FirebaseAuthenticationService com Polly
+        services.AddHttpClient<IFirebaseAuthenticationService, FirebaseAuthenticationService>()
+            .ConfigureHttpClient(client =>
+            {
+                client.Timeout = TimeSpan.FromSeconds(5);
+            })
+            .AddPolicyHandler(GetRetryPolicy())
+            .AddPolicyHandler(GetCircuitBreakerPolicy());
+
         return services;
+    }
+
+    /// <summary>
+    /// Política de retry para requisições HTTP transientes.
+    /// </summary>
+    private static IAsyncPolicy<HttpResponseMessage> GetRetryPolicy()
+    {
+        return HttpPolicyExtensions
+            .HandleTransientHttpError()
+            .WaitAndRetryAsync(
+                retryCount: 3,
+                sleepDurationProvider: retryAttempt => 
+                    TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)));
+    }
+
+    /// <summary>
+    /// Política de circuit breaker para requisições HTTP.
+    /// </summary>
+    private static IAsyncPolicy<HttpResponseMessage> GetCircuitBreakerPolicy()
+    {
+        return HttpPolicyExtensions
+            .HandleTransientHttpError()
+            .CircuitBreakerAsync(
+                handledEventsAllowedBeforeBreaking: 5,
+                durationOfBreak: TimeSpan.FromSeconds(30));
     }
 }

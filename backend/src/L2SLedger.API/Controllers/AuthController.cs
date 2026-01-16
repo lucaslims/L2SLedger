@@ -2,6 +2,7 @@ using System.Security.Claims;
 using L2SLedger.API.Contracts;
 using L2SLedger.Application.DTOs.Auth;
 using L2SLedger.Application.Interfaces;
+using L2SLedger.Application.UseCases.Auth;
 using L2SLedger.Domain.Exceptions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -119,5 +120,54 @@ public class AuthController : ControllerBase
         Response.Cookies.Delete(AuthCookieName);
 
         return NoContent();
+    }
+
+    /// <summary>
+    /// Login direto no Firebase com email e senha (apenas para testes).
+    /// </summary>
+    /// <remarks>
+    /// ⚠️ ATENÇÃO: Este endpoint está disponível apenas em ambientes de desenvolvimento/demo.
+    /// Use-o para obter um idToken válido sem precisar do frontend.
+    /// 
+    /// Exemplo de uso:
+    /// 1. Faça login neste endpoint com email/senha
+    /// 2. Copie o idToken retornado
+    /// 3. Use o idToken no endpoint POST /api/v1/auth/login
+    /// 
+    /// Este endpoint retorna 404 em produção por segurança.
+    /// </remarks>
+    [HttpPost("firebase/login")]
+    [AllowAnonymous]
+    [ProducesResponseType(typeof(FirebaseLoginResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<FirebaseLoginResponse>> FirebaseLogin(
+        [FromBody] FirebaseLoginRequest request,
+        [FromServices] FirebaseLoginUseCase useCase,
+        [FromServices] IWebHostEnvironment env,
+        CancellationToken cancellationToken)
+    {
+        // Validar ambiente (apenas DEV/DEMO)
+        if (env.IsProduction())
+        {
+            return NotFound(); // Esconder endpoint em produção
+        }
+
+        try
+        {
+            var result = await useCase.ExecuteAsync(request, cancellationToken);
+            return Ok(result);
+        }
+        catch (FluentValidation.ValidationException ex)
+        {
+            var errors = string.Join(", ", ex.Errors.Select(e => e.ErrorMessage));
+            return BadRequest(ErrorResponse.Create("VALIDATION_ERROR", errors));
+        }
+        catch (AuthenticationException ex)
+        {
+            _logger.LogWarning("Firebase login falhou: {Message}", ex.Message);
+            return Unauthorized(ErrorResponse.Create(ex.Code, ex.Message));
+        }
     }
 }

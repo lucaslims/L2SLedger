@@ -20,7 +20,7 @@ public static class ObservabilityExtensions
                 path: "logs/l2sledger-.log",
                 rollingInterval: RollingInterval.Minute,
                 flushToDiskInterval: TimeSpan.FromDays(5),
-                retainedFileCountLimit: 15)
+                retainedFileCountLimit: 10)
             .Enrich.WithProperty("Application", "L2SLedger.API")
             .Enrich.WithThreadId()
             .Enrich.WithMachineName()
