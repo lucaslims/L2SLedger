@@ -42,7 +42,7 @@ public class CategoryConfiguration : IEntityTypeConfiguration<Category>
 
         builder.Property(c => c.UpdatedAt)
             .HasColumnName("updated_at")
-            .IsRequired();
+            .IsRequired(false);
 
         builder.Property(c => c.IsDeleted)
             .HasColumnName("is_deleted")

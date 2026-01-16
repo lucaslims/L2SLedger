@@ -1,6 +1,7 @@
 using L2SLedger.Infrastructure.Persistence;
 using L2SLedger.Infrastructure.Persistence.Seeds;
 using Microsoft.EntityFrameworkCore;
+using Npgsql;
 using Serilog;
 
 namespace L2SLedger.API.Configuration;
@@ -19,10 +20,17 @@ public static class DatabaseExtensions
         IConfiguration configuration,
         IWebHostEnvironment environment)
     {
+        var connectionString = configuration.GetConnectionString("DefaultConnection");
+        var dataSourceBuilder = new NpgsqlDataSourceBuilder(connectionString);
+
+        dataSourceBuilder.EnableDynamicJson();
+        var dataSource = dataSourceBuilder.Build();
+
+        services.AddSingleton(dataSource);
+
         services.AddDbContext<L2SLedgerDbContext>(options =>
         {
-            var connectionString = configuration.GetConnectionString("DefaultConnection");
-            options.UseNpgsql(connectionString, npgsqlOptions =>
+            options.UseNpgsql(dataSource, npgsqlOptions =>
             {
                 npgsqlOptions.MigrationsAssembly("L2SLedger.Infrastructure");
             });
