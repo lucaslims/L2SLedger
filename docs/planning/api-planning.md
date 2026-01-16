@@ -70,6 +70,7 @@ backend/
 | `/api/v1/auth/login` | POST | Validar Firebase ID Token e criar sessão |
 | `/api/v1/auth/logout` | POST | Encerrar sessão e invalidar cookie |
 | `/api/v1/auth/me` | GET | Retornar usuário autenticado |
+| `/api/v1/auth/firebase/login` | POST | 🔧 Login direto no Firebase (apenas DEV/DEMO) |
 
 **Comportamentos:**
 
@@ -77,6 +78,15 @@ backend/
 - Verificação obrigatória de `email_verified`
 - Criação de cookie HttpOnly + Secure + SameSite=Lax
 - Registro em auditoria de login/logout
+
+**Endpoint Auxiliar de Teste:**
+
+O endpoint `/api/v1/auth/firebase/login` é uma ferramenta de desenvolvimento que permite obter um Firebase ID Token diretamente via email/senha, sem necessidade do frontend. 
+
+- ⚠️ Disponível apenas em ambientes DEV/DEMO
+- ⚠️ Retorna 404 em produção
+- Útil para testes via cURL/Postman/Scripts
+- Não deve ser usado em produção (usar Firebase SDK no frontend)
 
 ---
 
@@ -194,7 +204,47 @@ backend/
 
 ---
 
-### 3.10 Health & Observabilidade (ADR-006)
+### 3.10 Módulo de Configurações
+
+| Endpoint | Método | Descrição |
+|----------|--------|-----------|
+| `/api/v1/configurations` | GET | Obter configurações do sistema |
+| `/api/v1/configurations` | PUT | Atualizar configurações (Admin) |
+| `/api/v1/configurations/notifications` | GET | Obter configurações de notificações |
+| `/api/v1/configurations/notifications` | PUT | Atualizar notificações (Admin) |
+
+---
+
+### 3.11 Módulo de Controle de Planos (ADR-042, ADR-042-a)
+
+| Endpoint | Método | Descrição |
+|----------|--------|-----------|
+| `/api/v1/me/commercial-context` | GET | Obter contexto comercial do tenant |
+| `/api/v1/me/plan` | GET | Obter plano ativo e features habilitadas |
+| `/api/v1/me/usage` | GET | Obter limites e uso atual |
+| `/api/v1/me/ads-permission` | GET | Verificar permissão para exibir anúncios |
+| `/api/v1/me/upgrade` | POST | Solicitar upgrade de plano |
+| `/api/v1/me/downgrade` | POST | Solicitar downgrade de plano |
+| `/api/v1/me/cancel` | POST | Cancelar assinatura |
+
+---
+
+### 3.12 Módulo de controle de Pagamentos (futuro)
+
+| Endpoint | Método | Descrição |
+|----------|--------|-----------|
+| `/api/v1/payments/charge` | POST | Cobrar assinatura (futuro) |
+| `/api/v1/payments/me/billing-info` | GET | Obter informações de cobrança |
+| `/api/v1/payments/me/billing-info` | PUT | Atualizar informações de cobrança |
+| `/api/v1/payments/me/invoices` | GET | Listar faturas |
+| `/api/v1/payments/me/invoices/{id}` | GET | Obter fatura por ID |
+| `/api/v1/payments/me/payment-methods` | GET | Listar métodos de pagamento |
+| `/api/v1/payments/me/payment-methods` | POST | Adicionar método de pagamento |
+| `/api/v1/payments/me/payment-methods/{id}` | DELETE | Remover método de pagamento |
+
+---
+
+### 3.13 Health & Observabilidade (ADR-006)
 
 | Endpoint | Método | Descrição |
 |----------|--------|-----------|
@@ -412,17 +462,26 @@ public async Task PostTransaction_ReturnsCreated_WithValidContract()
 
 ### Fase 2 — Módulo de Autenticação
 
-- [ ] Implementar `/api/v1/auth/login`
-- [ ] Implementar `/api/v1/auth/logout`
-- [ ] Implementar `/api/v1/auth/me`
-- [ ] Criar testes unitários e de integração
-- [ ] Criar testes de contrato
+- [x] Implementar `/api/v1/auth/login`
+- [x] Implementar `/api/v1/auth/logout`
+- [x] Implementar `/api/v1/auth/me`
+- [x] Criar testes unitários e de integração
+- [x] Criar testes de contrato
 
 ### Fase 3 — Módulo de Categorias
 
-- [ ] Criar entidade Category no Domain
-- [ ] Implementar CRUD de categorias
-- [ ] Criar testes
+- [x] Criar entidade Category no Domain
+- [x] Implementar CRUD de categorias
+- [x] Criar testes
+
+### Fase 3.1 — Endpoint Auxiliar de Teste (Firebase Login)
+
+- [ ] Implementar `/api/v1/auth/firebase/login` (apenas DEV/DEMO)
+- [ ] Criar IFirebaseAuthenticationService
+- [ ] Integrar com Firebase Authentication REST API
+- [ ] Adicionar validação de ambiente (IsProduction → 404)
+- [ ] Criar testes (12 testes)
+- [ ] Atualizar documentação Swagger com grupo "dev"
 
 ### Fase 4 — Módulo de Lançamentos
 
