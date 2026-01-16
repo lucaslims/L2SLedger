@@ -8,6 +8,7 @@
 ## ✅ Fase 1: Estrutura Base - CONCLUÍDA
 
 ### Stack Tecnológico
+
 - **.NET 9.0** (ajuste de .NET 10 para compatibilidade)
 - **ASP.NET Core 9.0**
 - **Entity Framework Core 9.0**
@@ -27,6 +28,21 @@
 | `ErrorResponse` | API | Contrato de erro (ADR-021) | ✅ |
 | `ErrorCodes` | API | Catálogo de códigos de erro | ✅ |
 
+## 📝 Notas Técnicas
+
+### Decisões Importantes
+
+1. **Migração para .NET 9.0:** Necessária devido à incompatibilidade de pacotes NuGet com .NET 10 (Polly, AutoMapper, FluentAssertions)
+2. **PackageSourceMapping:** Configurado `nuget.config` com clear para resolver conflitos
+3. **Polly:** Adiado para versão futura devido a incompatibilidade com .NET 9
+
+### ADRs Aplicados na Fase 1
+
+- ADR-020: Clean Architecture e DDD
+- ADR-021: Modelo de Erros Semântico e Fail-Fast
+- ADR-034: PostgreSQL como fonte única
+- ADR-037: Estratégia de Testes
+
 ---
 
 ## ✅ Fase 2: Módulo de Autenticação - CONCLUÍDA
@@ -34,16 +50,19 @@
 ### Componentes Implementados
 
 #### Domain Layer
+
 - ✅ `User` - Entidade de usuário com Firebase UID, roles, email verification
 - ✅ `AuthenticationException` - Exceção específica para auth
 
 #### Application Layer
+
 - ✅ DTOs: `LoginRequest`, `LoginResponse`, `UserDto`, `CurrentUserResponse`
 - ✅ Interfaces: `IAuthenticationService`, `IUserRepository`, `IFirebaseAuthService`
 - ✅ `AuthenticationService` - Orquestra login e validação
 - ✅ `AuthProfile` - AutoMapper profile
 
 #### Infrastructure Layer
+
 - ✅ `FirebaseAuthService` - Valida Firebase ID Token com timeout
 - ✅ `UserRepository` - CRUD de usuários com soft delete
 - ✅ `L2SLedgerDbContext` - DbContext configurado
@@ -51,16 +70,19 @@
 - ✅ Migration `InitialCreate` - Tabela users criada
 
 #### API Layer
+
 - ✅ `AuthController` - Endpoints: login, logout, me
 - ✅ `AuthenticationMiddleware` - Valida cookie e popula HttpContext.User
 - ✅ `Program.cs` - Configuração completa: EF, Firebase, Serilog, CORS, AutoMapper
 
 ### Endpoints Implementados
+
 - ✅ `POST /api/v1/auth/login` - Validar Firebase ID Token e criar sessão com cookie
 - ✅ `POST /api/v1/auth/logout` - Encerrar sessão e remover cookie
 - ✅ `GET /api/v1/auth/me` - Retornar dados do usuário autenticado
 
 ### ADRs Aplicados
+
 - **ADR-001**: Firebase como IdP único
 - **ADR-002**: Fluxo completo de autenticação com email_verified
 - **ADR-003/004**: Cookies HttpOnly + Secure + SameSite=Lax
@@ -79,6 +101,7 @@
 **✅ 37 testes passando (100%)**
 
 #### Application.Tests (7 testes)
+
 - LoginAsync com token válido cria novo usuário ✅
 - LoginAsync com usuário existente retorna existente ✅
 - LoginAsync com email não verificado lança exceção ✅
@@ -88,6 +111,7 @@
 - GetCurrentUserAsync com ID inválido lança exceção ✅
 
 #### Domain.Tests (12 testes)
+
 - Constructor cria usuário com role padrão ✅
 - AddRole adiciona novo role ✅
 - AddRole com duplicata não adiciona ✅
@@ -102,6 +126,7 @@
 - MarkAsDeleted seta IsDeleted como true ✅
 
 #### Contract.Tests (18 testes)
+
 - DTOs: LoginRequest, LoginResponse, UserDto, CurrentUserResponse ✅ (9 testes)
 - ErrorCodes: AUTH_, VAL_, FIN_, PERM_, SYS_, INT_ ✅ (6 testes)
 - ErrorResponse: Estrutura, serialização, imutabilidade ✅ (3 testes)
@@ -126,6 +151,7 @@
 ## ✅ Fase 3: Módulo de Categorias - CONCLUÍDA (100%)
 
 ### Status Geral
+
 - **Progresso**: 100% ✅ (implementação + testes + seed completos)
 - **Build**: ✅ Compilando com sucesso
 - **Testes**: ✅ 90/90 passando (37 Fase 1+2 + 53 Fase 3)
@@ -134,6 +160,7 @@
 ### ✅ Componentes Implementados (100%)
 
 #### Domain Layer - ✅ COMPLETO
+
 - ✅ `Category` entity (Id, Name, Description, IsActive, ParentCategoryId)
 - ✅ Hierarquia de 2 níveis (método `CanHaveSubCategories()`)
 - ✅ Validações: nome obrigatório, máximo 100 caracteres
@@ -143,6 +170,7 @@
 - ✅ **Testes**: 13 testes implementados (CategoryTests.cs)
 
 #### Application Layer - ✅ COMPLETO
+
 - ✅ **DTOs**: 
   - `CategoryDto` (com ParentCategoryName)
   - `CreateCategoryRequest`
@@ -167,6 +195,7 @@
   - DeactivateCategoryUseCaseTests (6 testes)
 
 #### Infrastructure Layer - ✅ COMPLETO
+
 - ✅ `CategoryRepository` - CRUD completo + queries hierárquicas
   - GetByIdAsync (com Include de ParentCategory)
   - GetAllAsync (com filtro de ativo/inativo)
@@ -184,6 +213,7 @@
   - Integrado no `Program.cs` para DEV/DEMO
 
 #### API Layer - ✅ COMPLETO
+
 - ✅ `CategoriesController` - 5 endpoints implementados
   - `GET /api/v1/categories` - Listar (com filtros)
   - `GET /api/v1/categories/{id}` - Obter por ID
@@ -196,12 +226,14 @@
 - ✅ Swagger/OpenAPI documentado
 
 #### Contract Tests - ✅ COMPLETO
+
 - ✅ **CategoryDtoTests** (8 testes)
   - Validação de estrutura dos DTOs
   - Serialização/Deserialização JSON
   - Imutabilidade de contratos (ADR-022)
 
 #### Program.cs - ✅ INTEGRADO
+
 - ✅ `AddCategoryUseCases()` registrado
 - ✅ Repositories e validators configurados
 - ✅ Seed database integrado (Development only)
@@ -217,6 +249,7 @@
   - Contract.Tests: 8 testes ✅
 
 ### 📋 ADRs Aplicados
+
 - ✅ ADR-020: Clean Architecture (4 camadas respeitadas)
 - ✅ ADR-021: Modelo de erros semântico (BusinessRuleException)
 - ✅ ADR-022: Contratos imutáveis (DTOs record)
@@ -226,22 +259,8 @@
 
 ---
 
-## 📝 Notas Técnicas
-
-### Decisões Importantes
-1. **Migração para .NET 9.0:** Necessária devido à incompatibilidade de pacotes NuGet com .NET 10 (Polly, AutoMapper, FluentAssertions)
-2. **PackageSourceMapping:** Configurado `nuget.config` com clear para resolver conflitos
-3. **Polly:** Adiado para versão futura devido a incompatibilidade com .NET 9
-
-### ADRs Aplicados na Fase 1
-- ADR-020: Clean Architecture e DDD
-- ADR-021: Modelo de Erros Semântico e Fail-Fast
-- ADR-034: PostgreSQL como fonte única
-- ADR-037: Estratégia de Testes
-
----
-
 ## 🔗 Referências
+
 - [Planejamento Técnico da API](../../docs/planning/api-planning.md)
-- [Changelog](changelog.md)
-- [Agent Rules](agent-rules.md)
+- [Changelog](../ai-driven/changelog.md)
+- [Agent Rules](../ai-driven/agent-rules.md)
