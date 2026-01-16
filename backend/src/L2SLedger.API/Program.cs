@@ -46,6 +46,9 @@ try
     // Aplicar migrations automaticamente em Development (ADR-035)
     await app.ApplyMigrationsAsync();
 
+    // Executar seed de dados padrão em Development (ADR-029)
+    await app.SeedDatabaseAsync();
+
     // Configurar pipeline HTTP (exception handler, swagger, status codes, cors, auth)
     app.UseApiConfiguration();
 

@@ -1,4 +1,5 @@
 using L2SLedger.Infrastructure.Persistence;
+using L2SLedger.Infrastructure.Persistence.Seeds;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
 
@@ -47,6 +48,24 @@ public static class DatabaseExtensions
             var dbContext = scope.ServiceProvider.GetRequiredService<L2SLedgerDbContext>();
             await dbContext.Database.MigrateAsync();
             Log.Information("Migrations aplicadas com sucesso");
+        }
+
+        return app;
+    }
+
+    /// <summary>
+    /// Executa seed de dados padrão em ambiente de desenvolvimento.
+    /// Conforme ADR-029 (Estratégia de Seed de Dados Financeiros).
+    /// </summary>
+    public static async Task<WebApplication> SeedDatabaseAsync(this WebApplication app)
+    {
+        if (app.Environment.IsDevelopment())
+        {
+            using var scope = app.Services.CreateScope();
+            var dbContext = scope.ServiceProvider.GetRequiredService<L2SLedgerDbContext>();
+            
+            await CategorySeeder.SeedAsync(dbContext);
+            Log.Information("Seed de categorias padrão executado com sucesso");
         }
 
         return app;
