@@ -17,4 +17,17 @@ public interface ICurrentUserService
     /// </summary>
     /// <returns>Email do usuário.</returns>
     string? GetUserEmail();
+
+    /// <summary>
+    /// Obtém o nome do usuário autenticado.
+    /// </summary>
+    /// <returns>Nome do usuário.</returns>
+    string? GetUserName();
+
+    /// <summary>
+    /// Verifica se o usuário autenticado possui uma determinada role.
+    /// </summary>
+    /// <param name="role">Nome da role a verificar.</param>
+    /// <returns>True se o usuário possui a role, False caso contrário.</returns>
+    bool IsInRole(string role);
 }
