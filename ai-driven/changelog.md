@@ -9,6 +9,113 @@ O formato segue o padrão [Keep a Changelog](https://keepachangelog.com/en/1.0.0
 
 ---
 
+## [2026-01-17] - ✅ FASE 5 CONCLUÍDA: Módulo de Períodos Financeiros
+
+### 🎯 Visão Geral
+Implementação completa do **Módulo de Períodos Financeiros** conforme [fase-5-periodos-plan.md](../docs/planning/api-planning/fase-5-periodos-plan.md).
+Esta é uma funcionalidade **crítica** que implementa o ADR-015 (Imutabilidade via fechamento de períodos), garantindo a confiabilidade histórica dos dados financeiros.
+
+### 📊 Métricas
+- **26 arquivos criados** (4 Domain, 15 Application, 2 Infrastructure, 1 API, 4 Tests)
+- **3 arquivos modificados** (Transaction Use Cases)
+- **78 testes novos** (18 Domain + 45 Application + 8 Contract + 7 Integração)
+- **Total de testes**: 211/211 passando ✅
+- **1 migration**: AddFinancialPeriods (tabela financial_periods com 5 índices)
+- **5 endpoints REST**: GET list, GET by id, POST create, POST close, POST reopen
+
+### 🏗️ Componentes Implementados
+
+#### Domain Layer (4 arquivos)
+- **PeriodStatus** (enum): Open = 1, Closed = 2
+- **CategoryBalance** (Value Object): Saldo individual por categoria
+- **BalanceSnapshot** (Value Object): Snapshot consolidado de saldos
+- **FinancialPeriod** (Entity): Agregado raiz com métodos Close() e Reopen()
+
+#### Application Layer (15 arquivos)
+- **5 DTOs**: FinancialPeriodDto (19 props), CreatePeriodRequest, ReopenPeriodRequest, GetPeriodsRequest, GetPeriodsResponse
+- **2 Validators**: CreatePeriodRequestValidator, ReopenPeriodRequestValidator (FluentValidation)
+- **2 Interfaces**: IFinancialPeriodRepository (7 métodos), IPeriodBalanceService
+- **1 Service**: PeriodBalanceService (cálculo de snapshots com agregação por categoria)
+- **6 Use Cases**:
+  * CreateFinancialPeriodUseCase
+  * ClosePeriodUseCase (calcula snapshot, log WARNING)
+  * ReopenPeriodUseCase (log ERROR, justificativa obrigatória)
+  * GetFinancialPeriodsUseCase (filtros + paginação)
+  * GetFinancialPeriodByIdUseCase
+  * EnsurePeriodExistsAndOpenUseCase (helper para Transaction Use Cases)
+- **1 Mapper**: FinancialPeriodMappingProfile (AutoMapper)
+
+#### Infrastructure Layer (2 arquivos)
+- **FinancialPeriodRepository**: 7 métodos (GetByIdAsync, GetByYearMonthAsync, GetAllAsync, AddAsync, UpdateAsync, ExistsAsync, GetPeriodForDateAsync)
+- **FinancialPeriodConfiguration**: Mapeamento EF Core com 5 índices e 2 foreign keys para users
+
+#### API Layer (1 arquivo)
+- **PeriodsController**: 5 endpoints REST
+  * GET /api/v1/periods (filtros: year, month, status + paginação)
+  * GET /api/v1/periods/{id}
+  * POST /api/v1/periods (criar)
+  * POST /api/v1/periods/{id}/close (Admin/Financeiro)
+  * POST /api/v1/periods/{id}/reopen (APENAS Admin - ADR-016)
+
+#### Tests (4 arquivos)
+- **FinancialPeriodTests.cs**: 18 testes Domain
+- **FinancialPeriodDtoTests.cs**: 8 testes Contract
+- **6 Use Case Test Files**: 45 testes Application
+- **TransactionPeriodIntegrationTests.cs**: 7 testes Integração
+
+#### Integração com Fase 4 (3 arquivos modificados)
+- **CreateTransactionUseCase**: Validação de período antes de criar
+- **UpdateTransactionUseCase**: Validação dupla (data original + nova data)
+- **DeleteTransactionUseCase**: Validação de período antes de deletar
+
+### 🎯 Comportamento Implementado
+
+| Operação | Período Fechado | Período Aberto | Período Não Existe |
+|----------|-----------------|----------------|--------------------|
+| CREATE Transaction | ❌ FIN_PERIOD_CLOSED | ✅ Sucesso | ✅ Auto-cria + Sucesso |
+| UPDATE Transaction | ❌ FIN_PERIOD_CLOSED | ✅ Sucesso | ✅ Auto-cria + Sucesso |
+| DELETE Transaction | ❌ FIN_PERIOD_CLOSED | ✅ Sucesso | ✅ Auto-cria + Sucesso |
+| CLOSE Period | ❌ Already closed | ✅ Calcula snapshot + Close | N/A |
+| REOPEN Period | ✅ Reopen + Log ERROR | ❌ Already open | N/A |
+
+### 🔐 ADRs Aplicados
+- **ADR-015**: Imutabilidade via fechamento de períodos (CORE - enforcement completo)
+- **ADR-014**: Logs de auditoria obrigatórios (WARNING para close, ERROR para reopen)
+- **ADR-016**: RBAC - Admin para reopen, Admin/Financeiro para close
+- **ADR-020**: Clean Architecture respeitada (4 camadas)
+- **ADR-021**: Fail-fast + modelo de erros semântico (FIN_PERIOD_CLOSED)
+- **ADR-022**: Contratos imutáveis (DTOs record)
+- **ADR-029**: Soft delete implementado
+- **ADR-034**: PostgreSQL + JSONB para BalanceSnapshot
+- **ADR-037**: Estratégia de testes 100%
+
+### ✅ Validações
+```bash
+✅ Build: SUCCESS (7.9s)
+✅ Testes: 211/211 passando (100%)
+✅ Migration: AddFinancialPeriods aplicada
+✅ Tabela: financial_periods criada (17 colunas, 5 índices)
+✅ Endpoints: 5 REST documentados em Swagger
+✅ Documentação: 100% em português brasileiro
+```
+
+### 📚 Lições Aprendidas
+1. **Auto-criação de períodos**: Simplifica UX - períodos são criados automaticamente na primeira transação do mês
+2. **Validação dupla em Update**: Essencial validar AMBOS períodos (original + novo) quando data da transação muda
+3. **Snapshot de saldos**: JSONB no PostgreSQL permite queries flexíveis + performance
+4. **Logs de auditoria**: WARNING para close (operação normal), ERROR para reopen (operação excepcional)
+5. **Orquestração via Master**: Uso de subagentes especializados garantiu qualidade e governança
+
+### 🚀 Próximos Passos
+- Fase 6: Ajustes Pós-Fechamento (permitir ajustes em períodos fechados com auditoria rigorosa)
+- Fase 7: Relatórios de Saldos Consolidados
+- Opcional: Dashboard de períodos fechados vs abertos
+
+### Ferramenta Utilizada
+GitHub Copilot (Claude Sonnet 4.5) - Prompt Master com orquestração de subagentes especializados
+
+---
+
 ## [2026-01-17] - Integração Fase 4 + Fase 5: Validação de Períodos em Transações ✅ CONCLUÍDO
 
 ### Contexto

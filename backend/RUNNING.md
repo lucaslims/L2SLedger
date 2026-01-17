@@ -48,7 +48,8 @@ Crie o arquivo `backend/src/L2SLedger.API/appsettings.Development.json`:
     "DefaultConnection": "Host=localhost;Port=5432;Database=l2sledger;Username=l2sledger;Password=l2sledger"
   },
   "Firebase": {
-    "CredentialPath": "C:\\caminho\\para\\firebase-service-account.json"
+    "CredentialPath": "C:\\caminho\\para\\firebase-service-account.json",
+    "WebApiKey": "SUA_FIREBASE_WEB_API_KEY_AQUI"
   },
   "Cors": {
     "AllowedOrigins": [

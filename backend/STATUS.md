@@ -1,7 +1,7 @@
 # Status de Desenvolvimento - L2SLedger Backend
 
 > **Última atualização:** 2026-01-17  
-> **Fase atual:** ✅ Fase 4: Módulo de Transações - CONCLUÍDA (100%)
+> **Fase atual:** ✅ Fase 5: Módulo de Períodos Financeiros - CONCLUÍDA (100%)
 
 ---
 
@@ -378,12 +378,204 @@
 - ✅ ADR-034: PostgreSQL com indexes otimizados
 - ✅ ADR-037: Estratégia de testes (Contract + Domain implementados)
 
-### 🚀 Próximos Passos
+---
 
-- **Fase 5**: Financial Periods (71 testes planejados)
-- **Opcional**: Application Layer Tests completos para Transações (40 testes)
+## ✅ Fase 5: Módulo de Períodos Financeiros - CONCLUÍDA (100%)
+
+### Status Geral
+
+- **Progresso**: 100% ✅ (implementação + testes + integração completos)
+- **Build**: ✅ Compilando com sucesso
+- **Testes**: ✅ 211/211 passando (127 Fase 1-4 + 84 Fase 5)
+- **Migration**: ✅ AddFinancialPeriods aplicada
+
+### ✅ Componentes Implementados (100%)
+
+#### Domain Layer - ✅ COMPLETO
+
+- ✅ `PeriodStatus` enum (Open = 1, Closed = 2)
+- ✅ `CategoryBalance` Value Object (saldo por categoria)
+- ✅ `BalanceSnapshot` Value Object (snapshot consolidado)
+- ✅ `FinancialPeriod` entity (Id, Year, Month, StartDate, EndDate, Status, ClosedAt, ClosedByUserId, ReopenedAt, ReopenedByUserId, ReopenReason, TotalIncome, TotalExpense, NetBalance, BalanceSnapshotJson)
+- ✅ Métodos de negócio: Close(), Reopen(), IsOpen(), IsClosed(), ContainsDate(), GetPeriodName()
+- ✅ Validações: Year 2000-2100, Month 1-12, Justificativa 10-500 caracteres
+- ✅ Navigation properties: ClosedByUser, ReopenedByUser
+- ✅ **Testes**: 18 testes implementados (FinancialPeriodTests.cs)
+
+#### Application Layer - ✅ COMPLETO
+
+- ✅ **DTOs** (5 arquivos):
+  - `FinancialPeriodDto` (19 propriedades incluindo BalanceSnapshot deserializado)
+  - `CreatePeriodRequest` (Year, Month)
+  - `ReopenPeriodRequest` (Reason - justificativa obrigatória)
+  - `GetPeriodsRequest` (Year?, Month?, Status?, Page, PageSize - defaults 1, 12)
+  - `GetPeriodsResponse` (Periods, TotalCount, Page, PageSize)
+- ✅ **Validators** (FluentValidation - 2 arquivos):
+  - `CreatePeriodRequestValidator` (Year 2000-2100, Month 1-12)
+  - `ReopenPeriodRequestValidator` (Reason NotEmpty, MinLength 10, MaxLength 500)
+- ✅ **Interfaces** (2 arquivos):
+  - `IFinancialPeriodRepository` (7 métodos: GetByIdAsync, GetByYearMonthAsync, GetAllAsync, AddAsync, UpdateAsync, ExistsAsync, GetPeriodForDateAsync)
+  - `IPeriodBalanceService` (CalculateBalanceSnapshotAsync)
+- ✅ **Services** (1 arquivo):
+  - `PeriodBalanceService` (calcula snapshot agregando transações por categoria)
+- ✅ **Use Cases** (6 implementados):
+  - `CreateFinancialPeriodUseCase` - Criar período (valida duplicata)
+  - `ClosePeriodUseCase` - Fechar período (calcula snapshot, log WARNING)
+  - `ReopenPeriodUseCase` - Reabrir período (log ERROR, justificativa obrigatória)
+  - `GetFinancialPeriodsUseCase` - Listar com filtros e paginação (Year DESC, Month DESC)
+  - `GetFinancialPeriodByIdUseCase` - Obter por ID
+  - `EnsurePeriodExistsAndOpenUseCase` - Helper para validação em Transaction Use Cases
+- ✅ **Mapper**: `FinancialPeriodMappingProfile` (AutoMapper com PeriodName, Status enum→string, BalanceSnapshotJson→BalanceSnapshot)
+- ✅ **Testes**: 45 testes implementados
+  - CreateFinancialPeriodUseCaseTests (8 testes)
+  - ClosePeriodUseCaseTests (10 testes)
+  - ReopenPeriodUseCaseTests (9 testes)
+  - GetFinancialPeriodsUseCaseTests (6 testes)
+  - GetFinancialPeriodByIdUseCaseTests (4 testes)
+  - EnsurePeriodExistsAndOpenUseCaseTests (8 testes)
+
+#### Infrastructure Layer - ✅ COMPLETO
+
+- ✅ `FinancialPeriodRepository` - CRUD completo + queries
+  - GetByIdAsync (com Include de ClosedByUser e ReopenedByUser)
+  - GetByYearMonthAsync (busca por ano/mês único)
+  - GetAllAsync (filtros: year, month, status + paginação ordenada)
+  - AddAsync, UpdateAsync (com SaveChanges)
+  - ExistsAsync (verifica year + month)
+  - GetPeriodForDateAsync (busca período que contém data)
+- ✅ `FinancialPeriodConfiguration` - EF Core mapping completo
+  - Tabela: `financial_periods` (17 colunas)
+  - Índices: 5 (unique year/month, year DESC/month DESC, status, closed_by_user_id, reopened_by_user_id)
+  - Foreign Keys: 2 para users (Restrict delete)
+  - Query Filter: soft delete (!IsDeleted)
+  - JSONB para BalanceSnapshotJson
+- ✅ **Migration**: `20260117004820_AddFinancialPeriods` - Tabela criada com 5 índices
+- ✅ DbContext atualizado com `DbSet<FinancialPeriod>`
+
+#### API Layer - ✅ COMPLETO
+
+- ✅ `PeriodsController` - 5 endpoints REST implementados
+  - `GET /api/v1/periods` - Listar (filtros: year, month, status, paginação)
+  - `GET /api/v1/periods/{id}` - Obter por ID (404 se não existir)
+  - `POST /api/v1/periods` - Criar (201 CreatedAtAction)
+  - `POST /api/v1/periods/{id}/close` - Fechar período (200 OK) - **Autorização: Admin/Financeiro**
+  - `POST /api/v1/periods/{id}/reopen` - Reabrir período (200 OK) - **Autorização: APENAS Admin**
+- ✅ Autorização via `[Authorize]` e `[Authorize(Roles = "...")]`
+- ✅ Tratamento de erros (ValidationException, BusinessRuleException)
+- ✅ Logs estruturados com ILogger<PeriodsController>
+- ✅ Swagger/OpenAPI documentado (XML comments em PT-BR)
+
+#### Contract Tests - ✅ COMPLETO
+
+- ✅ **FinancialPeriodDtoTests** (8 testes)
+  - Validação de estrutura dos DTOs (19, 2, 1, 5, 4 propriedades)
+  - Serialização/Deserialização JSON
+  - BalanceSnapshot serialização testada
+  - PeriodStatus enum serializa como int (Open=1, Closed=2)
+  - Valores default testados (Page=1, PageSize=12)
+  - Imutabilidade de contratos (ADR-022)
+
+#### Integration Tests - ✅ COMPLETO
+
+- ✅ **TransactionPeriodIntegrationTests** (7 testes)
+  - CreateTransaction_WithOpenPeriod_ShouldSucceed (auto-criação)
+  - CreateTransaction_WithClosedPeriod_ShouldThrowException (FIN_PERIOD_CLOSED)
+  - UpdateTransaction_WithClosedPeriod_ShouldThrowException
+  - UpdateTransaction_ChangingDateToClosedPeriod_ShouldThrowException
+  - UpdateTransaction_ChangingDateBetweenOpenPeriods_ShouldSucceed
+  - DeleteTransaction_WithClosedPeriod_ShouldThrowException
+  - DeleteTransaction_WithOpenPeriod_ShouldSucceed
+
+#### Transaction Use Cases - ✅ MODIFICADOS (Integração)
+
+- ✅ `CreateTransactionUseCase` - Adicionado validação de período aberto
+- ✅ `UpdateTransactionUseCase` - Adicionado validação dupla (data original + nova data)
+- ✅ `DeleteTransactionUseCase` - Adicionado validação de período aberto
+
+#### Program.cs - ✅ INTEGRADO
+
+- ✅ `AddPeriodUseCases()` extension method criado
+- ✅ IFinancialPeriodRepository → FinancialPeriodRepository (Scoped)
+- ✅ IPeriodBalanceService → PeriodBalanceService (Scoped)
+- ✅ 6 Use Cases registrados (Scoped)
+
+### 📊 Estatísticas de Testes
+
+**✅ 211 testes passando (100%)**
+
+- **Fase 1-4**: 127 testes (Base + Auth + Categories + Transactions)
+- **Fase 5**: 84 testes (Períodos Financeiros + Integração)
+  - Domain.Tests: 18 testes ✅
+  - Application.Tests: 45 testes ✅
+  - Contract.Tests: 8 testes ✅
+  - Integration.Tests: 7 testes ✅
+  - Infrastructure.Tests: 6 testes ✅ (incluídos no total anterior)
+
+### 🎯 Comportamento Implementado
+
+| Operação | Período Fechado | Período Aberto | Período Não Existe |
+|----------|-----------------|----------------|--------------------|
+| **CREATE Transaction** | ❌ FIN_PERIOD_CLOSED | ✅ Sucesso | ✅ Auto-cria Open + Sucesso |
+| **UPDATE Transaction** | ❌ FIN_PERIOD_CLOSED | ✅ Sucesso | ✅ Auto-cria Open + Sucesso |
+| **DELETE Transaction** | ❌ FIN_PERIOD_CLOSED | ✅ Sucesso | ✅ Auto-cria Open + Sucesso |
+| **CLOSE Period** | ❌ Already closed | ✅ Calcula snapshot + Close | N/A |
+| **REOPEN Period** | ✅ Reopen + Log ERROR | ❌ Already open | N/A |
+
+### 📋 ADRs Aplicados
+
+- ✅ **ADR-015**: Imutabilidade via fechamento de períodos (**CORE** - pilar da confiabilidade)
+- ✅ **ADR-014**: Logs de auditoria obrigatórios (WARNING para close, ERROR para reopen)
+- ✅ **ADR-016**: RBAC - Admin para reopen, Admin/Financeiro para close
+- ✅ ADR-020: Clean Architecture (4 camadas respeitadas)
+- ✅ ADR-021: Fail-fast + modelo de erros semântico (FIN_PERIOD_CLOSED, FIN_PERIOD_NOT_FOUND)
+- ✅ ADR-022: Contratos imutáveis (DTOs record)
+- ✅ ADR-029: Soft delete implementado
+- ✅ ADR-034: PostgreSQL + JSONB para BalanceSnapshot
+- ✅ ADR-037: Estratégia de testes 100%
+
+### 🔧 Detalhes Técnicos
+
+#### Auto-criação de Períodos
+- Simplifica UX: usuário não precisa criar período manualmente
+- Primeira transação do mês auto-cria período com status Open
+- Log informativo registrado
+
+#### Snapshot de Saldos
+- Calculado no fechamento via `PeriodBalanceService`
+- Agrega transações por categoria
+- Armazenado como JSONB no PostgreSQL
+- Permite queries flexíveis e performance otimizada
+
+#### Logs de Auditoria
+- **INFO**: Criação de período
+- **WARNING**: Fechamento de período (operação normal mas crítica)
+- **ERROR**: Reabertura de período (operação excepcional)
+- Todos incluem detalhes: userId, saldos, justificativa
+
+### 📚 Lições Aprendidas
+
+1. **Auto-criação de períodos**: Decisão de UX que simplificou o fluxo do usuário
+2. **Validação dupla em Update**: Essencial validar AMBOS períodos (original + novo) quando data muda
+3. **Snapshot de saldos**: JSONB permite flexibilidade sem perder performance
+4. **Logs de auditoria**: Níveis diferentes (WARNING vs ERROR) comunicam criticidade
+5. **Orquestração via Master**: Uso de subagentes especializados garantiu qualidade e governança
+6. **Documentação em PT-BR**: Manter consistência desde o início evita retrabalho
+
+### 🚀 Melhorias Futuras (Fora do Escopo MVP)
+
+- Notificação quando período está próximo de fechar
+- Geração automática de transações recorrentes ao fechar período
+- Exportação de períodos fechados (PDF/CSV)
+- Comparação de saldos entre períodos
+- Dashboard de períodos fechados vs abertos
+- Workflow de aprovação para fechamento (múltiplos aprovadores)
 
 ---
+
+## 🚀 Próximos Passos
+
+- **Fase 6**: Ajustes Pós-Fechamento e Relatórios
+- **Opcional**: Application Layer Tests completos para Transações (40 testes)
 
 ## 🔗 Referências
 
