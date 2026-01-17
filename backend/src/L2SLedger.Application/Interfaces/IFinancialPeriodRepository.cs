@@ -3,23 +3,23 @@ using L2SLedger.Domain.Entities;
 namespace L2SLedger.Application.Interfaces;
 
 /// <summary>
-/// Repository interface for FinancialPeriod aggregate.
-/// Follows ADR-034 (Repository Pattern) and ADR-020 (Clean Architecture).
+/// Interface de repositório para o agregado FinancialPeriod.
+/// Segue ADR-034 (Repository Pattern) e ADR-020 (Clean Architecture).
 /// </summary>
 public interface IFinancialPeriodRepository
 {
     /// <summary>
-    /// Retrieves a financial period by its unique identifier.
+    /// Recupera um período financeiro por seu identificador único.
     /// </summary>
     Task<FinancialPeriod?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Retrieves a financial period by year and month.
+    /// Recupera um período financeiro por ano e mês.
     /// </summary>
     Task<FinancialPeriod?> GetByYearMonthAsync(int year, int month, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Retrieves a paginated list of financial periods with optional filtering.
+    /// Recupera uma lista paginada de períodos financeiros com filtros opcionais.
     /// </summary>
     Task<(IEnumerable<FinancialPeriod> Periods, int TotalCount)> GetAllAsync(
         int? year,
@@ -30,22 +30,22 @@ public interface IFinancialPeriodRepository
         CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Adds a new financial period to the repository.
+    /// Adiciona um novo período financeiro ao repositório.
     /// </summary>
     Task<FinancialPeriod> AddAsync(FinancialPeriod period, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Updates an existing financial period.
+    /// Atualiza um período financeiro existente.
     /// </summary>
     Task UpdateAsync(FinancialPeriod period, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Checks if a financial period exists for the given year and month.
+    /// Verifica se existe um período financeiro para o ano e mês informados.
     /// </summary>
     Task<bool> ExistsAsync(int year, int month, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Retrieves the financial period that contains the specified date.
+    /// Recupera o período financeiro que contém a data especificada.
     /// </summary>
     Task<FinancialPeriod?> GetPeriodForDateAsync(DateTime date, CancellationToken cancellationToken = default);
 }

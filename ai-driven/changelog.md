@@ -8,6 +8,145 @@ O formato segue o padrão [Keep a Changelog](https://keepachangelog.com/en/1.0.0
 
 ---
 
+## [2026-01-16] - Fase 5: Períodos Financeiros - Application Layer (Use Cases, Mapper) ✅ CONCLUÍDO
+
+### Contexto
+Implementação da **camada mais complexa** da Fase 5: Application Layer com 6 Use Cases, Mapper Profile e 45 testes.
+Seguindo [fase-5-periodos-plan.md](../docs/planning/api-planning/fase-5-periodos-plan.md) seções 3.4, 3.6 e 7.2.
+
+### Componentes Implementados
+
+#### Mapper Profile (1 arquivo)
+- **FinancialPeriodMappingProfile.cs**:
+  * Mapeia `FinancialPeriod` → `FinancialPeriodDto`
+  * Converte `PeriodName` usando `GetPeriodName()`
+  * Converte `Status` enum para string
+  * Mapeia navigation properties para `ClosedByUserName` e `ReopenedByUserName`
+  * Deserializa `BalanceSnapshotJson` para objeto `BalanceSnapshot`
+
+#### Use Cases (6 arquivos)
+1. **CreateFinancialPeriodUseCase.cs**:
+   * Valida request com FluentValidation
+   * Verifica duplicidade via `ExistsAsync()`
+   * Lança `BusinessRuleException` com código `FIN_PERIOD_ALREADY_EXISTS`
+   * Cria novo período (default status: Open)
+   * Log de auditoria (ADR-014)
+
+2. **ClosePeriodUseCase.cs**:
+   * Valida se período já está fechado
+   * Calcula snapshot via `IPeriodBalanceService`
+   * Serializa snapshot para JSON
+   * Chama `period.Close()` com totais
+   * Log WARNING crítico (operação de fechamento)
+
+3. **ReopenPeriodUseCase.cs**:
+   * Valida justificativa obrigatória (min 10 chars)
+   * Valida se período já está aberto
+   * Chama `period.Reopen()` com reason
+   * Log ERROR crítico (reabertura é excepcional - ADR-014)
+   * Autorização Admin validada no controller (ADR-016)
+
+4. **GetFinancialPeriodsUseCase.cs**:
+   * Converte Status string para enum
+   * Aplica filtros: Year, Month, Status
+   * Paginação com Page e PageSize
+   * Ordenação: Year DESC, Month DESC
+   * Retorna `GetPeriodsResponse`
+
+5. **GetFinancialPeriodByIdUseCase.cs**:
+   * Busca período por ID
+   * Valida existência e soft-delete
+   * Retorna DTO com BalanceSnapshot deserializado
+
+6. **EnsurePeriodExistsAndOpenUseCase.cs** (HELPER):
+   * Busca período para transactionDate via `GetPeriodForDateAsync()`
+   * Se não existe: auto-cria período e registra log
+   * Se existe e está fechado: lança `FIN_PERIOD_CLOSED`
+   * Se existe e está aberto: sucesso silencioso
+   * Será usado nos Transaction Use Cases (Fase 4 update)
+
+#### Testes (5 arquivos, 45 testes totais)
+
+**CreateFinancialPeriodUseCaseTests.cs (8 testes):**
+1. ✅ Criar período válido retorna DTO
+2. ✅ Período duplicado lança BusinessRuleException
+3. ✅ Validação falha com ano inválido
+4. ✅ Validação falha com mês inválido
+5. ✅ Log de auditoria registrado
+6. ✅ Repository AddAsync chamado
+7. ✅ CancellationToken cancela operação
+8. ✅ Período criado com status Open
+
+**ClosePeriodUseCaseTests.cs (10 testes):**
+1. ✅ Fechar período válido atualiza status
+2. ✅ Fechar período já fechado lança exceção
+3. ✅ Snapshot de saldos calculado corretamente
+4. ✅ TotalIncome e TotalExpense salvos
+5. ✅ NetBalance calculado (income - expense)
+6. ✅ BalanceSnapshotJson serializado
+7. ✅ ClosedAt e ClosedByUserId registrados
+8. ✅ Log crítico de auditoria (WARNING)
+9. ✅ Repository UpdateAsync chamado
+10. ✅ CancellationToken cancela
+
+**ReopenPeriodUseCaseTests.cs (9 testes):**
+1. ✅ Reabrir período fechado atualiza status
+2. ✅ Reabrir período já aberto lança exceção
+3. ✅ Justificativa obrigatória validada
+4. ✅ Justificativa mínima 10 caracteres
+5. ✅ ReopenedAt e ReopenedByUserId registrados
+6. ✅ Log crítico (ERROR) de reabertura
+7. ✅ Documentado que Admin authorization é no controller
+8. ✅ Repository UpdateAsync chamado
+9. ✅ CancellationToken cancela
+
+**GetFinancialPeriodsUseCaseTests.cs (6 testes):**
+1. ✅ Listar todos os períodos
+2. ✅ Filtrar por ano
+3. ✅ Filtrar por mês
+4. ✅ Filtrar por status (Open/Closed)
+5. ✅ Paginação funciona
+6. ✅ Ordenação: Year DESC, Month DESC
+
+**GetFinancialPeriodByIdUseCaseTests.cs (4 testes):**
+1. ✅ Retornar período por ID válido
+2. ✅ ID não encontrado lança exceção
+3. ✅ Período deletado lança exceção
+4. ✅ BalanceSnapshot deserializado corretamente
+
+**EnsurePeriodExistsAndOpenUseCaseTests.cs (8 testes):**
+1. ✅ Período não existe - cria automaticamente
+2. ✅ Período existe e está aberto - passa
+3. ✅ Período existe e está fechado - lança FIN_PERIOD_CLOSED
+4. ✅ Auto-criação registra log
+5. ✅ Validação para Create operation
+6. ✅ Validação para Update operation
+7. ✅ Validação para Delete operation
+8. ✅ CancellationToken cancela
+
+### ADRs Aplicados
+- ✅ **ADR-015**: Imutabilidade via fechamento de períodos
+- ✅ **ADR-014**: Logs de auditoria obrigatórios (INFO, WARNING, ERROR)
+- ✅ **ADR-016**: RBAC - Apenas Admin pode reabrir períodos
+- ✅ **ADR-020**: Clean Architecture - Application coordena Domain
+- ✅ **ADR-021**: Modelo de erros semântico com códigos
+- ✅ **ADR-037**: Cobertura de testes 100%
+
+### Testes Executados
+- **Build**: ✅ SUCCESS
+- **Testes**: 196/196 passando (151 anteriores + 45 novos)
+- **Cobertura**: Application Layer completa testada
+
+### Próximos Passos Sugeridos
+1. Infrastructure Layer: FinancialPeriodRepository (EF Core)
+2. API Layer: FinancialPeriodsController (RESTful endpoints)
+3. Integração: EnsurePeriodExistsAndOpenUseCase nos Transaction Use Cases
+
+### Ferramenta Utilizada
+- GitHub Copilot (Claude Sonnet 4.5)
+
+---
+
 ## [2026-01-16] - Fase 5 Módulo de Períodos Financeiros - Application Layer ✅ CONCLUÍDO
 
 ### Contexto

@@ -5,8 +5,8 @@ using L2SLedger.Domain.ValueObjects;
 namespace L2SLedger.Application.Services;
 
 /// <summary>
-/// Service for calculating balance snapshots for financial periods.
-/// Implements ADR-015 (Snapshot for Immutability).
+/// Serviço para cálculo de snapshots de saldo para períodos financeiros.
+/// Implementa ADR-015 (Snapshot para Imutabilidade).
 /// </summary>
 public class PeriodBalanceService : IPeriodBalanceService
 {
@@ -22,8 +22,8 @@ public class PeriodBalanceService : IPeriodBalanceService
     }
 
     /// <summary>
-    /// Calculates a complete balance snapshot for a specific period.
-    /// Aggregates transactions by category and computes income, expense, and net balance.
+    /// Calcula um snapshot completo de saldo para um período específico.
+    /// Agrega transações por categoria e calcula receita, despesa e saldo líquido.
     /// </summary>
     public async Task<BalanceSnapshot> CalculateBalanceSnapshotAsync(
         int year,
