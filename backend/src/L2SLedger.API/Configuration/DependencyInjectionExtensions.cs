@@ -1,5 +1,6 @@
 using L2SLedger.Application.Interfaces;
 using L2SLedger.Application.Services;
+using L2SLedger.Application.UseCases.Adjustments;
 using L2SLedger.Application.UseCases.Auth;
 using L2SLedger.Application.UseCases.Categories;
 using L2SLedger.Application.UseCases.Periods;
@@ -30,6 +31,7 @@ public static class DependencyInjectionExtensions
         services.AddScoped<ICategoryRepository, CategoryRepository>();
         services.AddScoped<ITransactionRepository, TransactionRepository>();
         services.AddScoped<IFinancialPeriodRepository, FinancialPeriodRepository>();
+        services.AddScoped<IAdjustmentRepository, AdjustmentRepository>();
 
         return services;
     }
@@ -96,6 +98,20 @@ public static class DependencyInjectionExtensions
         services.AddScoped<GetFinancialPeriodByIdUseCase>();
         services.AddScoped<EnsurePeriodExistsAndOpenUseCase>();
         services.AddScoped<IPeriodBalanceService, PeriodBalanceService>();
+
+        return services;
+    }
+
+    /// <summary>
+    /// Registra use cases de ajustes pós-fechamento.
+    /// ADR-015: Ajustes criam novos lançamentos, não alteram originais.
+    /// </summary>
+    public static IServiceCollection AddAdjustmentUseCases(this IServiceCollection services)
+    {
+        services.AddScoped<CreateAdjustmentUseCase>();
+        services.AddScoped<GetAdjustmentsUseCase>();
+        services.AddScoped<GetAdjustmentByIdUseCase>();
+        services.AddScoped<DeleteAdjustmentUseCase>();
 
         return services;
     }
