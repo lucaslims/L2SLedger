@@ -452,13 +452,14 @@ public async Task PostTransaction_ReturnsCreated_WithValidContract()
 
 ### Fase 1 — Estrutura Base
 
-- [ ] Criar solution e projetos (Clean Architecture)
-- [ ] Configurar EF Core + PostgreSQL
-- [ ] Configurar Firebase Admin SDK
-- [ ] Implementar middleware de autenticação
-- [ ] Implementar modelo de erros semântico
-- [ ] Configurar Serilog (logs estruturados)
+- [x] Criar solution e projetos (Clean Architecture)
+- [x] Configurar EF Core + PostgreSQL
+- [x] Configurar Firebase Admin SDK
+- [x] Implementar middleware de autenticação
+- [x] Implementar modelo de erros semântico
+- [x] Configurar Serilog (logs estruturados)
 - [ ] Configurar Polly (resiliência)
+
 
 ### Fase 2 — Módulo de Autenticação
 
@@ -476,25 +477,25 @@ public async Task PostTransaction_ReturnsCreated_WithValidContract()
 
 ### Fase 3.1 — Endpoint Auxiliar de Teste (Firebase Login)
 
-- [ ] Implementar `/api/v1/auth/firebase/login` (apenas DEV/DEMO)
-- [ ] Criar IFirebaseAuthenticationService
-- [ ] Integrar com Firebase Authentication REST API
-- [ ] Adicionar validação de ambiente (IsProduction → 404)
-- [ ] Criar testes (12 testes)
+- [x] Implementar `/api/v1/auth/firebase/login` (apenas DEV/DEMO)
+- [x] Criar IFirebaseAuthenticationService
+- [x] Integrar com Firebase Authentication REST API
+- [x] Adicionar validação de ambiente (IsProduction → 404)
+- [x] Criar testes (12 testes)
 - [ ] Atualizar documentação Swagger com grupo "dev"
 
 ### Fase 4 — Módulo de Lançamentos
 
-- [ ] Criar entidade Transaction no Domain
-- [ ] Implementar regras de período (aberto/fechado)
-- [ ] Implementar auditoria automática
-- [ ] Criar testes incluindo regressão financeira
+- [x] Criar entidade Transaction no Domain
+- [x] Implementar regras de período (aberto/fechado)
+- [x] Implementar auditoria automática
+- [x] Criar testes incluindo regressão financeira
 
 ### Fase 5 — Módulo de Períodos
 
-- [ ] Criar entidade FinancialPeriod
-- [ ] Implementar fechamento/reabertura
-- [ ] Criar testes
+- [x] Criar entidade FinancialPeriod
+- [x] Implementar fechamento/reabertura
+- [x] Criar testes
 
 ### Fase 6 — Módulos Complementares
 
