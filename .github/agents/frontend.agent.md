@@ -3,7 +3,7 @@ description: Agente especializado em frontend do L2SLedger, responsável por SPA
 
 tools: ['execute', 'read', 'edit', 'search', 'web', 'io.github.upstash/context7/*', 'agent', 'todo']
 
-model: GPT-5.2
+model: Claude Sonnet 4.5 (copilot)
 
 ---
 
