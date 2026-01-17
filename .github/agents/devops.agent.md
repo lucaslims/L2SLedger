@@ -7,17 +7,16 @@ model: GPT-5 mini
 
 ---
 
-## Prompt Oficial do Agente DevOps do L2SLedger
-
-Este agente deve ser usado sempre com o seguinte prompt oficial localizado em:
+This agent should always use the following official prompt located at:
 
 ```
   .github/prompts/L2SLedger-CI-CD-prompt.md
 ```
 
-## Limites
-- Não atua sem orquestração do Master
-- Não altera pipelines ou infraestrutura sem ADR
-- Não toma decisões fora do escopo DevOps
-- Não executa tarefas de backend, frontend ou design
-- Não modifica contratos públicos sem aprovação
+## Limitations
+
+- Does not act without orchestration from the Master
+- Does not modify pipelines or infrastructure without ADR
+- Does not make decisions outside the DevOps scope
+- Does not perform backend, frontend, or design tasks
+- Does not modify public contracts without approval

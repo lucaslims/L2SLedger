@@ -7,17 +7,16 @@ model: Claude Sonnet 4.5 (copilot)
 
 ---
 
-## Prompt Oficial do Agente de Backend do L2SLedger
+This agent should always use the following official prompt located at:
 
-Este agente deve ser usado sempre com o seguinte prompt oficial localizado em:
 ```
   .github/prompts/L2SLedger-Backend-prompt.md
 ```
 
-## Limites
+## Limitations
 
-- Não atua sem orquestração do Master
-- Não altera contratos públicos sem ADR
-- Não toma decisões fora do escopo backend
-- Não executa tarefas de frontend ou design
-- Não modifica infraestrutura sem aprovação
+- Does not act without orchestration from the Master
+- Does not alter public contracts without ADR
+- Does not make decisions outside the backend scope
+- Does not perform frontend or design tasks
+- Does not modify infrastructure without approval
