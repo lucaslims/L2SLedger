@@ -1,4 +1,5 @@
 using L2SLedger.Application.Interfaces;
+using L2SLedger.Application.UseCases.Periods;
 
 namespace L2SLedger.Application.UseCases.Transaction;
 
@@ -9,13 +10,16 @@ public class DeleteTransactionUseCase
 {
     private readonly ITransactionRepository _transactionRepository;
     private readonly ICurrentUserService _currentUserService;
+    private readonly EnsurePeriodExistsAndOpenUseCase _ensurePeriodOpenUseCase;
 
     public DeleteTransactionUseCase(
         ITransactionRepository transactionRepository,
-        ICurrentUserService currentUserService)
+        ICurrentUserService currentUserService,
+        EnsurePeriodExistsAndOpenUseCase ensurePeriodOpenUseCase)
     {
         _transactionRepository = transactionRepository;
         _currentUserService = currentUserService;
+        _ensurePeriodOpenUseCase = ensurePeriodOpenUseCase;
     }
 
     public async Task ExecuteAsync(Guid id, CancellationToken cancellationToken = default)
@@ -29,6 +33,9 @@ public class DeleteTransactionUseCase
         {
             throw new InvalidOperationException("Transação não encontrada ou não pertence ao usuário");
         }
+
+        // Validar que o período está aberto (ADR-015: Imutabilidade de períodos)
+        await _ensurePeriodOpenUseCase.ExecuteAsync(transaction.TransactionDate, cancellationToken);
 
         // Soft delete
         transaction.MarkAsDeleted();

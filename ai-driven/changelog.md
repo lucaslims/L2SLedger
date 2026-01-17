@@ -9,6 +9,84 @@ O formato segue o padrão [Keep a Changelog](https://keepachangelog.com/en/1.0.0
 
 ---
 
+## [2026-01-17] - Integração Fase 4 + Fase 5: Validação de Períodos em Transações ✅ CONCLUÍDO
+
+### Contexto
+Implementação da **integração entre Transaction Use Cases (Fase 4) e Financial Periods (Fase 5)** conforme [fase-5-periodos-plan.md](../docs/planning/api-planning/fase-5-periodos-plan.md) seção 6.
+Enforcement da **ADR-015 (Imutabilidade de períodos fechados)**: transações não podem ser criadas, atualizadas ou deletadas em períodos fechados.
+
+### Componentes Modificados
+
+#### Use Cases de Transaction (3 arquivos)
+- **CreateTransactionUseCase.cs**:
+  * Adicionado `EnsurePeriodExistsAndOpenUseCase` via DI
+  * Validação de período aberto ANTES de criar transação
+  * Auto-criação de período se não existir
+
+- **UpdateTransactionUseCase.cs**:
+  * Adicionado `EnsurePeriodExistsAndOpenUseCase` via DI
+  * Validação dupla: período da data ORIGINAL + período da NOVA data (se alterada)
+  * Garante que ambos períodos estejam abertos
+
+- **DeleteTransactionUseCase.cs**:
+  * Adicionado `EnsurePeriodExistsAndOpenUseCase` via DI
+  * Validação de período aberto ANTES de soft delete
+  * Mesmo soft delete requer período aberto
+
+#### Testes de Integração (1 arquivo novo)
+- **TransactionPeriodIntegrationTests.cs** (7 testes):
+  * `CreateTransaction_WithOpenPeriod_ShouldSucceed`: Verifica auto-criação de período
+  * `CreateTransaction_WithClosedPeriod_ShouldThrowException`: Valida FIN_PERIOD_CLOSED
+  * `UpdateTransaction_WithClosedPeriod_ShouldThrowException`: Valida bloqueio em período fechado
+  * `UpdateTransaction_ChangingDateToClosedPeriod_ShouldThrowException`: Valida mudança de data
+  * `UpdateTransaction_ChangingDateBetweenOpenPeriods_ShouldSucceed`: Valida mudança válida
+  * `DeleteTransaction_WithClosedPeriod_ShouldThrowException`: Valida bloqueio de delete
+  * `DeleteTransaction_WithOpenPeriod_ShouldSucceed`: Valida delete em período aberto
+
+### Detalhes Técnicos
+
+#### Padrão de Integração
+- Validação de período SEMPRE antes de modificações
+- Exceções propagam naturalmente (fail-fast)
+- BusinessRuleException com código `FIN_PERIOD_CLOSED`
+- Comentários com referência ADR-015 no código
+- CancellationToken em todas as chamadas
+
+#### Comportamento Implementado
+- **Criar transação**: Valida período → se não existe, auto-cria Open → se fechado, erro
+- **Atualizar transação**: Valida período original → se data muda, valida novo período também
+- **Deletar transação**: Valida período → soft delete permitido apenas se Open
+
+#### Estrutura de Testes
+- Mocking completo: Transactions, Periods, Categories, Validators
+- FluentAssertions para validações
+- Cenários positivos e negativos
+- Verificação de não-execução em casos de erro
+
+### Validações Executadas
+
+```bash
+✅ Build: SUCCESS
+✅ Testes: 211/211 passando (204 anteriores + 7 integração)
+✅ Nenhum teste anterior quebrado
+```
+
+### ADRs Aplicados
+- **ADR-015**: Imutabilidade de períodos fechados (enforcement crítico)
+- **ADR-020**: Clean Architecture (Use Cases coordenam validações)
+- **ADR-021**: Fail-fast (validar período antes de processar)
+
+### Arquivos Alterados
+- `backend/src/L2SLedger.Application/UseCases/Transaction/CreateTransactionUseCase.cs`
+- `backend/src/L2SLedger.Application/UseCases/Transaction/UpdateTransactionUseCase.cs`
+- `backend/src/L2SLedger.Application/UseCases/Transaction/DeleteTransactionUseCase.cs`
+- `backend/tests/L2SLedger.Application.Tests/UseCases/Transaction/TransactionPeriodIntegrationTests.cs` *(novo)*
+
+### Ferramenta Utilizada
+GitHub Copilot (Claude Sonnet 4.5)
+
+---
+
 ## [2026-01-17] - Fase 5: Contract Tests para Períodos Financeiros ✅ CONCLUÍDO
 
 ### Contexto

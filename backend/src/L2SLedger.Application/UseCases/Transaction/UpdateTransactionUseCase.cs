@@ -1,6 +1,7 @@
 using FluentValidation;
 using L2SLedger.Application.DTOs.Transaction;
 using L2SLedger.Application.Interfaces;
+using L2SLedger.Application.UseCases.Periods;
 using L2SLedger.Domain.Entities;
 
 namespace L2SLedger.Application.UseCases.Transaction;
@@ -14,17 +15,20 @@ public class UpdateTransactionUseCase
     private readonly ICategoryRepository _categoryRepository;
     private readonly IValidator<UpdateTransactionRequest> _validator;
     private readonly ICurrentUserService _currentUserService;
+    private readonly EnsurePeriodExistsAndOpenUseCase _ensurePeriodOpenUseCase;
 
     public UpdateTransactionUseCase(
         ITransactionRepository transactionRepository,
         ICategoryRepository categoryRepository,
         IValidator<UpdateTransactionRequest> validator,
-        ICurrentUserService currentUserService)
+        ICurrentUserService currentUserService,
+        EnsurePeriodExistsAndOpenUseCase ensurePeriodOpenUseCase)
     {
         _transactionRepository = transactionRepository;
         _categoryRepository = categoryRepository;
         _validator = validator;
         _currentUserService = currentUserService;
+        _ensurePeriodOpenUseCase = ensurePeriodOpenUseCase;
     }
 
     public async Task ExecuteAsync(Guid id, UpdateTransactionRequest request, CancellationToken cancellationToken = default)
@@ -44,6 +48,15 @@ public class UpdateTransactionUseCase
         if (transaction == null || transaction.UserId != userId)
         {
             throw new InvalidOperationException("Transação não encontrada ou não pertence ao usuário");
+        }
+
+        // Validar que o período da data original está aberto (ADR-015: Imutabilidade de períodos)
+        await _ensurePeriodOpenUseCase.ExecuteAsync(transaction.TransactionDate, cancellationToken);
+
+        // Se a data está sendo alterada, validar o novo período também
+        if (request.TransactionDate != transaction.TransactionDate)
+        {
+            await _ensurePeriodOpenUseCase.ExecuteAsync(request.TransactionDate, cancellationToken);
         }
 
         // Verificar se categoria existe

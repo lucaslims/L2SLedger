@@ -1,6 +1,7 @@
 using FluentValidation;
 using L2SLedger.Application.DTOs.Transaction;
 using L2SLedger.Application.Interfaces;
+using L2SLedger.Application.UseCases.Periods;
 using L2SLedger.Domain.Entities;
 
 namespace L2SLedger.Application.UseCases.Transaction;
@@ -14,17 +15,20 @@ public class CreateTransactionUseCase
     private readonly ICategoryRepository _categoryRepository;
     private readonly IValidator<CreateTransactionRequest> _validator;
     private readonly ICurrentUserService _currentUserService;
+    private readonly EnsurePeriodExistsAndOpenUseCase _ensurePeriodOpenUseCase;
 
     public CreateTransactionUseCase(
         ITransactionRepository transactionRepository,
         ICategoryRepository categoryRepository,
         IValidator<CreateTransactionRequest> validator,
-        ICurrentUserService currentUserService)
+        ICurrentUserService currentUserService,
+        EnsurePeriodExistsAndOpenUseCase ensurePeriodOpenUseCase)
     {
         _transactionRepository = transactionRepository;
         _categoryRepository = categoryRepository;
         _validator = validator;
         _currentUserService = currentUserService;
+        _ensurePeriodOpenUseCase = ensurePeriodOpenUseCase;
     }
 
     public async Task<Guid> ExecuteAsync(CreateTransactionRequest request, CancellationToken cancellationToken = default)
@@ -35,6 +39,9 @@ public class CreateTransactionUseCase
         {
             throw new ValidationException(validationResult.Errors);
         }
+
+        // Validar que o período está aberto (ADR-015: Imutabilidade de períodos)
+        await _ensurePeriodOpenUseCase.ExecuteAsync(request.TransactionDate, cancellationToken);
 
         // Obter usuário autenticado
         var userId = _currentUserService.GetUserId();
