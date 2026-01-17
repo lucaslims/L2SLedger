@@ -1,10 +1,12 @@
 using L2SLedger.Application.Interfaces;
 using L2SLedger.Application.UseCases.Auth;
 using L2SLedger.Application.UseCases.Categories;
+using L2SLedger.Application.UseCases.Transaction;
 using L2SLedger.Application.Validators.Categories;
 using L2SLedger.Infrastructure.Identity;
 using L2SLedger.Infrastructure.Persistence.Repositories;
 using L2SLedger.Infrastructure.Repositories;
+using L2SLedger.Infrastructure.Services;
 using FluentValidation;
 using Polly;
 using Polly.Extensions.Http;
@@ -24,6 +26,7 @@ public static class DependencyInjectionExtensions
     {
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<ICategoryRepository, CategoryRepository>();
+        services.AddScoped<ITransactionRepository, TransactionRepository>();
 
         return services;
     }
@@ -33,6 +36,7 @@ public static class DependencyInjectionExtensions
     /// </summary>
     public static IServiceCollection AddApplicationServices(this IServiceCollection services)
     {
+        services.AddHttpContextAccessor();
         services.AddScoped<IAuthenticationService, AuthenticationService>();
 
         return services;
@@ -63,6 +67,20 @@ public static class DependencyInjectionExtensions
     }
 
     /// <summary>
+    /// Registra use cases de transações.
+    /// </summary>
+    public static IServiceCollection AddTransactionUseCases(this IServiceCollection services)
+    {
+        services.AddScoped<CreateTransactionUseCase>();
+        services.AddScoped<UpdateTransactionUseCase>();
+        services.AddScoped<GetTransactionsUseCase>();
+        services.AddScoped<GetTransactionByIdUseCase>();
+        services.AddScoped<DeleteTransactionUseCase>();
+
+        return services;
+    }
+
+    /// <summary>
     /// Registra validadores FluentValidation.
     /// </summary>
     public static IServiceCollection AddValidators(this IServiceCollection services)
@@ -78,6 +96,7 @@ public static class DependencyInjectionExtensions
     public static IServiceCollection AddInfrastructureServices(this IServiceCollection services)
     {
         services.AddScoped<IFirebaseAuthService, FirebaseAuthService>();
+        services.AddScoped<ICurrentUserService, CurrentUserService>();
 
         // Configurar HttpClient para FirebaseAuthenticationService com Polly
         services.AddHttpClient<IFirebaseAuthenticationService, FirebaseAuthenticationService>()

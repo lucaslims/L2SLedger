@@ -95,6 +95,8 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 .pnpm-store/
+package-lock.json
+yarn.lock
 
 # Build outputs
 dist/
@@ -211,3 +213,7 @@ local/
 scratch/
 temp/
 tmp/
+
+# Email validation files
+validar_emails/*
+
