@@ -1,7 +1,7 @@
 using FluentValidation;
 using L2SLedger.Application.DTOs.Auth;
 
-namespace L2SLedger.Application.Validators;
+namespace L2SLedger.Application.Validators.Auth;
 
 /// <summary>
 /// Validador para FirebaseLoginRequest.

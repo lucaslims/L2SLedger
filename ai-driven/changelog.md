@@ -8,6 +8,76 @@ O formato segue o padrão [Keep a Changelog](https://keepachangelog.com/en/1.0.0
 
 ---
 
+## [2026-01-16] - Fase 5 Módulo de Períodos Financeiros - Application Layer ✅ CONCLUÍDO
+
+### Contexto
+Implementação da **Application Layer** da Fase 5 conforme [fase-5-periodos-plan.md](../docs/planning/api-planning/fase-5-periodos-plan.md), seções 3.3 e 3.5.
+Esta camada define as interfaces do Repository Pattern (ADR-034) e implementa o serviço de cálculo de snapshots de saldos (ADR-015).
+
+### Componentes Implementados
+
+#### Application Interfaces (2 arquivos)
+- **IFinancialPeriodRepository.cs**:
+  * `GetByIdAsync()` - Busca período por ID
+  * `GetByYearMonthAsync()` - Busca período por ano/mês
+  * `GetAllAsync()` - Busca paginada com filtros (year, month, status)
+  * `AddAsync()` - Adiciona novo período
+  * `UpdateAsync()` - Atualiza período existente
+  * `ExistsAsync()` - Verifica existência por ano/mês
+  * `GetPeriodForDateAsync()` - Busca período que contém uma data
+
+- **IPeriodBalanceService.cs**:
+  * `CalculateBalanceSnapshotAsync()` - Calcula snapshot de saldos por período
+
+#### Application Services (1 arquivo)
+- **PeriodBalanceService.cs**:
+  * Implementa `IPeriodBalanceService`
+  * Usa `ITransactionRepository` e `ICategoryRepository` via DI
+  * Lógica de cálculo:
+    1. Define boundaries do período (startDate/endDate)
+    2. Busca todas transações do período via `GetByFiltersAsync()`
+    3. Agrupa transações por CategoryId
+    4. Para cada categoria, calcula TotalIncome, TotalExpense e NetBalance
+    5. Busca detalhes das categorias via `GetByIdAsync()`
+    6. Cria lista de `CategoryBalance`
+    7. Calcula totais gerais (income, expense, net)
+    8. Retorna `BalanceSnapshot` com timestamp UTC
+  * Respeita filtros do repositório (!IsDeleted já aplicado)
+  * Verifica IsActive e !IsDeleted de categorias
+
+### Dependências Utilizadas
+- ✅ `ITransactionRepository` (Fase 4 - Application/Interfaces)
+- ✅ `ICategoryRepository` (Fase 3 - Application/Interfaces)
+- ✅ `BalanceSnapshot` e `CategoryBalance` (Fase 5 Domain - ValueObjects)
+- ✅ `FinancialPeriod` e `PeriodStatus` (Fase 5 Domain)
+- ✅ `TransactionType` (Fase 4 Domain)
+
+### Resultado
+- ✅ Build: **SUCCESS**
+- ✅ Testes: **151/151 passando** (mantido)
+- ✅ Arquivos criados: 3
+  * `L2SLedger.Application/Interfaces/IFinancialPeriodRepository.cs`
+  * `L2SLedger.Application/Interfaces/IPeriodBalanceService.cs`
+  * `L2SLedger.Application/Services/PeriodBalanceService.cs`
+
+### Próximos Passos Recomendados
+1. Infrastructure Layer - Implementar `FinancialPeriodRepository`
+2. Infrastructure Layer - Configurar EF Core DbSet e mapping
+3. Infrastructure Layer - Criar migration para tabela FinancialPeriods
+4. Application Layer - Implementar Use Cases (Create, Close, Reopen, Get)
+5. API Layer - Implementar FinancialPeriodsController
+6. Integração - Adicionar validação de período em Transaction Use Cases
+
+### ADRs Respeitados
+- **ADR-015**: Snapshot garante imutabilidade de períodos fechados
+- **ADR-020**: Clean Architecture - Interfaces na Application Layer
+- **ADR-034**: Repository Pattern com interfaces
+
+### Ferramenta
+- GitHub Copilot (Claude Sonnet 4.5)
+
+---
+
 ## [2026-01-16] - Fase 5 Módulo de Períodos Financeiros - Domain Layer ✅ CONCLUÍDO
 
 ### Contexto
