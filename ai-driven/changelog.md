@@ -8,6 +8,100 @@ O formato segue o padrão [Keep a Changelog](https://keepachangelog.com/en/1.0.0
 
 ---
 
+## [2026-01-16] - Fase 5 Módulo de Períodos Financeiros - Domain Layer ✅ CONCLUÍDO
+
+### Contexto
+Implementação da **Domain Layer** da Fase 5 conforme [fase-5-periodos-plan.md](../docs/planning/api-planning/fase-5-periodos-plan.md).
+Esta fase implementa o **ADR-015** (Imutabilidade e Fechamento de Períodos), pilar fundamental da confiabilidade do L2SLedger.
+
+### Componentes Implementados
+
+#### Domain Layer (18 testes)
+- **PeriodStatus.cs** - Enum:
+  * `Open = 1` - Período aberto para lançamentos
+  * `Closed = 2` - Período fechado (imutável)
+
+- **CategoryBalance.cs** - Record Value Object:
+  * Propriedades: CategoryId, CategoryName, TotalIncome, TotalExpense, NetBalance
+  * Usado para snapshot de saldos por categoria
+
+- **BalanceSnapshot.cs** - Record Value Object:
+  * Propriedades: SnapshotDate, Categories (IReadOnlyList), TotalIncome, TotalExpense, NetBalance
+  * Representa snapshot consolidado de saldos no fechamento
+
+- **FinancialPeriod.cs** - Entidade principal:
+  * Propriedades: Year, Month, StartDate, EndDate, Status, ClosedAt, ClosedByUserId, ReopenedAt, ReopenedByUserId, ReopenReason
+  * Saldos: TotalIncome, TotalExpense, NetBalance, BalanceSnapshotJson
+  * Navigation properties: ClosedByUser, ReopenedByUser
+  * Constructor: Validações (year 2000-2100, month 1-12), auto-cálculo de StartDate/EndDate, Status=Open
+  * `Close()`: Fecha período, registra saldos e snapshot, validações de negócio
+  * `Reopen()`: Reabre período com justificativa obrigatória (min 10 chars, max 500)
+  * `IsOpen()`, `IsClosed()`: Métodos de consulta
+  * `ContainsDate()`: Verifica se data está no período
+  * `GetPeriodName()`: Retorna formato "YYYY/MM"
+
+#### Testes (18 testes - 100% cobertura)
+**FinancialPeriodTests.cs:**
+1. ✅ Constructor cria período válido com status Open
+2. ✅ Constructor calcula StartDate e EndDate corretamente
+3. ✅ Constructor com ano inválido (<2000 ou >2100) lança ArgumentException
+4. ✅ Constructor com mês inválido (<1 ou >12) lança ArgumentException
+5. ✅ Close atualiza status para Closed
+6. ✅ Close registra usuário (ClosedByUserId) e timestamp (ClosedAt)
+7. ✅ Close calcula saldos corretamente (TotalIncome, TotalExpense, NetBalance)
+8. ✅ Close com período já fechado lança BusinessRuleException (FIN_PERIOD_ALREADY_CLOSED)
+9. ✅ Close com snapshot vazio lança ArgumentException
+10. ✅ Reopen atualiza status para Open
+11. ✅ Reopen registra justificativa (ReopenReason), usuário (ReopenedByUserId) e timestamp (ReopenedAt)
+12. ✅ Reopen com período já aberto lança BusinessRuleException (FIN_PERIOD_ALREADY_OPEN)
+13. ✅ Reopen sem justificativa lança ArgumentException
+14. ✅ Reopen com justificativa < 10 caracteres lança ArgumentException
+15. ✅ ContainsDate retorna true para data no período
+16. ✅ ContainsDate retorna false para data fora do período
+17. ✅ IsOpen retorna true para período aberto
+18. ✅ GetPeriodName retorna formato correto "YYYY/MM"
+
+### ADRs Aplicados
+- **ADR-015**: ✅ Imutabilidade e fechamento de períodos (CORE)
+- **ADR-020**: ✅ Clean Architecture - Domain puro sem dependências
+- **ADR-021**: ✅ Modelo de erros semântico (FIN_PERIOD_ALREADY_CLOSED, FIN_PERIOD_ALREADY_OPEN)
+- **ADR-037**: ✅ Estratégia de testes 100%
+
+### Resultado da Execução
+- ✅ Build: **SUCCESS** (9.4s)
+- ✅ Testes: **151/151 passando** (127 anteriores + 18 novos + 6 existentes Domain)
+- ✅ Todos os arquivos Domain criados e funcionais
+- ✅ Zero erros de compilação
+- ✅ Cobertura de testes: 100% da Domain Layer
+
+### Arquivos Criados
+```
+backend/src/L2SLedger.Domain/
+  ├── Entities/
+  │   ├── PeriodStatus.cs
+  │   └── FinancialPeriod.cs
+  └── ValueObjects/
+      ├── CategoryBalance.cs
+      └── BalanceSnapshot.cs
+
+backend/tests/L2SLedger.Domain.Tests/
+  └── Entities/
+      └── FinancialPeriodTests.cs
+```
+
+### Próximos Passos
+1. Implementar Application Layer (DTOs, Use Cases, Validators)
+2. Implementar Infrastructure Layer (Repository, Configuration, Migration)
+3. Implementar API Layer (PeriodsController)
+4. Integrar validação de períodos em Transaction Use Cases
+5. Testes de integração (7 testes)
+
+### Ferramenta Utilizada
+- **GitHub Copilot** (Claude Sonnet 4.5)
+- Plano técnico: `fase-5-periodos-plan.md`
+
+---
+
 ## [2026-01-17] - Fase 4 Módulo de Transações - COMPLETA (100%) - ✅ CONCLUÍDO
 
 ### Contexto
