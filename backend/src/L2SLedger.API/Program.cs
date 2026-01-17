@@ -28,6 +28,7 @@ try
     builder.Services.AddCategoryUseCases();
     builder.Services.AddAuthUseCases();
     builder.Services.AddTransactionUseCases();
+    builder.Services.AddPeriodUseCases();
     builder.Services.AddValidators();
     builder.Services.AddInfrastructureServices();
 

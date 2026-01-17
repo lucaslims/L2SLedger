@@ -1,10 +1,128 @@
 # Changelog AI-Driven
+
 Este arquivo documenta as mudanças significativas feitas no projeto com a ajuda de ferramentas de IA. Cada entrada inclui a data, uma descrição da mudança e a ferramenta de IA utilizada.
 
 O formato segue o padrão [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## Mudanças Devem ser escritas Abaixo desta Linha
 <!-- BEGIN CHANGELOG -->
+
+---
+
+## [2026-01-16] - Fase 5: Períodos Financeiros - API Layer (Controller + DI) ✅ CONCLUÍDO
+
+### Contexto
+Implementação da **camada de API** da Fase 5: PeriodsController com 5 endpoints REST + configuração de Dependency Injection.
+Seguindo [fase-5-periodos-plan.md](../docs/planning/api-planning/fase-5-periodos-plan.md) seção 8 (API Layer).
+
+### Componentes Implementados
+
+#### Controller (1 arquivo)
+- **PeriodsController.cs** (`/api/v1/periods`):
+  * **GET /api/v1/periods**: Lista períodos com filtros (ano, mês, status) e paginação
+  * **GET /api/v1/periods/{id}**: Obtém período por ID com snapshot de saldos
+  * **POST /api/v1/periods**: Cria novo período financeiro
+  * **POST /api/v1/periods/{id}/close**: Fecha período (Admin/Financeiro) com snapshot automático
+  * **POST /api/v1/periods/{id}/reopen**: Reabre período fechado (APENAS Admin) com justificativa obrigatória
+  * Autorização: `[Authorize(Roles = "Admin,Financeiro")]` para close, `[Authorize(Roles = "Admin")]` para reopen
+  * Tratamento de erros padronizado: ValidationException → 400, BusinessRuleException → 422/404
+  * Logs de auditoria em operações críticas (close, reopen)
+  * Documentação XML completa em português brasileiro
+
+#### Dependency Injection (2 arquivos modificados)
+- **DependencyInjectionExtensions.cs**:
+  * Método `AddPeriodUseCases()` registrando 6 Use Cases + IPeriodBalanceService
+  * `AddRepositories()` atualizado com IFinancialPeriodRepository
+  * Todos registrados como Scoped (transação por request)
+  
+- **Program.cs**:
+  * Adicionada chamada `builder.Services.AddPeriodUseCases()` após Transaction Use Cases
+  * Ordem respeitada: Repositories → Services → Use Cases (por módulo)
+
+### Detalhes Técnicos
+
+#### Endpoints REST
+1. **GET /api/v1/periods**: 
+   - Query params: `year`, `month`, `status`, `page`, `pageSize`
+   - Retorna: `GetPeriodsResponse` com lista paginada
+   
+2. **GET /api/v1/periods/{id}**: 
+   - Route param: `id` (Guid)
+   - Retorna: `FinancialPeriodDto` com BalanceSnapshot deserializado
+   - 404 NotFound se não encontrado
+   
+3. **POST /api/v1/periods**: 
+   - Body: `CreatePeriodRequest` (Year, Month)
+   - Retorna: 201 Created com Location header
+   - 422 UnprocessableEntity se período já existe
+   
+4. **POST /api/v1/periods/{id}/close**: 
+   - Route param: `id` (Guid)
+   - Autorização: Admin OU Financeiro
+   - Extrai userId do ClaimTypes.NameIdentifier
+   - Calcula snapshot automático via PeriodBalanceService
+   - Log WARNING crítico com saldos
+   
+5. **POST /api/v1/periods/{id}/reopen**: 
+   - Route param: `id` (Guid)
+   - Body: `ReopenPeriodRequest` (Reason obrigatória, min 10 chars)
+   - Autorização: APENAS Admin (ADR-016)
+   - Extrai userId do ClaimTypes.NameIdentifier
+   - Log ERROR crítico com justificativa completa
+
+#### Tratamento de Erros Semântico (ADR-021)
+- `ValidationException` → 400 Bad Request com detalhes de campos
+- `BusinessRuleException` com Code == "FIN_PERIOD_NOT_FOUND" → 404 Not Found
+- `BusinessRuleException` com Code == "FIN_PERIOD_ALREADY_EXISTS" → 422 Unprocessable Entity
+- Outros `BusinessRuleException` → 422 Unprocessable Entity
+- Todas as respostas de erro usam `ErrorResponse.Create()` com TraceId
+
+#### Padrões Implementados
+- Injeção via `[FromServices]` nos métodos (não no constructor)
+- CancellationToken em todos os endpoints
+- Route constraints: `{id:guid}`
+- ProducesResponseType para documentação Swagger
+- Comentários XML em português brasileiro
+- Logs estruturados com ILogger<T>
+
+### Use Cases Registrados no DI
+1. ✅ CreateFinancialPeriodUseCase
+2. ✅ ClosePeriodUseCase
+3. ✅ ReopenPeriodUseCase
+4. ✅ GetFinancialPeriodsUseCase
+5. ✅ GetFinancialPeriodByIdUseCase
+6. ✅ EnsurePeriodExistsAndOpenUseCase
+
+### ADRs Aplicados
+- ✅ **ADR-015**: Períodos fechados garantem imutabilidade de transações
+- ✅ **ADR-016**: RBAC - Apenas Admin pode reabrir, Admin/Financeiro podem fechar
+- ✅ **ADR-014**: Logs de auditoria obrigatórios (INFO para criação, WARNING para fechamento, INFO para reabertura)
+- ✅ **ADR-021**: Modelo de erros semântico com códigos (FIN_PERIOD_CLOSED, FIN_PERIOD_NOT_FOUND, etc)
+- ✅ **ADR-022**: Contratos imutáveis (versioning futuro se necessário)
+- ✅ **ADR-020**: Clean Architecture - API é camada fina sobre Application
+
+### Validações Executadas
+- **Build**: ✅ SUCCESS
+- **Testes**: 196/196 passando (nenhum teste quebrado)
+- **Compilação**: Sem erros ou warnings de compilação
+- **DI**: Todos os Use Cases e Repository registrados corretamente
+- **Swagger**: Endpoints documentados automaticamente via XML comments
+
+### Observações
+- Implementação 100% consistente com TransactionsController (padrão do projeto)
+- Nenhuma modificação em Domain ou Application (apenas leitura)
+- GetPeriodById usa `useCase.ExecuteAsync()` e valida resultado null + exceções BusinessRuleException
+- UserId extraído do token JWT via `User.FindFirstValue(ClaimTypes.NameIdentifier)`
+- Reabertura é operação excepcional (Log ERROR) conforme ADR-014
+
+### Próximos Passos Sugeridos
+1. ✅ **Contract Tests**: PeriodsControllerTests (Fase 5.5)
+2. ✅ **Integration Tests**: Testar fluxo completo de fechamento/reabertura
+3. 🔄 **Integração Fase 4**: Adicionar `EnsurePeriodExistsAndOpenUseCase` nos Transaction Use Cases
+4. 📖 **Documentação**: Atualizar swagger.json com exemplos de request/response
+
+### Ferramenta Utilizada
+- GitHub Copilot (Claude Sonnet 4.5)
 
 ---
 

@@ -1,6 +1,8 @@
 using L2SLedger.Application.Interfaces;
+using L2SLedger.Application.Services;
 using L2SLedger.Application.UseCases.Auth;
 using L2SLedger.Application.UseCases.Categories;
+using L2SLedger.Application.UseCases.Periods;
 using L2SLedger.Application.UseCases.Transaction;
 using L2SLedger.Application.Validators.Categories;
 using L2SLedger.Infrastructure.Identity;
@@ -27,6 +29,7 @@ public static class DependencyInjectionExtensions
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<ICategoryRepository, CategoryRepository>();
         services.AddScoped<ITransactionRepository, TransactionRepository>();
+        services.AddScoped<IFinancialPeriodRepository, FinancialPeriodRepository>();
 
         return services;
     }
@@ -76,6 +79,23 @@ public static class DependencyInjectionExtensions
         services.AddScoped<GetTransactionsUseCase>();
         services.AddScoped<GetTransactionByIdUseCase>();
         services.AddScoped<DeleteTransactionUseCase>();
+
+        return services;
+    }
+
+    /// <summary>
+    /// Registra use cases de períodos financeiros.
+    /// ADR-015: Períodos financeiros garantem imutabilidade de transações.
+    /// </summary>
+    public static IServiceCollection AddPeriodUseCases(this IServiceCollection services)
+    {
+        services.AddScoped<CreateFinancialPeriodUseCase>();
+        services.AddScoped<ClosePeriodUseCase>();
+        services.AddScoped<ReopenPeriodUseCase>();
+        services.AddScoped<GetFinancialPeriodsUseCase>();
+        services.AddScoped<GetFinancialPeriodByIdUseCase>();
+        services.AddScoped<EnsurePeriodExistsAndOpenUseCase>();
+        services.AddScoped<IPeriodBalanceService, PeriodBalanceService>();
 
         return services;
     }
