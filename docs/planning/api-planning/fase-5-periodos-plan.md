@@ -1,6 +1,6 @@
 # Plano Técnico — Fase 5: Módulo de Períodos Financeiros
 
-> **Status:** 📋 Aguardando Aprovação  
+> **Status:** Aprovada  
 > **Data:** 2026-01-16  
 > **Versão:** 1.0  
 > **Dependências:** Fase 1, 2, 3 e 4 concluídas
@@ -749,6 +749,7 @@ public class FinancialPeriodConfiguration : IEntityTypeConfiguration<FinancialPe
             .HasColumnName("created_at");
 
         builder.Property(p => p.UpdatedAt)
+            .IsRequired(false)
             .HasColumnName("updated_at");
 
         // Índices
