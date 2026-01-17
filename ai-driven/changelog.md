@@ -9,6 +9,78 @@ O formato segue o padrão [Keep a Changelog](https://keepachangelog.com/en/1.0.0
 
 ---
 
+## [2026-01-17] - Fase 5: Contract Tests para Períodos Financeiros ✅ CONCLUÍDO
+
+### Contexto
+Implementação dos **Contract Tests da Fase 5** seguindo [fase-5-periodos-plan.md](../docs/planning/api-planning/fase-5-periodos-plan.md) seção 7.3.
+Validação de estrutura e serialização dos contratos públicos (DTOs) conforme ADR-022 (imutabilidade de contratos).
+
+### Componentes Implementados
+
+#### Contract Tests (1 arquivo novo)
+- **FinancialPeriodDtoTests.cs** (8 testes):
+  * `FinancialPeriodDto_ShouldHaveCorrectStructure`: Valida 19 propriedades na ordem correta
+  * `FinancialPeriodDto_ShouldSerializeToJson`: Testa serialização JSON de período aberto
+  * `FinancialPeriodDto_WithBalanceSnapshot_ShouldSerializeCorrectly`: Testa serialização com snapshot de saldos
+  * `CreatePeriodRequest_ShouldHaveCorrectStructure`: Valida estrutura e imutabilidade (record type)
+  * `ReopenPeriodRequest_ShouldHaveCorrectStructure`: Valida estrutura e imutabilidade
+  * `GetPeriodsRequest_ShouldHaveCorrectStructure`: Valida estrutura e valores default (Page=1, PageSize=12)
+  * `GetPeriodsResponse_ShouldHaveCorrectStructure`: Valida estrutura de response paginado
+  * `PeriodStatus_ShouldSerializeAsInteger`: Valida que enum serializa como int (Open=1, Closed=2)
+
+### Detalhes Técnicos
+
+#### Padrão de Testes
+- Baseado em `TransactionDtoTests.cs` (referência do projeto)
+- FluentAssertions para validações expressivas
+- Testes de estrutura usando Reflection (.GetProperties())
+- Testes de serialização usando System.Text.Json
+- Validação de imutabilidade (record types)
+- Validação de ordem de propriedades com .ContainInOrder()
+
+#### Validações de Contrato
+- **FinancialPeriodDto**: 19 propriedades incluindo BalanceSnapshot opcional
+- **CreatePeriodRequest**: Apenas Year e Month (minimalista)
+- **ReopenPeriodRequest**: Apenas Reason (justificativa obrigatória)
+- **GetPeriodsRequest**: 5 propriedades com defaults corretos
+- **GetPeriodsResponse**: Lista paginada com metadados
+- **PeriodStatus enum**: Serialização como inteiro
+
+### Validações Executadas
+
+#### Build
+```
+✅ dotnet build: SUCCESS sem erros
+✅ Compilação: 9 projetos compilados com 1 aviso pré-existente
+```
+
+#### Testes
+```
+✅ Contract Tests Fase 5: 8/8 passando
+✅ Total de Testes: 204/204 passando
+  - 196 testes anteriores (Fases 1-4)
+  - 8 novos Contract Tests (Fase 5)
+```
+
+### Cobertura Alcançada
+- ✅ Estrutura de todos os DTOs validada
+- ✅ Serialização JSON testada (inclusive BalanceSnapshot aninhado)
+- ✅ Imutabilidade de contratos garantida (ADR-022)
+- ✅ Valores default testados (paginação)
+- ✅ Enum serialization testada (PeriodStatus)
+
+### ADRs Aplicados
+- **ADR-022**: Contratos públicos imutáveis (record types)
+- **ADR-037**: Estratégia de testes (Contract Tests obrigatórios)
+
+### Ferramenta Utilizada
+GitHub Copilot (Claude Sonnet 4.5)
+
+### Próxima Etapa
+**Integração Fase 4 + Fase 5**: Atualizar Transaction Use Cases com validação de período aberto antes de criar/atualizar/deletar transações.
+
+---
+
 ## [2026-01-16] - Fase 5: Períodos Financeiros - API Layer (Controller + DI) ✅ CONCLUÍDO
 
 ### Contexto
