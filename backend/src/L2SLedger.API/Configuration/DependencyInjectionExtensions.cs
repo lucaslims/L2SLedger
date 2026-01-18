@@ -4,10 +4,12 @@ using L2SLedger.Application.UseCases.Adjustments;
 using L2SLedger.Application.UseCases.Auth;
 using L2SLedger.Application.UseCases.Balances;
 using L2SLedger.Application.UseCases.Categories;
+using L2SLedger.Application.UseCases.Exports;
 using L2SLedger.Application.UseCases.Periods;
 using L2SLedger.Application.UseCases.Reports;
 using L2SLedger.Application.UseCases.Transaction;
 using L2SLedger.Application.Validators.Categories;
+using L2SLedger.Infrastructure.BackgroundServices;
 using L2SLedger.Infrastructure.Identity;
 using L2SLedger.Infrastructure.Persistence.Repositories;
 using L2SLedger.Infrastructure.Repositories;
@@ -34,6 +36,7 @@ public static class DependencyInjectionExtensions
         services.AddScoped<ITransactionRepository, TransactionRepository>();
         services.AddScoped<IFinancialPeriodRepository, FinancialPeriodRepository>();
         services.AddScoped<IAdjustmentRepository, AdjustmentRepository>();
+        services.AddScoped<IExportRepository, ExportRepository>();
 
         return services;
     }
@@ -132,6 +135,20 @@ public static class DependencyInjectionExtensions
     }
 
     /// <summary>
+    /// Registra use cases de exportação.
+    /// ADR-017: Exportação de relatórios (CSV/PDF) com processamento assíncrono.
+    /// </summary>
+    public static IServiceCollection AddExportUseCases(this IServiceCollection services)
+    {
+        services.AddScoped<RequestExportUseCase>();
+        services.AddScoped<GetExportStatusUseCase>();
+        services.AddScoped<GetExportByIdUseCase>();
+        services.AddScoped<DownloadExportUseCase>();
+
+        return services;
+    }
+
+    /// <summary>
     /// Registra validadores FluentValidation.
     /// </summary>
     public static IServiceCollection AddValidators(this IServiceCollection services)
@@ -148,6 +165,12 @@ public static class DependencyInjectionExtensions
     {
         services.AddScoped<IFirebaseAuthService, FirebaseAuthService>();
         services.AddScoped<ICurrentUserService, CurrentUserService>();
+        services.AddScoped<ICsvExportService, CsvExportService>();
+        services.AddScoped<IPdfExportService, PdfExportService>();
+        services.AddScoped<IFileStorageService, FileStorageService>();
+
+        // Registrar Hosted Service para processamento de exportações
+        services.AddHostedService<ExportProcessorHostedService>();
 
         // Configurar HttpClient para FirebaseAuthenticationService com Polly
         services.AddHttpClient<IFirebaseAuthenticationService, FirebaseAuthenticationService>()

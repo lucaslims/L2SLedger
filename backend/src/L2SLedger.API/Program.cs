@@ -31,6 +31,7 @@ try
     builder.Services.AddPeriodUseCases();
     builder.Services.AddAdjustmentUseCases();
     builder.Services.AddBalanceAndReportUseCases();
+    builder.Services.AddExportUseCases();
     builder.Services.AddValidators();
     builder.Services.AddInfrastructureServices();
 
