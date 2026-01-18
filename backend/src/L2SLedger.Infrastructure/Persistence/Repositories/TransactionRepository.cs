@@ -86,4 +86,116 @@ public class TransactionRepository : ITransactionRepository
 
         return (transactions, totalCount);
     }
+
+    public async Task<Dictionary<(Guid CategoryId, TransactionType Type), decimal>> GetBalanceByCategoryAsync(
+        Guid userId,
+        DateTime startDate,
+        DateTime endDate,
+        Guid? categoryId = null,
+        CancellationToken cancellationToken = default)
+    {
+        var query = _context.Transactions
+            .Where(t => t.UserId == userId 
+                && !t.IsDeleted
+                && t.TransactionDate >= startDate.Date
+                && t.TransactionDate <= endDate.Date);
+
+        if (categoryId.HasValue)
+        {
+            query = query.Where(t => t.CategoryId == categoryId.Value);
+        }
+
+        var results = await query
+            .GroupBy(t => new { t.CategoryId, t.Type })
+            .Select(g => new 
+            { 
+                g.Key.CategoryId, 
+                g.Key.Type, 
+                Total = g.Sum(t => t.Amount) 
+            })
+            .ToListAsync(cancellationToken);
+
+        return results.ToDictionary(
+            r => (r.CategoryId, r.Type),
+            r => r.Total);
+    }
+
+    public async Task<decimal> GetBalanceBeforeDateAsync(
+        Guid userId,
+        DateTime beforeDate,
+        CancellationToken cancellationToken = default)
+    {
+        var result = await _context.Transactions
+            .Where(t => t.UserId == userId 
+                && !t.IsDeleted
+                && t.TransactionDate < beforeDate.Date)
+            .GroupBy(t => t.Type)
+            .Select(g => new { g.Key, Total = g.Sum(t => t.Amount) })
+            .ToListAsync(cancellationToken);
+
+        var income = result.FirstOrDefault(r => r.Key == TransactionType.Income)?.Total ?? 0m;
+        var expense = result.FirstOrDefault(r => r.Key == TransactionType.Expense)?.Total ?? 0m;
+
+        return income - expense;
+    }
+
+    public async Task<Dictionary<DateTime, (decimal Income, decimal Expense)>> GetDailyBalancesAsync(
+        Guid userId,
+        DateTime startDate,
+        DateTime endDate,
+        CancellationToken cancellationToken = default)
+    {
+        var results = await _context.Transactions
+            .Where(t => t.UserId == userId 
+                && !t.IsDeleted
+                && t.TransactionDate >= startDate.Date
+                && t.TransactionDate <= endDate.Date)
+            .GroupBy(t => new { t.TransactionDate, t.Type })
+            .Select(g => new 
+            { 
+                Date = g.Key.TransactionDate, 
+                g.Key.Type, 
+                Total = g.Sum(t => t.Amount) 
+            })
+            .ToListAsync(cancellationToken);
+
+        var dictionary = new Dictionary<DateTime, (decimal Income, decimal Expense)>();
+
+        foreach (var result in results)
+        {
+            if (!dictionary.ContainsKey(result.Date))
+            {
+                dictionary[result.Date] = (0m, 0m);
+            }
+
+            var current = dictionary[result.Date];
+            if (result.Type == TransactionType.Income)
+            {
+                dictionary[result.Date] = (result.Total, current.Expense);
+            }
+            else
+            {
+                dictionary[result.Date] = (current.Income, result.Total);
+            }
+        }
+
+        return dictionary;
+    }
+
+    public async Task<List<Transaction>> GetTransactionsWithCategoryAsync(
+        Guid userId,
+        DateTime startDate,
+        DateTime endDate,
+        CancellationToken cancellationToken = default)
+    {
+        return await _context.Transactions
+            .Include(t => t.Category)
+            .Where(t => t.UserId == userId 
+                && !t.IsDeleted
+                && t.TransactionDate >= startDate.Date
+                && t.TransactionDate <= endDate.Date)
+            .OrderBy(t => t.TransactionDate)
+            .ThenBy(t => t.CreatedAt)
+            .ToListAsync(cancellationToken);
+    }
 }
