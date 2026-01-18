@@ -1152,12 +1152,14 @@ public class ExportsController : ControllerBase
 ## 📋 TODO - Fase 8: Exportação de Relatórios
 
 ### 1. Validar Pré-condições
+
 - [x] Confirmar Fase 7 completa (290 testes passando)
 - [x] Revisar ADR-017, ADR-016, ADR-014
 - [x] Validar índices existentes em transactions table
 - [x] Verificar ITransactionRepository atual
 
 ### 2. Domain Layer - Entities e Enums
+
 - [x] Criar ExportStatus enum (Pending, Processing, Completed, Failed)
 - [x] Criar ExportFormat enum (Csv, Pdf)
 - [x] Criar Export entity com 15+ propriedades
@@ -1167,11 +1169,12 @@ public class ExportsController : ControllerBase
   - [x] Implementar IsDownloadable()
 
 ### 3. Application Layer - DTOs
-- [ ] Criar DTOs/Exports/ExportDto.cs (15 propriedades)
-- [ ] Criar DTOs/Exports/RequestExportRequest.cs (5 propriedades)
-- [ ] Criar DTOs/Exports/ExportStatusResponse.cs (6 propriedades)
-- [ ] Criar DTOs/Exports/GetExportsRequest.cs (4 propriedades)
-- [ ] Criar DTOs/Exports/GetExportsResponse.cs (4 propriedades)
+
+- [x] Criar DTOs/Exports/ExportDto.cs (15 propriedades)
+- [x] Criar DTOs/Exports/RequestExportRequest.cs (5 propriedades)
+- [x] Criar DTOs/Exports/ExportStatusResponse.cs (6 propriedades)
+- [x] Criar DTOs/Exports/GetExportsRequest.cs (4 propriedades)
+- [x] Criar DTOs/Exports/GetExportsResponse.cs (4 propriedades)
 
 ### 4. Application Layer - Interfaces
 - [ ] Criar Interfaces/IExportRepository.cs (7 métodos)
