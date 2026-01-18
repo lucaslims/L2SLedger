@@ -1234,13 +1234,13 @@ public class ExportsController : ControllerBase
   - [x] DeleteAsync (soft delete)
 
 ### 9. Infrastructure Layer - Configuration
-- [ ] Criar Configurations/ExportConfiguration.cs
-  - [ ] Tabela: exports
-  - [ ] Índices: requested_by_user_id, status, requested_at, (status + requested_at)
-  - [ ] FK: RequestedByUser (Restrict)
-  - [ ] JSONB: ParametersJson
-  - [ ] Query Filter: !IsDeleted
-- [ ] Criar Migration: AddExports
+- [x] Criar Configurations/ExportConfiguration.cs
+  - [x] Tabela: exports
+  - [x] Índices: requested_by_user_id, status, requested_at, (status + requested_at)
+  - [x] FK: RequestedByUser (Restrict)
+  - [x] JSONB: ParametersJson
+  - [x] Query Filter: !IsDeleted
+- [x] Criar Migration: AddExports
 
 ### 10. Infrastructure Layer - Hosted Service
 - [ ] Criar BackgroundServices/ExportProcessorHostedService.cs
