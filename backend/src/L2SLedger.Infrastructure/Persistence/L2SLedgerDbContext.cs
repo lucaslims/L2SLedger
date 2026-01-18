@@ -19,6 +19,7 @@ public class L2SLedgerDbContext : DbContext
     public DbSet<Transaction> Transactions => Set<Transaction>();
     public DbSet<FinancialPeriod> FinancialPeriods => Set<FinancialPeriod>();
     public DbSet<Adjustment> Adjustments => Set<Adjustment>();
+    public DbSet<Export> Exports => Set<Export>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
