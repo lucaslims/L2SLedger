@@ -1207,21 +1207,21 @@ public class ExportsController : ControllerBase
   - [x] TransactionType entre 1-2 (se informado)
 
 ### 7. Infrastructure Layer - Services
-- [ ] Criar Services/CsvExportService.cs
-  - [ ] Query transações via repository
-  - [ ] Gerar CSV com CsvHelper ou StringBuilder
-  - [ ] Headers: Date, Description, Category, Amount, Type
-- [ ] Criar Services/PdfExportService.cs
-  - [ ] Query transações via repository
-  - [ ] Gerar PDF com QuestPDF ou similar
+- [x] Criar Services/CsvExportService.cs
+  - [x] Query transações via repository
+  - [x] Gerar CSV com CsvHelper ou StringBuilder
+  - [x] Headers: Date, Description, Category, Amount, Type
+- [x] Criar Services/PdfExportService.cs
+  - [x] Query transações via repository
+  - [x] Gerar PDF com QuestPDF ou similar
   - [ ] Layout: Logo, título, tabela, totais
-- [ ] Criar Services/FileStorageService.cs
-  - [ ] Diretório: exports/
-  - [ ] SaveExportFileAsync
-  - [ ] ReadExportFileAsync
-  - [ ] DeleteExportFileAsync
-  - [ ] CleanupOldExportsAsync (> 7 dias)
-  - [ ] GetFileSizeBytes
+- [x] Criar Services/FileStorageService.cs
+  - [x] Diretório: exports/
+  - [x] SaveExportFileAsync
+  - [x] ReadExportFileAsync
+  - [x] DeleteExportFileAsync
+  - [x] CleanupOldExportsAsync (> 7 dias)
+  - [x] GetFileSizeBytes
 
 ### 8. Infrastructure Layer - Repository
 - [ ] Criar Repositories/ExportRepository.cs
