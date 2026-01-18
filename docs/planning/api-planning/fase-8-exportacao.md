@@ -1224,14 +1224,14 @@ public class ExportsController : ControllerBase
   - [x] GetFileSizeBytes
 
 ### 8. Infrastructure Layer - Repository
-- [ ] Criar Repositories/ExportRepository.cs
-  - [ ] AddAsync
-  - [ ] GetByIdAsync (Include RequestedByUser)
-  - [ ] GetByFiltersAsync (filtros + paginação)
-  - [ ] CountByFiltersAsync
-  - [ ] GetPendingAsync (limit 5)
-  - [ ] UpdateAsync
-  - [ ] DeleteAsync (soft delete)
+- [x] Criar Repositories/ExportRepository.cs
+  - [x] AddAsync
+  - [x] GetByIdAsync (Include RequestedByUser)
+  - [x] GetByFiltersAsync (filtros + paginação)
+  - [x] CountByFiltersAsync
+  - [x] GetPendingAsync (limit 5)
+  - [x] UpdateAsync
+  - [x] DeleteAsync (soft delete)
 
 ### 9. Infrastructure Layer - Configuration
 - [ ] Criar Configurations/ExportConfiguration.cs
