@@ -30,6 +30,7 @@ try
     builder.Services.AddTransactionUseCases();
     builder.Services.AddPeriodUseCases();
     builder.Services.AddAdjustmentUseCases();
+    builder.Services.AddBalanceAndReportUseCases();
     builder.Services.AddValidators();
     builder.Services.AddInfrastructureServices();
 

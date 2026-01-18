@@ -2,8 +2,10 @@ using L2SLedger.Application.Interfaces;
 using L2SLedger.Application.Services;
 using L2SLedger.Application.UseCases.Adjustments;
 using L2SLedger.Application.UseCases.Auth;
+using L2SLedger.Application.UseCases.Balances;
 using L2SLedger.Application.UseCases.Categories;
 using L2SLedger.Application.UseCases.Periods;
+using L2SLedger.Application.UseCases.Reports;
 using L2SLedger.Application.UseCases.Transaction;
 using L2SLedger.Application.Validators.Categories;
 using L2SLedger.Infrastructure.Identity;
@@ -112,6 +114,19 @@ public static class DependencyInjectionExtensions
         services.AddScoped<GetAdjustmentsUseCase>();
         services.AddScoped<GetAdjustmentByIdUseCase>();
         services.AddScoped<DeleteAdjustmentUseCase>();
+
+        return services;
+    }
+
+    /// <summary>
+    /// Registra use cases de saldos e relatórios.
+    /// ADR-034: Queries agregadas em PostgreSQL para performance.
+    /// </summary>
+    public static IServiceCollection AddBalanceAndReportUseCases(this IServiceCollection services)
+    {
+        services.AddScoped<GetBalanceUseCase>();
+        services.AddScoped<GetDailyBalanceUseCase>();
+        services.AddScoped<GetCashFlowReportUseCase>();
 
         return services;
     }
