@@ -215,5 +215,8 @@ temp/
 tmp/
 
 # Email validation files
-validar_emails/*
+**/validar_emails/*
+
+# Database checker files
+**/db-checker/*
 
