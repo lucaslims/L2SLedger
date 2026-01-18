@@ -1183,28 +1183,28 @@ public class ExportsController : ControllerBase
 - [x] Criar Interfaces/IFileStorageService.cs (5 métodos)
 
 ### 5. Application Layer - Use Cases
-- [ ] Criar UseCases/Exports/RequestExportUseCase.cs
-  - [ ] Validar formato (1-2)
-  - [ ] Validar período (máximo 365 dias)
-  - [ ] Serializar parâmetros JSON
-  - [ ] Criar Export com status Pending
-- [ ] Criar UseCases/Exports/GetExportStatusUseCase.cs
-  - [ ] Validar ownership
-  - [ ] Calcular progressPercentage
-- [ ] Criar UseCases/Exports/GetExportByIdUseCase.cs
-  - [ ] Validar ownership
-  - [ ] Include de RequestedByUser
-- [ ] Criar UseCases/Exports/DownloadExportUseCase.cs
-  - [ ] Validar IsDownloadable
-  - [ ] Ler arquivo via FileStorage
-  - [ ] Determinar contentType
+- [x] Criar UseCases/Exports/RequestExportUseCase.cs
+  - [x] Validar formato (1-2)
+  - [x] Validar período (máximo 365 dias)
+  - [x] Serializar parâmetros JSON
+  - [x] Criar Export com status Pending
+- [x] Criar UseCases/Exports/GetExportStatusUseCase.cs
+  - [x] Validar ownership
+  - [x] Calcular progressPercentage
+- [x] Criar UseCases/Exports/GetExportByIdUseCase.cs
+  - [x] Validar ownership
+  - [x] Include de RequestedByUser
+- [x] Criar UseCases/Exports/DownloadExportUseCase.cs
+  - [x] Validar IsDownloadable
+  - [x] Ler arquivo via FileStorage
+  - [x] Determinar contentType
 
 ### 6. Application Layer - Validators
-- [ ] Criar Validators/RequestExportRequestValidator.cs
-  - [ ] Format entre 1-2
-  - [ ] StartDate <= EndDate
-  - [ ] Período <= 365 dias
-  - [ ] TransactionType entre 1-2 (se informado)
+- [x] Criar Validators/RequestExportRequestValidator.cs
+  - [x] Format entre 1-2
+  - [x] StartDate <= EndDate
+  - [x] Período <= 365 dias
+  - [x] TransactionType entre 1-2 (se informado)
 
 ### 7. Infrastructure Layer - Services
 - [ ] Criar Services/CsvExportService.cs
