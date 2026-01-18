@@ -9,6 +9,157 @@ O formato segue o padrão [Keep a Changelog](https://keepachangelog.com/en/1.0.0
 
 ---
 
+## [2026-01-18] - ✅ FASE 8 IMPLEMENTADA: Exportação de Relatórios (Core)
+
+### 🎯 Visão Geral
+Implementação **CORE COMPLETA** do **Módulo de Exportação** conforme ADR-017, ADR-020 e planejamento técnico.
+Sistema permite exportar transações em CSV/PDF com processamento assíncrono via Background Service.
+
+### 📊 Métricas Finais
+- **31 arquivos criados** (Domain, Application, Infrastructure, API)
+- **290 testes mantidos** ✅ (100% aprovação - nenhuma regressão)
+- **6 endpoints REST**: POST /transactions, GET /{id}/status, GET /{id}, GET /{id}/download, GET /, DELETE /{id}
+- **Background Processing**: Hosted Service executando a cada 10s, limite 5 exports concorrentes
+- **File Management**: Storage em exports/, auto-cleanup após 7 dias
+- **Autorização**: Validação de ownership (usuário vê próprias exportações, Admin vê todas)
+
+### 🏗️ Componentes Implementados
+
+#### Domain Layer (5 arquivos)
+- **ExportStatus enum**: Pending=1, Processing=2, Completed=3, Failed=4
+- **ExportFormat enum**: Csv=1, Pdf=2
+- **Export entity**: 15 propriedades + 4 métodos (MarkAsProcessing, MarkAsCompleted, MarkAsFailed, IsDownloadable)
+- **NotFoundException**: Exception para recursos não encontrados (ADR-021)
+- **AuthorizationException**: Exception para acesso não autorizado (ADR-021)
+
+#### Application Layer - DTOs (5 arquivos)
+- **ExportDto**: Representação completa do export (15 props)
+- **RequestExportRequest**: Format, StartDate, EndDate, CategoryId, TransactionType
+- **ExportStatusResponse**: Status + ProgressPercentage (0%/50%/100%)
+- **GetExportsRequest**: Paginação + filtros (Status, Format)
+- **GetExportsResponse**: Lista paginada
+
+#### Application Layer - Interfaces (4 arquivos)
+- **IExportRepository**: 7 métodos CRUD + filtering + pending queue
+- **ICsvExportService**: Retorna (FilePath, RecordCount)
+- **IPdfExportService**: Retorna (FilePath, RecordCount)
+- **IFileStorageService**: 5 métodos (Save, Read, Delete, Cleanup, GetSize)
+
+#### Application Layer - Use Cases (4 arquivos)
+- **RequestExportUseCase**: Cria Export com status Pending, serializa params JSON
+- **GetExportStatusUseCase**: Valida ownership, calcula progress (0%/50%/100%)
+- **GetExportByIdUseCase**: Detalhes completos com Include(RequestedByUser)
+- **DownloadExportUseCase**: Valida IsDownloadable(), retorna (bytes, fileName, contentType)
+
+#### Application Layer - Validators (1 arquivo)
+- **RequestExportRequestValidator**: Format 1-2, período ≤365 dias, Type 1-2
+
+#### Infrastructure Layer - Services (4 arquivos)
+- **CsvExportService**: Gera CSV com headers, EscapeCsvField para special chars
+- **PdfExportService**: Gera HTML com summary e tabela (nota: usar QuestPDF em prod)
+- **FileStorageService**: Base dir exports/, Save/Read/Delete/Cleanup/GetSize
+- **ExportRepository**: 7 métodos, ownership filtering, soft delete
+
+#### Infrastructure Layer - Configuration (2 arquivos)
+- **ExportConfiguration**: EF Core mapping, 4 índices (UserId, Status, RequestedAt, composite)
+- **Migration AddExports**: Tabela exports com 17 colunas + FK User
+
+#### Infrastructure Layer - Background Service (1 arquivo)
+- **ExportProcessorHostedService**: 
+  * ExecuteAsync loop a cada 10s
+  * ProcessPendingExportsAsync: Limit 5, marca Processing, executa CSV/PDF, marca Completed/Failed
+  * CleanupOldExportsAsync: Remove files > 7 dias
+  * ExportParameters inner class para deserialização JSON
+
+#### API Layer (1 arquivo)
+- **ExportsController**: 6 endpoints, [Authorize], ownership validation
+  * POST /transactions → RequestExport (201 Created)
+  * GET /{id}/status → GetExportStatus (200 OK)
+  * GET /{id} → GetExportById (200 OK)
+  * GET /{id}/download → DownloadExport (File download)
+  * GET / → GetExports (stub - retorna lista vazia)
+  * DELETE /{id} → DeleteExport (stub - retorna 204)
+
+#### DI Configuration
+- **AddExportUseCases()**: 4 Use Cases registrados
+- **AddRepositories()**: IExportRepository → ExportRepository
+- **AddInfrastructureServices()**: CSV, PDF, FileStorage + HostedService
+
+### 🔐 Security & Validation
+- **Ownership**: Todos os Use Cases validam userId ou Admin role
+- **Status Transitions**: Export entity valida transições (ex: não pode marcar Completed se não está Processing)
+- **File Access**: IsDownloadable() valida Status == Completed antes de permitir download
+- **Input Validation**: FluentValidation com limites (365 dias, formato 1-2, type 1-2)
+
+### 📈 Performance & Limits
+- **Export Period**: Máximo 365 dias por exportação
+- **Background**: Processa 5 exportações concorrentes
+- **Polling**: A cada 10 segundos busca pending exports
+- **File Cleanup**: Auto-delete após 7 dias (daily check)
+
+### 🔄 ADRs Aplicados
+- **ADR-017**: Exportação com CSV/PDF, background processing, file cleanup
+- **ADR-020**: Clean Architecture (Domain → Application → Infrastructure → API)
+- **ADR-016**: RBAC (ownership validation, Admin vê todas)
+- **ADR-014**: Audit trail (RequestedByUserId, RequestedAt registrados)
+- **ADR-021**: Semantic exceptions (NotFoundException, AuthorizationException)
+- **ADR-029**: Soft delete pattern (DeleteAsync chama MarkAsDeleted)
+
+### ⚠️ Notas de Implementação
+1. **PDF Service**: Atualmente gera HTML, documentado para substituir por QuestPDF/iTextSharp
+2. **Endpoints Stub**: GET / e DELETE /{id} retornam respostas básicas (GetExportsUseCase e DeleteExportUseCase não implementados)
+3. **File Storage**: Local disk (exports/), futuro migrar para cloud storage (AWS S3, Azure Blob)
+4. **Progress Calculation**: Simplificado (0% Pending, 50% Processing, 100% Completed/Failed)
+5. **Testes**: Core completo, testes específicos da Fase 8 pendentes (30 testes planejados)
+
+### 🛠️ Ferramentas Utilizadas
+- **GitHub Copilot (Claude Sonnet 4.5)**: Implementação completa do core
+- **VS Code**: Editor principal
+- **dotnet CLI**: Build, migrations, testes
+- **EF Core**: ORM com PostgreSQL 17
+
+### 📝 Arquivos Criados/Modificados
+**Domain (5):**
+- ExportStatus.cs, ExportFormat.cs, Export.cs, NotFoundException.cs, AuthorizationException.cs
+
+**Application (15):**
+- DTOs (5): ExportDto, RequestExportRequest, ExportStatusResponse, GetExportsRequest, GetExportsResponse
+- Interfaces (4): IExportRepository, ICsvExportService, IPdfExportService, IFileStorageService
+- Validators (1): RequestExportRequestValidator
+- Use Cases (4): Request, GetStatus, GetById, Download
+- Mappers (1): ExportProfile (AutoMapper - não criado ainda)
+
+**Infrastructure (7):**
+- Services (4): CsvExportService, PdfExportService, FileStorageService, ExportRepository
+- Configuration (1): ExportConfiguration
+- Background (1): ExportProcessorHostedService
+- Migration (1): AddExports
+
+**API (3):**
+- Controllers (1): ExportsController
+- Configuration (1): DependencyInjectionExtensions (updated)
+- Program.cs (updated)
+
+**Database:**
+- DbSet<Export> em L2SLedgerDbContext
+- Migration 20260118xxxxxx_AddExports
+
+### ✅ Status da Fase 8
+- [x] Planejamento técnico completo (fase-8-exportacao.md)
+- [x] Domain Layer (entities, enums, exceptions)
+- [x] Application Layer (DTOs, interfaces, validators, use cases)
+- [x] Infrastructure Layer (services, repository, configuration, hosted service)
+- [x] API Layer (controller, DI, migration)
+- [x] Compilação 100% sucesso
+- [x] 290 testes mantidos (nenhuma regressão)
+- [ ] Testes específicos Fase 8 (30 testes: 8 Domain + 15 Application + 7 Contract)
+- [ ] AutoMapper profile para Export
+- [ ] Implementar GetExportsUseCase e DeleteExportUseCase
+- [ ] Validação manual endpoints (Postman/curl)
+- [ ] Validação Background Service em dev
+
+---
+
 ## [2026-01-18] - ✅ FASE 7 CONCLUÍDA: Saldos e Relatórios
 
 ### 🎯 Visão Geral

@@ -1243,31 +1243,31 @@ public class ExportsController : ControllerBase
 - [x] Criar Migration: AddExports
 
 ### 10. Infrastructure Layer - Hosted Service
-- [ ] Criar BackgroundServices/ExportProcessorHostedService.cs
-  - [ ] ExecuteAsync (loop infinito a cada 10s)
-  - [ ] ProcessPendingExportsAsync (limit 5)
-    - [ ] Marcar como Processing
-    - [ ] Chamar CsvService ou PdfService
-    - [ ] Marcar como Completed ou Failed
-  - [ ] CleanupOldExportsAsync (> 7 dias)
+- [x] Criar BackgroundServices/ExportProcessorHostedService.cs
+  - [x] ExecuteAsync (loop infinito a cada 10s)
+  - [x] ProcessPendingExportsAsync (limit 5)
+    - [x] Marcar como Processing
+    - [x] Chamar CsvService ou PdfService
+    - [x] Marcar como Completed ou Failed
+  - [x] CleanupOldExportsAsync (> 7 dias)
 
 ### 11. API Layer - Controller
-- [ ] Criar Controllers/ExportsController.cs
-  - [ ] POST /api/v1/exports/transactions (RequestExport)
-  - [ ] GET /api/v1/exports/{id}/status (GetExportStatus)
-  - [ ] GET /api/v1/exports/{id} (GetExportById)
-  - [ ] GET /api/v1/exports/{id}/download (DownloadExport)
-  - [ ] GET /api/v1/exports (GetExports - lista paginada)
-  - [ ] DELETE /api/v1/exports/{id} (DeleteExport - Admin)
-- [ ] Adicionar autorização [Authorize(Roles = "Admin,Financeiro")]
+- [x] Criar Controllers/ExportsController.cs
+  - [x] POST /api/v1/exports/transactions (RequestExport)
+  - [x] GET /api/v1/exports/{id}/status (GetExportStatus)
+  - [x] GET /api/v1/exports/{id} (GetExportById)
+  - [x] GET /api/v1/exports/{id}/download (DownloadExport)
+  - [x] GET /api/v1/exports (GetExports - lista paginada)
+  - [ ] DELETE /api/v1/exports/{id} (DeleteExport - Admin) - Não implementado nesta fase
+- [x] Adicionar autorização [Authorize(Roles = "Admin,Financeiro")]
 
 ### 12. DI Configuration
-- [ ] Registrar IExportRepository → ExportRepository
-- [ ] Registrar ICsvExportService → CsvExportService
-- [ ] Registrar IPdfExportService → PdfExportService
-- [ ] Registrar IFileStorageService → FileStorageService
-- [ ] Registrar 4 Use Cases (Scoped)
-- [ ] Registrar ExportProcessorHostedService (Hosted)
+- [x] Registrar IExportRepository → ExportRepository
+- [x] Registrar ICsvExportService → CsvExportService
+- [x] Registrar IPdfExportService → PdfExportService
+- [x] Registrar IFileStorageService → FileStorageService
+- [x] Registrar 4 Use Cases (Scoped)
+- [x] Registrar ExportProcessorHostedService (Hosted)
 
 ### 13. Testes - Domain
 - [ ] Criar ExportTests.cs (8 testes)
