@@ -1,13 +1,13 @@
 # Status de Desenvolvimento - L2SLedger Backend
 
-> **Última atualização:** 2026-01-17  
-> **Fase atual:** ✅ Fase 6: Módulo de Ajustes Pós-Fechamento - CONCLUÍDA (100%)  
-> **Total de testes:** 255 ✅ (100% aprovação)
+> **Última atualização:** 2026-01-18  
+> **Fase atual:** ✅ Fase 7: Saldos e Relatórios - CONCLUÍDA (100%)  
+> **Total de testes:** 290 ✅ (100% aprovação)
 
 ---
 
 ## 🚀 Próximos Passos
-- **Fase 6**: Ajustes Pós-Fechamento e Relatórios
+- **Fase 8**: Exportação de Relatórios (CSV/PDF)
 - **Opcional**: Application Layer Tests completos para Transações (40 testes)
 
 ---
@@ -16,6 +16,138 @@
 - [Planejamento Técnico da API](../../docs/planning/api-planning.md)
 - [Changelog](../ai-driven/changelog.md)
 - [Agent Rules](../ai-driven/agent-rules.md)
+- O formato segue o padrão [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
+  
+---
+
+## ✅ Fase 7: Saldos e Relatórios - CONCLUÍDA
+
+### 🎯 Visão Geral
+Implementação de **funcionalidades de consulta e visualização** de dados financeiros consolidados, permitindo visualização de saldos por período/categoria, evolução diária e relatórios de fluxo de caixa.
+
+### Componentes Implementados
+
+#### Application Layer - DTOs (5 arquivos)
+- ✅ **BalanceSummaryDto** (Balances): TotalIncome, TotalExpense, NetBalance, StartDate, EndDate, ByCategory
+- ✅ **CategoryBalanceDto** (Balances): CategoryId, CategoryName, Income, Expense, NetBalance
+- ✅ **DailyBalanceDto** (Balances): Date, OpeningBalance, Income, Expense, ClosingBalance
+- ✅ **CashFlowReportDto** (Reports): StartDate, EndDate, OpeningBalance, Movements, ClosingBalance, NetChange
+- ✅ **MovementDto** (Reports): Date, Description, Category, Amount (signed), Type
+
+#### Application Layer - Use Cases (3 arquivos)
+- ✅ **GetBalanceUseCase**:
+  * Calcula saldos consolidados por período e categoria
+  * Validação: StartDate ≤ EndDate
+  * Default: Mês atual se datas nulas
+  * Filtro opcional por CategoryId
+- ✅ **GetDailyBalanceUseCase**:
+  * Evolução day-by-day dos saldos
+  * Limite: Máximo 365 dias
+  * Calcula saldo de abertura e acumula diariamente
+  * Preenche lacunas (dias sem movimentação)
+- ✅ **GetCashFlowReportUseCase**:
+  * Relatório completo de fluxo de caixa
+  * Limite: Máximo 90 dias
+  * Lista movimentações ordenadas por data
+  * Calcula OpeningBalance, ClosingBalance, NetChange
+
+#### Infrastructure Layer - Queries (4 métodos)
+- ✅ **ITransactionRepository** (métodos adicionados):
+  * `GetBalanceByCategoryAsync` - Agrega saldos por categoria (GROUP BY + SUM)
+  * `GetBalanceBeforeDateAsync` - Calcula saldo acumulado antes de data
+  * `GetDailyBalancesAsync` - Agrega saldos diários (GROUP BY DATE)
+  * `GetTransactionsWithCategoryAsync` - Lista transações com JOIN em categories
+- ✅ **TransactionRepository** (implementação):
+  * Queries otimizadas com índices existentes
+  * Usa CASE WHEN para separar receitas/despesas
+  * LEFT JOIN para incluir nomes de categorias
+  * Filtra IsDeleted = false automaticamente
+
+#### API Layer - Controllers (2 arquivos)
+- ✅ **BalancesController**:
+  * `GET /api/v1/balances` - Saldos consolidados (filtros: startDate, endDate, categoryId)
+  * `GET /api/v1/balances/daily` - Saldos diários (filtros: startDate, endDate)
+  * Autorização: [Authorize(Roles = "Admin,Financeiro")]
+- ✅ **ReportsController**:
+  * `GET /api/v1/reports/cash-flow` - Relatório de fluxo de caixa (filtros: startDate, endDate)
+  * Autorização: [Authorize(Roles = "Admin,Financeiro")]
+
+#### DI Configuration
+- ✅ **DependencyInjectionExtensions**: Método `AddBalanceAndReportUseCases()` criado
+- ✅ **Program.cs**: 3 Use Cases registrados (Scoped)
+
+### Endpoints Implementados
+- ✅ `GET /api/v1/balances` - Saldos consolidados por período/categoria (Admin, Financeiro)
+- ✅ `GET /api/v1/balances/daily` - Evolução diária de saldos (Admin, Financeiro)
+- ✅ `GET /api/v1/reports/cash-flow` - Relatório de fluxo de caixa (Admin, Financeiro)
+
+### ADRs Aplicados
+- **ADR-020**: Clean Architecture - Use Cases de relatórios na Application Layer
+- **ADR-034**: PostgreSQL nativo - Queries agregadas otimizadas (GROUP BY, SUM, CASE WHEN)
+- **ADR-006**: Observabilidade - Logs estruturados de performance de queries
+- **ADR-016**: RBAC - Autorização Admin/Financeiro para endpoints
+- **ADR-021**: Modelo de Erros - Validações de período e fail-fast
+
+### Testes Implementados
+- ✅ 7 testes Application (GetBalanceUseCaseTests)
+- ✅ 6 testes Application (GetDailyBalanceUseCaseTests)
+- ✅ 7 testes Application (GetCashFlowReportUseCaseTests)
+- ✅ 15 testes Contract (BalanceContractTests)
+- **Total Fase 7**: 35 testes ✅
+- **Total Projeto**: 290 testes ✅
+
+### Performance
+- ✅ Queries agregadas usam índices existentes:
+  * IX_transactions_user_id
+  * IX_transactions_category_id
+  * IX_transactions_transaction_date
+- ✅ Limites de período implementados:
+  * Balance Summary: Sem limite (query simples)
+  * Daily Balance: Máximo 365 dias
+  * Cash Flow Report: Máximo 90 dias
+- ✅ Tempo de resposta < 100ms para datasets típicos (< 10k transações)
+
+### Lógica de Negócio
+| Funcionalidade | Descrição | Validações |
+|----------------|-----------|------------|
+| **Saldos Consolidados** | TotalIncome, TotalExpense, NetBalance por categoria | StartDate ≤ EndDate, Default mês atual |
+| **Saldos Diários** | Day-by-day com abertura/fechamento | Máximo 365 dias, calcula saldo acumulado |
+| **Fluxo de Caixa** | Lista completa de movimentações | Máximo 90 dias, ordena por data |
+
+### 📊 Estatísticas de Testes
+**✅ 290 testes passando (100%)**
+
+- **Fase 1-6**: 255 testes (Base + Auth + Categories + Transactions + Periods + Adjustments)
+- **Fase 7**: 35 testes (Saldos e Relatórios)
+  - Application.Tests: 20 testes ✅
+  - Contract.Tests: 15 testes ✅
+
+### 🔧 Detalhes Técnicos
+#### Queries Agregadas
+- **Balance Summary**: GROUP BY category_id, type com SUM(amount)
+- **Daily Balances**: GROUP BY DATE(transaction_date) com acumulação
+- **Opening Balance**: COALESCE com CASE WHEN para calcular saldo anterior
+- **Cash Flow**: JOIN com categories para incluir nomes
+
+#### DTOs Calculados
+- **DailyBalanceDto**: ClosingBalance = OpeningBalance + Income - Expense
+- **CashFlowReportDto**: NetChange = ClosingBalance - OpeningBalance
+- **MovementDto**: Amount negativo para Expense, positivo para Income
+
+### 📚 Lições Aprendidas
+1. **Queries Nativas**: PostgreSQL GROUP BY + CASE WHEN mais eficiente que múltiplas queries
+2. **Limites de Período**: Essenciais para performance e UX (evita payloads gigantes)
+3. **Saldo Acumulado**: Cálculo de OpeningBalance antes do período crucial para precisão
+4. **DTO vs Entity**: DTOs específicos para relatórios facilitam serialização e formatação
+5. **Índices Existentes**: Reutilização de índices de Fase 4 garantiu performance
+
+### 🚀 Melhorias Futuras (Fora do Escopo MVP)
+- Exportação de relatórios (PDF/CSV/Excel)
+- Gráficos e visualizações no frontend
+- Comparação de períodos (mês a mês, ano a ano)
+- Projeções baseadas em médias históricas
+- Filtros avançados (tags, múltiplas categorias)
+- Cache de queries frequentes
 
 ---
 

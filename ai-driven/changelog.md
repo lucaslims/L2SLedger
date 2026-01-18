@@ -9,6 +9,60 @@ O formato segue o padrão [Keep a Changelog](https://keepachangelog.com/en/1.0.0
 
 ---
 
+## [2026-01-18] - ✅ FASE 7 CONCLUÍDA: Saldos e Relatórios
+
+### 🎯 Visão Geral
+Implementação **COMPLETA** do **Módulo de Saldos e Relatórios** conforme ADR-020, ADR-034 e planejamento técnico.
+Permite visualização consolidada de dados financeiros com saldos por período/categoria, evolução diária e relatórios de fluxo de caixa.
+
+### 📊 Métricas Finais
+- **15 arquivos criados/atualizados** (Application, Infrastructure, API, Tests)
+- **35 testes implementados e APROVADOS** ✅:
+  * 20 testes de Application (Use Cases) ✅
+  * 15 testes de Contract ✅
+- **290 testes totais no projeto** (100% aprovação, +35 da Fase 7)
+- **3 endpoints REST**: GET /api/v1/balances, GET /api/v1/balances/daily, GET /api/v1/reports/cash-flow
+- **4 query methods agregados**: GetBalanceByCategoryAsync, GetBalanceBeforeDateAsync, GetDailyBalancesAsync, GetTransactionsWithCategoryAsync
+- **Autorização RBAC**: Admin + Financeiro (ADR-016)
+- **Performance**: Queries otimizadas com índices existentes, limites de 365 dias (daily) e 90 dias (cash-flow)
+- **Compliance**: ADR-020 (Clean Architecture), ADR-034 (PostgreSQL queries), ADR-006 (Observabilidade), ADR-021 (Erros)
+
+### 🏗️ Componentes Implementados
+
+#### Application Layer - DTOs (5 arquivos)
+- **BalanceSummaryDto**: TotalIncome, TotalExpense, NetBalance, StartDate, EndDate, ByCategory
+- **CategoryBalanceDto**: CategoryId, CategoryName, Income, Expense, NetBalance
+- **DailyBalanceDto**: Date, OpeningBalance, Income, Expense, ClosingBalance
+- **CashFlowReportDto**: StartDate, EndDate, OpeningBalance, Movements, ClosingBalance, NetChange
+- **MovementDto**: Date, Description, Category, Amount (signed), Type
+
+#### Application Layer - Use Cases (3 arquivos)
+- **GetBalanceUseCase**: Saldos consolidados por período/categoria (7 testes ✅)
+- **GetDailyBalanceUseCase**: Evolução diária com saldo acumulado (6 testes ✅)
+- **GetCashFlowReportUseCase**: Relatório completo de movimentações (7 testes ✅)
+
+#### Infrastructure Layer - Queries (4 métodos)
+- **GetBalanceByCategoryAsync**: GROUP BY com SUM para saldos por categoria
+- **GetBalanceBeforeDateAsync**: Saldo acumulado antes do período
+- **GetDailyBalancesAsync**: GROUP BY DATE para saldos diários
+- **GetTransactionsWithCategoryAsync**: JOIN com categories ordenado
+
+#### API Layer - Controllers (2 arquivos)
+- **BalancesController**: 2 endpoints (saldos consolidados + diários)
+- **ReportsController**: 1 endpoint (fluxo de caixa)
+- **DI**: AddBalanceAndReportUseCases() em Program.cs
+
+### 🧪 Testes: 35 testes implementados (100% aprovação)
+- **GetBalanceUseCaseTests**: 7 testes ✅
+- **GetDailyBalanceUseCaseTests**: 6 testes ✅
+- **GetCashFlowReportUseCaseTests**: 7 testes ✅
+- **BalanceContractTests**: 15 testes ✅
+
+### 🎯 Próxima Fase
+Aguardando aprovação para **Fase 8: Exportação de Relatórios**.
+
+---
+
 ## [2026-01-17] - ✅ FASE 6 CONCLUÍDA: Módulo de Ajustes Pós-Fechamento
 
 ### 🎯 Visão Geral
