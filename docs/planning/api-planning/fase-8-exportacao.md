@@ -1177,10 +1177,10 @@ public class ExportsController : ControllerBase
 - [x] Criar DTOs/Exports/GetExportsResponse.cs (4 propriedades)
 
 ### 4. Application Layer - Interfaces
-- [ ] Criar Interfaces/IExportRepository.cs (7 métodos)
-- [ ] Criar Interfaces/ICsvExportService.cs (1 método)
-- [ ] Criar Interfaces/IPdfExportService.cs (1 método)
-- [ ] Criar Interfaces/IFileStorageService.cs (5 métodos)
+- [x] Criar Interfaces/IExportRepository.cs (7 métodos)
+- [x] Criar Interfaces/ICsvExportService.cs (1 método)
+- [x] Criar Interfaces/IPdfExportService.cs (1 método)
+- [x] Criar Interfaces/IFileStorageService.cs (5 métodos)
 
 ### 5. Application Layer - Use Cases
 - [ ] Criar UseCases/Exports/RequestExportUseCase.cs
