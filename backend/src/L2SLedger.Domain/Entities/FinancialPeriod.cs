@@ -46,7 +46,7 @@ public class FinancialPeriod : Entity
 
         Year = year;
         Month = month;
-        StartDate = new DateTime(year, month, 1, 0, 0, 0, DateTimeKind.Utc);
+        StartDate = new DateTime(year, month, 1, 0, 0, 0, DateTimeKind.Unspecified);
         EndDate = StartDate.AddMonths(1).AddDays(-1);
         Status = PeriodStatus.Open;
     }

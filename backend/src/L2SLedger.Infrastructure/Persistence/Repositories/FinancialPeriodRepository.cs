@@ -114,7 +114,7 @@ public class FinancialPeriodRepository : IFinancialPeriodRepository
     /// </summary>
     public async Task<FinancialPeriod?> GetPeriodForDateAsync(DateTime date, CancellationToken cancellationToken = default)
     {
-        var dateOnly = date.Date;
+        var dateOnly = DateTime.SpecifyKind(date.Date, DateTimeKind.Unspecified);
         
         return await _context.FinancialPeriods
             .FirstOrDefaultAsync(
