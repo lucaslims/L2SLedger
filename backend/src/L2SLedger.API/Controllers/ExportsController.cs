@@ -18,6 +18,8 @@ public class ExportsController : ControllerBase
     private readonly GetExportStatusUseCase _getExportStatusUseCase;
     private readonly GetExportByIdUseCase _getExportByIdUseCase;
     private readonly DownloadExportUseCase _downloadExportUseCase;
+    private readonly GetExportsUseCase _getExportsUseCase;
+    private readonly DeleteExportUseCase _deleteExportUseCase;
     private readonly ILogger<ExportsController> _logger;
 
     public ExportsController(
@@ -25,12 +27,16 @@ public class ExportsController : ControllerBase
         GetExportStatusUseCase getExportStatusUseCase,
         GetExportByIdUseCase getExportByIdUseCase,
         DownloadExportUseCase downloadExportUseCase,
+        GetExportsUseCase getExportsUseCase,
+        DeleteExportUseCase deleteExportUseCase,
         ILogger<ExportsController> logger)
     {
         _requestExportUseCase = requestExportUseCase;
         _getExportStatusUseCase = getExportStatusUseCase;
         _getExportByIdUseCase = getExportByIdUseCase;
         _downloadExportUseCase = downloadExportUseCase;
+        _getExportsUseCase = getExportsUseCase;
+        _deleteExportUseCase = deleteExportUseCase;
         _logger = logger;
     }
 
@@ -105,31 +111,24 @@ public class ExportsController : ControllerBase
     [ProducesResponseType(typeof(GetExportsResponse), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetExports([FromQuery] GetExportsRequest request)
     {
-        // Nota: Implementar GetExportsUseCase (não criado ainda)
-        // Por ora, retornar lista vazia
-        var response = new GetExportsResponse
-        {
-            Exports = new List<ExportDto>(),
-            TotalCount = 0,
-            Page = request.Page,
-            PageSize = request.PageSize
-        };
-
+        var response = await _getExportsUseCase.ExecuteAsync(request);
         return Ok(response);
     }
 
     /// <summary>
     /// Excluir uma exportação (soft delete).
+    /// Apenas Admin pode executar.
     /// </summary>
     /// <param name="id">ID da exportação</param>
     /// <returns>Confirmação de exclusão</returns>
     [HttpDelete("{id:guid}")]
+    [Authorize(Roles = "Admin")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<IActionResult> DeleteExport(Guid id)
     {
-        // Nota: Implementar DeleteExportUseCase (não criado ainda)
-        // Por ora, retornar NoContent
+        await _deleteExportUseCase.ExecuteAsync(id);
         _logger.LogInformation("Exportação {ExportId} marcada para exclusão", id);
         
         return NoContent();

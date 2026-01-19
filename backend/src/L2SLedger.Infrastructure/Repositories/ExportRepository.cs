@@ -45,8 +45,12 @@ public class ExportRepository : IExportRepository
             .Include(e => e.RequestedByUser)
             .AsQueryable();
 
-        // Usuário vê apenas suas exportações (Admin vê todas)
-        query = query.Where(e => e.RequestedByUserId == userId);
+        // Se userId for Guid.Empty, retorna todas (Admin)
+        // Caso contrário, filtra por userId
+        if (userId != Guid.Empty)
+        {
+            query = query.Where(e => e.RequestedByUserId == userId);
+        }
 
         if (status.HasValue)
         {
@@ -69,7 +73,11 @@ public class ExportRepository : IExportRepository
     {
         var query = _context.Exports.AsQueryable();
 
-        query = query.Where(e => e.RequestedByUserId == userId);
+        // Se userId for Guid.Empty, retorna todas (Admin)
+        if (userId != Guid.Empty)
+        {
+            query = query.Where(e => e.RequestedByUserId == userId);
+        }
 
         if (status.HasValue)
         {

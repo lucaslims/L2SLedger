@@ -144,6 +144,8 @@ public static class DependencyInjectionExtensions
         services.AddScoped<GetExportStatusUseCase>();
         services.AddScoped<GetExportByIdUseCase>();
         services.AddScoped<DownloadExportUseCase>();
+        services.AddScoped<GetExportsUseCase>();
+        services.AddScoped<DeleteExportUseCase>();
 
         return services;
     }
