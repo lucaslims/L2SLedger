@@ -15,7 +15,7 @@ namespace L2SLedger.API.Controllers;
 /// ADR-016: RBAC - Apenas Admin pode reabrir períodos.
 /// </summary>
 [ApiController]
-[Route("api/v1/periods")]
+[Route("api/v1/[controller]")]
 [Authorize]
 public class PeriodsController : ControllerBase
 {

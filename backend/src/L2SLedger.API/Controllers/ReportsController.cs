@@ -10,7 +10,7 @@ namespace L2SLedger.API.Controllers;
 /// Endpoints para geração de relatórios financeiros.
 /// </summary>
 [ApiController]
-[Route("api/v1/reports")]
+[Route("api/v1/[controller]")]
 [Authorize]
 public class ReportsController : ControllerBase
 {

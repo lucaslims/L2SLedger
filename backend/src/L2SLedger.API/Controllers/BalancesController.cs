@@ -10,7 +10,7 @@ namespace L2SLedger.API.Controllers;
 /// Endpoints para consulta de saldos financeiros.
 /// </summary>
 [ApiController]
-[Route("api/v1/balances")]
+[Route("api/v1/[controller]")]
 [Authorize]
 public class BalancesController : ControllerBase
 {

@@ -12,7 +12,7 @@ namespace L2SLedger.API.Controllers;
 /// Conforme ADR-015 (Imutabilidade e Ajustes Pós-Fechamento).
 /// </summary>
 [ApiController]
-[Route("api/v1/adjustments")]
+[Route("api/v1/[controller]")]
 [Authorize]
 public class AdjustmentsController : ControllerBase
 {

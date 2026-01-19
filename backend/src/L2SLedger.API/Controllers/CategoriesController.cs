@@ -10,7 +10,7 @@ namespace L2SLedger.API.Controllers;
 /// Endpoints para gerenciamento de categorias financeiras.
 /// </summary>
 [ApiController]
-[Route("api/v1/categories")]
+[Route("api/v1/[controller]")]
 [Authorize]
 public class CategoriesController : ControllerBase
 {

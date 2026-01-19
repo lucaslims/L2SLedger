@@ -10,7 +10,7 @@ namespace L2SLedger.API.Controllers;
 /// Endpoints para gerenciamento de transações financeiras.
 /// </summary>
 [ApiController]
-[Route("api/v1/transactions")]
+[Route("api/v1/[controller]")]
 [Authorize]
 public class TransactionsController : ControllerBase
 {

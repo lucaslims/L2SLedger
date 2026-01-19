@@ -10,7 +10,7 @@ namespace L2SLedger.API.Controllers;
 /// Conforme ADR-017 (Exportação) e ADR-016 (RBAC).
 /// </summary>
 [ApiController]
-[Route("api/exports")]
+[Route("api/v1/[controller]")]
 [Authorize]
 public class ExportsController : ControllerBase
 {
