@@ -9,6 +9,156 @@ O formato segue o padrão [Keep a Changelog](https://keepachangelog.com/en/1.0.0
 
 ---
 
+## [2026-01-19] - ✅ FASE 8 CONCLUÍDA: Exportação de Relatórios (100%)
+
+### 🎯 Visão Geral
+Implementação **COMPLETA** do **Módulo de Exportação** conforme ADR-017, ADR-020 e planejamento técnico.
+Sistema permite exportar transações em CSV/PDF com processamento assíncrono via Background Service.
+
+### 📊 Métricas Finais
+- **31 arquivos criados** (Domain, Application, Infrastructure, API)
+- **45 testes novos** ✅ (10 Domain + 25 Application + 10 Contract)
+- **335 testes totais** ✅ (100% aprovação - nenhuma regressão)
+- **6 endpoints REST**: POST /transactions, GET /{id}/status, GET /{id}, GET /{id}/download, GET /, DELETE /{id}
+- **6 Use Cases completos**: RequestExport, GetExportStatus, GetExportById, DownloadExport, GetExports, DeleteExport
+- **Background Processing**: Hosted Service executando a cada 10s, limite 5 exports concorrentes
+- **File Management**: Storage em exports/, auto-cleanup após 7 dias
+- **Autorização**: Validação de ownership (usuário vê próprias exportações, Admin vê todas)
+
+### 🏗️ Componentes Implementados
+
+#### Domain Layer (5 arquivos)
+- **ExportStatus enum**: Pending=1, Processing=2, Completed=3, Failed=4
+- **ExportFormat enum**: Csv=1, Pdf=2
+- **Export entity**: 15 propriedades + 4 métodos (MarkAsProcessing, MarkAsCompleted, MarkAsFailed, IsDownloadable)
+- **NotFoundException**: Exception para recursos não encontrados (ADR-021)
+- **AuthorizationException**: Exception para acesso não autorizado (ADR-021)
+
+#### Application Layer - DTOs (5 arquivos)
+- **ExportDto**: Representação completa do export (15 props)
+- **RequestExportRequest**: Format, StartDate, EndDate, CategoryId, TransactionType
+- **ExportStatusResponse**: Status + ProgressPercentage (0%/50%/100%)
+- **GetExportsRequest**: Paginação + filtros (Status, Format)
+- **GetExportsResponse**: Lista paginada
+
+#### Application Layer - Interfaces (4 arquivos)
+- **IExportRepository**: 7 métodos CRUD + filtering + pending queue
+- **ICsvExportService**: Retorna (FilePath, RecordCount)
+- **IPdfExportService**: Retorna (FilePath, RecordCount)
+- **IFileStorageService**: 5 métodos (Save, Read, Delete, Cleanup, GetSize)
+
+#### Application Layer - Use Cases (6 arquivos)
+- **RequestExportUseCase**: Cria Export com status Pending, serializa params JSON
+- **GetExportStatusUseCase**: Valida ownership, calcula progress (0%/50%/100%)
+- **GetExportByIdUseCase**: Valida ownership, retorna ExportDto completo
+- **DownloadExportUseCase**: Valida ownership + IsDownloadable, retorna (bytes, fileName, contentType)
+- **GetExportsUseCase**: Lista paginada com filtros, Admin vê todas (Guid.Empty pattern)
+- **DeleteExportUseCase**: Soft delete + file cleanup, Admin-only
+
+#### Infrastructure Layer - Repository (1 arquivo)
+- **ExportRepository**: 7 métodos implementados com EF Core
+  * Guid.Empty pattern para Admin queries (GetByFiltersAsync, CountByFiltersAsync)
+  * Include(RequestedByUser) para navigation properties
+  * Paginação e filtros por Status/Format
+
+#### Testes Criados (45 novos testes)
+
+**Domain Tests (10 testes)**
+- **ExportTests.cs**: 
+  * Constructor validation
+  * MarkAsProcessing (success/failure)
+  * MarkAsCompleted (success/failure)
+  * MarkAsFailed (success/failure)
+  * IsDownloadable (2 scenarios)
+
+**Application Tests (25 testes)**
+- **RequestExportUseCaseTests.cs** (4 testes):
+  * Valid request creates export
+  * With category filter
+  * Logs export creation
+  * Returns all required DTO fields
+
+- **GetExportStatusUseCaseTests.cs** (8 testes: 5 + Theory com 4 casos):
+  * Valid ID returns status
+  * Invalid ID throws NotFoundException
+  * Unauthorized user throws AuthorizationException
+  * Different statuses return correct progress (Theory)
+  * Admin can access other users' exports
+
+- **DownloadExportUseCaseTests.cs** (6 testes):
+  * Completed export returns file bytes
+  * Pending export throws BusinessRuleException
+  * Missing file throws exception
+  * Unauthorized user throws AuthorizationException
+  * PDF export returns correct content type
+  * Logs download operation
+
+- **GetExportByIdUseCaseTests.cs** (3 testes):
+  * Valid ID returns ExportDto
+  * Invalid ID throws NotFoundException
+  * Unauthorized user throws AuthorizationException
+
+- **GetExportsUseCaseTests.cs** (4 testes):
+  * With filters returns filtered exports
+  * Without filters returns all user exports
+  * Admin can see all exports (Guid.Empty)
+  * Logs query information
+
+**Contract Tests (10 testes)**
+- **ExportContractTests.cs**:
+  * ExportDto has all 15 required properties
+  * ExportDto serializes with camelCase
+  * RequestExportRequest has 5 properties
+  * RequestExportRequest serializes correctly
+  * ExportStatusResponse has 7 properties
+  * ExportStatusResponse serializes correctly
+  * GetExportsResponse has 4 properties
+  * GetExportsResponse serializes correctly
+  * GetExportsRequest has 4 properties
+  * Format and Status serialize as integers
+
+### 🛠️ Correções e Ajustes
+- **ExportFormat enum**: CSV → Csv, PDF → Pdf (seguindo convenção Pascal Case)
+- **IExportRepository.AddAsync**: Assinatura sem CancellationToken (padrão do projeto)
+- **Export.MarkAsCompleted**: Requer 3 parâmetros (filePath, fileSizeBytes, recordCount)
+- **User.DisplayName**: Propriedade correta usada nos DTOs
+- **Exception constructors**: Seguem padrão (code, message) conforme ADR-021
+
+### 📝 Documentação Atualizada
+- ✅ `docs/planning/api-planning/fase-8-exportacao.md`: Status "CONCLUÍDA", checklist 100%
+- ✅ `backend/STATUS.md`: Fase 8 100%, 335 testes totais
+- ✅ `ai-driven/changelog.md`: Esta entrada completa
+
+### 🔍 Validação
+- ✅ **Compilação**: `dotnet build` - Construir êxito em 3.5s
+- ✅ **Testes**: `dotnet test` - 335 testes passando (0 falhas, 0 ignorados)
+- ✅ **Regressões**: Zero - todos os 290 testes baseline mantidos
+- ✅ **Coverage**: Domain, Application, Infrastructure, API, Contract
+
+### 🎓 Lições Aprendidas
+1. **Padrão Guid.Empty**: Convenção elegante para "admin vê tudo" no repository
+2. **Moq Patterns**: Setup claro de mocks simplifica testes complexos
+3. **Theory Tests**: xUnit Theory reduz duplicação (1 teste = 4 casos)
+4. **Contract Tests**: Validam serialização JSON + estrutura de DTOs
+5. **Incremental Testing**: Build + test após cada arquivo garante feedback rápido
+
+### ⏱️ Tempo de Execução
+- **Planejamento**: Já realizado previamente
+- **Implementação Use Cases**: ~1h (GetExportsUseCase, DeleteExportUseCase)
+- **Implementação Testes**: ~3h (Domain, Application, Contract)
+- **Documentação**: ~30min
+- **Total**: ~4.5h (abaixo da estimativa de 8-10h)
+
+### 👥 Agentes Utilizados
+- **Master Agent**: Coordenação geral, validação, documentação
+- **GitHub Copilot**: Implementação de testes com Moq, correções de compilação
+
+### 🚀 Próximas Fases
+- **Fase 9**: Auditoria e Logs Detalhados (ADR-014)
+- **Fase 10**: Notificações e Alertas
+
+---
+
 ## [2026-01-18] - ✅ FASE 8 IMPLEMENTADA: Exportação de Relatórios (Core)
 
 ### 🎯 Visão Geral
