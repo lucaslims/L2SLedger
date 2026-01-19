@@ -2,7 +2,7 @@ using L2SLedger.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace L2SLedger.Infrastructure.Persistence.Configuration;
+namespace L2SLedger.Infrastructure.Persistence.Configurations;
 
 /// <summary>
 /// Configuração do Entity Framework Core para Adjustment.
