@@ -1,184 +1,216 @@
 # Status de Desenvolvimento - L2SLedger Backend
 
-> **Última atualização:** 2026-01-18  
-> **Fase atual:** 🔄 Fase 8: Exportação - CORE IMPLEMENTADO (80%)  
-> **Total de testes:** 290 ✅ (100% aprovação)
+> **Última atualização:** 2026-01-19  
+> **Fase atual:** ⏳ Fase 8: Exportação - EM ANDAMENTO (~56%)  
+> **Total de testes:** 290 ✅ (100% aprovação) | Meta Fase 8: 320 testes
 
 ---
 
 ## 🚀 Próximos Passos
-- **Fase 8 (pending)**: Testes específicos (30 testes: 8 Domain + 15 Application + 7 Contract)
-- **Fase 8 (pending)**: AutoMapper profile para Export
-- **Fase 8 (pending)**: Implementar GetExportsUseCase e DeleteExportUseCase
-- **Fase 8 (pending)**: Validação manual endpoints (Postman/curl)
-- **Fase 8 (pending)**: Validação Background Service funcionando
+- **Fase 8.1**: Concluir pendências (Use Cases, Endpoints, Testes) - ~7-8h
+- **Fase 9**: Auditoria e Logs Detalhados
+- **Fase 10**: Notificações e Alertas
 
 ---
 
 ## 🔗 Referências
 - [Planejamento Técnico da API](../../docs/planning/api-planning.md)
-- [Planejamento Fase 8](../../docs/planning/api-planning/complete/fase-8-exportacao.md)
+- [Planejamento Fase 8 (Original)](../../docs/planning/api-planning/complete/fase-8-exportacao.md)
+- [Pendências Fase 8.1](../../docs/planning/api-planning/fase-8.1-pendencias-exportacao.md) ⚠️ **ATIVO**
 - [Changelog](../ai-driven/changelog.md)
 - [Agent Rules](../ai-driven/agent-rules.md)
   
 ---
 
-## 🔄 Fase 8: Exportação de Relatórios - CORE IMPLEMENTADO
+## ⏳ Fase 8: Exportação de Relatórios - EM ANDAMENTO (~56%)
 
 ### 🎯 Visão Geral
-Implementação **CORE** de funcionalidade de exportação de transações em múltiplos formatos (CSV, PDF) com processamento assíncrono via Background Service. Sistema permite criar, acompanhar e fazer download de exportações.
+Implementação **PARCIAL** de funcionalidade de exportação de transações em múltiplos formatos (CSV, PDF) com processamento assíncrono via Background Service. Infraestrutura base implementada, pendentes: Use Cases finais, endpoints completos e suite de testes.
 
-### Status: 80% Completo
+### Status: 56% Completo (9.5/17 componentes)
 - ✅ Domain Layer (5 arquivos: entities, enums, exceptions)
-- ✅ Application Layer (15 arquivos: DTOs, interfaces, validators, use cases)
-- ✅ Infrastructure Layer (7 arquivos: services, repository, configuration, hosted service)
-- ✅ API Layer (3 arquivos: controller, DI, migration)
-- ✅ Compilação 100% sucesso
-- ✅ 290 testes mantidos (zero regressões)
-- ⏳ Testes específicos Fase 8 (30 planejados)
-- ⏳ AutoMapper profile para Export
-- ⏳ GetExportsUseCase e DeleteExportUseCase (endpoints stub implementados)
-- ⏳ Validação manual funcional
-- ⏳ Validação Background Service
+- ✅ Application Layer - DTOs (5 arquivos)
+- ✅ Application Layer - Interfaces (4 arquivos)
+- ✅ Application Layer - Validators (1 arquivo)
+- ⏳ Application Layer - Use Cases (4/6 implementados - 67%)
+- ⏳ Infrastructure Layer - Services (3/4 implementados - 75%)
+- ✅ Infrastructure Layer - Repository (1 arquivo)
+- ✅ Infrastructure Layer - Configuration (2 arquivos: mapping + migration)
+- ✅ Infrastructure Layer - Hosted Service (1 arquivo)
+- ⏳ API Layer - Controller (4/6 endpoints completos - 67%)
+- ✅ DI Configuration (completo)
+- ❌ Testes Domain (0/8 implementados)
+- ❌ Testes Application (0/15 implementados)
+- ❌ Testes Contract (0/7 implementados)
+- ⏳ Validação Manual (60% - endpoints básicos testados)
+
+### 📋 Pendências Críticas (Fase 8.1)
+
+#### 🎯 PRIORIDADE ALTA (3h)
+- ❌ **GetExportsUseCase** - Listar exportações com paginação e filtros
+- ❌ **DeleteExportUseCase** - Soft delete de exportações (Admin-only)
+- ❌ **ExportsController** - Completar endpoints:
+  - `GET /api/v1/exports` (stub - retorna lista vazia)
+  - `DELETE /api/v1/exports/{id}` (stub - retorna 204 sem lógica)
+
+#### 🎯 PRIORIDADE MÉDIA (5.5h)
+- ❌ **Testes Domain** - 8 testes (ExportTests.cs)
+- ❌ **Testes Application** - 15 testes (5 arquivos de Use Case tests)
+- ❌ **Testes Contract** - 7 testes (ExportContractTests.cs)
+
+#### 🎯 PRIORIDADE BAIXA (1-2h)
+- ⏳ **PdfExportService** - Substituir HTML por biblioteca PDF real (QuestPDF recomendado)
+
+**Estimativa Total**: 8-10 horas (7-8h crítico + 1-2h opcional)
+
+> 📖 **Detalhes completos**: Consulte [fase-8.1-pendencias-exportacao.md](../../docs/planning/api-planning/fase-8.1-pendencias-exportacao.md)
 
 ### Componentes Implementados
 
-#### Domain Layer (5 arquivos)
+#### Domain Layer (5 arquivos) - ✅ 100%
 - ✅ **ExportStatus enum**: Pending, Processing, Completed, Failed
 - ✅ **ExportFormat enum**: Csv, Pdf
 - ✅ **Export entity**:
   * 15 propriedades (ExportType, Format, Status, FilePath, FileSizeBytes, ParametersJson, etc.)
-  * 4 métodos (MarkAsProcessing, MarkAsCompleted, MarkAsFailed, IsDownloadable)
-  * Status transition validation (InvalidOperationException se transição inválida)
+  * Métodos: MarkAsProcessing(), MarkAsCompleted(), MarkAsFailed(), IsDownloadable()
+  * Validações: Status transitions com InvalidOperationException
   * Navigation property: RequestedByUser
 - ✅ **NotFoundException**: Exception para recursos não encontrados (ADR-021)
 - ✅ **AuthorizationException**: Exception para acesso não autorizado (ADR-021)
 
-#### Application Layer - DTOs (5 arquivos)
+#### Application Layer - DTOs (5 arquivos) - ✅ 100%
 - ✅ **ExportDto**: Representação completa (15 props: Id, Type, Format, Status, FilePath, Size, Params, User, Dates, Error, RecordCount)
 - ✅ **RequestExportRequest**: Format (1-2), StartDate, EndDate, CategoryId?, TransactionType?
 - ✅ **ExportStatusResponse**: Id, Status, ErrorMessage, ProgressPercentage, RequestedAt, CompletedAt, IsDownloadable
 - ✅ **GetExportsRequest**: Status?, Format?, Page=1, PageSize=20 (paginação)
 - ✅ **GetExportsResponse**: Exports[], TotalCount, Page, PageSize
 
-#### Application Layer - Interfaces (4 arquivos)
+#### Application Layer - Interfaces (4 arquivos) - ✅ 100%
 - ✅ **IExportRepository**: AddAsync, GetByIdAsync, GetByFiltersAsync, CountByFiltersAsync, GetPendingAsync, UpdateAsync, DeleteAsync
 - ✅ **ICsvExportService**: ExportTransactionsToCsvAsync retorna (FilePath, RecordCount)
 - ✅ **IPdfExportService**: ExportTransactionsToPdfAsync retorna (FilePath, RecordCount)
 - ✅ **IFileStorageService**: SaveExportFileAsync, ReadExportFileAsync, DeleteExportFileAsync, CleanupOldExportsAsync, GetFileSizeBytes
 
-#### Application Layer - Validators (1 arquivo)
+#### Application Layer - Validators (1 arquivo) - ✅ 100%
 - ✅ **RequestExportRequestValidator**:
   * Format deve estar entre 1-2 (Csv/Pdf)
   * StartDate ≤ EndDate
-  * Período máximo 365 dias
+  * Período máximo: 365 dias
   * TransactionType (se presente) entre 1-2 (Income/Expense)
 
-#### Application Layer - Use Cases (4 arquivos)
-- ✅ **RequestExportUseCase**:
+#### Application Layer - Use Cases (4/6 arquivos) - ⏳ 67%
+- ✅ **RequestExportUseCase** (COMPLETO):
   * Cria Export entity com status Pending
-  * Serializa parâmetros para JSON (JsonSerializer)
-  * Persiste no banco
+  * Valida formato, período (max 365 dias)
+  * Serializa parâmetros em JSON
   * Retorna ExportDto
-- ✅ **GetExportStatusUseCase**:
+- ✅ **GetExportStatusUseCase** (COMPLETO):
   * Valida ownership (user ou Admin)
-  * Calcula ProgressPercentage: 0% (Pending), 50% (Processing), 100% (Completed/Failed)
+  * Calcula ProgressPercentage (0%, 50%, 100%)
   * Retorna ExportStatusResponse (polling endpoint)
-- ✅ **GetExportByIdUseCase**:
+- ✅ **GetExportByIdUseCase** (COMPLETO):
   * Valida ownership (user ou Admin)
-  * Include(RequestedByUser) para navigation
+  * Include de RequestedByUser
   * Retorna ExportDto completo
-- ✅ **DownloadExportUseCase**:
+- ✅ **DownloadExportUseCase** (COMPLETO):
   * Valida ownership (user ou Admin)
-  * Valida IsDownloadable() (Status == Completed)
-  * Lê arquivo via IFileStorageService
-  * Determina contentType e fileName
+  * Verifica IsDownloadable()
+  * Lê arquivo via FileStorage
   * Retorna (bytes[], fileName, contentType)
+- ❌ **GetExportsUseCase** (STUB - lista vazia):
+  * Pendente: Listar com paginação e filtros
+  * Pendente: Ownership validation (Admin vê todas)
+  * Pendente: Mapear para GetExportsResponse
+- ❌ **DeleteExportUseCase** (STUB - retorna 204):
+  * Pendente: Soft delete via MarkAsDeleted()
+  * Pendente: Deletar arquivo físico
+  * Pendente: Validação Admin-only
 
-#### Infrastructure Layer - Services (4 arquivos)
-- ✅ **CsvExportService**:
+#### Infrastructure Layer - Services (3/4 arquivos) - ⏳ 75%
+- ✅ **CsvExportService** (COMPLETO):
   * Query transactions via ITransactionRepository.GetByFiltersAsync
-  * Gera CSV com headers: Date, Description, Category, Amount, Type
-  * EscapeCsvField method (handle commas, quotes, newlines)
-  * Salva via IFileStorageService
+  * Gera CSV com StringBuilder
+  * Headers: Date, Description, Category, Amount, Type
+  * Formatação de valores monetários
   * Retorna (filePath, recordCount)
-- ✅ **PdfExportService**:
+- ⏳ **PdfExportService** (FUNCIONAL - gera HTML):
   * Query transactions similar a CSV
-  * GenerateHtmlReport: HTML formatado com summary section e table
-  * CSS para coloração (income green, expense red)
-  * **Nota**: Atualmente salva como HTML (documentado para usar QuestPDF/iTextSharp em prod)
+  * ⚠️ Atualmente gera HTML formatado (não PDF real)
+  * Layout: Tabela, totais, formatação
+  * **Pendente**: Implementar biblioteca PDF real (QuestPDF recomendado)
   * Retorna (filePath, recordCount)
-- ✅ **FileStorageService**:
+- ✅ **FileStorageService** (COMPLETO):
   * Base directory: exports/ (criado se não existir)
-  * SaveExportFileAsync: Escreve bytes, loga tamanho
-  * ReadExportFileAsync: Lê ou FileNotFoundException
-  * DeleteExportFileAsync: Deleta se existe
-  * CleanupOldExportsAsync: Itera files, deleta se CreationTimeUtc < olderThan, retorna count
+  * SaveExportFileAsync: Salva com nome único
+  * ReadExportFileAsync: Lê bytes do arquivo
+  * DeleteExportFileAsync: Remove arquivo físico
+  * CleanupOldExportsAsync: Remove > 7 dias
   * GetFileSizeBytes: FileInfo.Length
-- ✅ **ExportRepository**:
+
+#### Infrastructure Layer - Repository (1 arquivo) - ✅ 100%
+- ✅ **ExportRepository** (COMPLETO):
   * AddAsync: Insere e SaveChanges
-  * GetByIdAsync: Include RequestedByUser navigation
-  * GetByFiltersAsync: Filtra userId (ownership), status, format; OrderByDescending(RequestedAt); paginação
-  * CountByFiltersAsync: Count com mesmos filtros (sem paginação)
-  * GetPendingAsync: Where Status == Pending, OrderBy(RequestedAt), Take(limit) - para Background Service
-  * UpdateAsync: Update e SaveChanges
+  * GetByIdAsync: Include RequestedByUser
+  * GetByFiltersAsync: Filtros dinâmicos + paginação
+  * CountByFiltersAsync: Para paginação
+  * GetPendingAsync: Limit 5, OrderBy RequestedAt
+  * UpdateAsync: SaveChanges
   * DeleteAsync: Soft delete via MarkAsDeleted()
 
-#### Infrastructure Layer - Configuration (2 arquivos)
+#### Infrastructure Layer - Configuration (2 arquivos) - ✅ 100%
 - ✅ **ExportConfiguration**: 
   * Entity Framework Core mapping
-  * ParametersJson como JSONB (PostgreSQL)
-  * 4 índices: RequestedByUserId, Status, RequestedAt, composite (Status + RequestedAt)
-  * FK para User com DeleteBehavior.Restrict
+  * JSONB para ParametersJson (PostgreSQL)
+  * FKs: RequestedByUser, ClosedByUser (Restrict)
+  * 4 índices: requested_by_user_id, status, requested_at, (status + requested_at)
   * Query filter para soft delete (!IsDeleted)
 - ✅ **Migration AddExports**:
   * Tabela exports com 17 colunas
-  * FK constraint para users
+  * Constraints e defaults configurados
   * 4 índices conforme configuration
 
-#### Infrastructure Layer - Background Service (1 arquivo)
-- ✅ **ExportProcessorHostedService**:
+#### Infrastructure Layer - Background Service (1 arquivo) - ✅ 100%
+- ✅ **ExportProcessorHostedService** (COMPLETO):
   * **ExecuteAsync**: Loop infinito com polling a cada 10s
-  * **ProcessPendingExportsAsync**: Busca até 5 exports Pending, processa em série
-  * **ProcessExportAsync**:
-    - Marca export como Processing
-    - Desserializa ParametersJson
-    - Executa CSV ou PDF service baseado em Format
-    - Obtém file size
-    - Marca como Completed com (filePath, size, recordCount) ou Failed com (errorMessage)
-  * **CleanupOldExportsAsync**: Remove files > 7 dias via IFileStorageService
-  * Logs estruturados em todas as etapas
+  * **ProcessPendingExportsAsync**: 
+    - Busca até 5 exportações pendentes
+    - Marca como Processing
+    - Chama CSV ou PDF service
+    - Marca como Completed ou Failed
+    - Logs de sucesso/erro
+  * **CleanupOldExportsAsync**: Remove arquivos > 7 dias
   * Try-catch para evitar crash do service
 
-#### API Layer (1 arquivo)
-- ✅ **ExportsController**:
-  * `POST /api/exports/transactions` → RequestExport (201 Created)
-  * `GET /api/exports/{id}/status` → GetExportStatus (200 OK)
-  * `GET /api/exports/{id}` → GetExportById (200 OK)
-  * `GET /api/exports/{id}/download` → DownloadExport (File download)
-  * `GET /api/exports` → GetExports (stub - lista vazia)
-  * `DELETE /api/exports/{id}` → DeleteExport (stub - 204 NoContent)
-  * [Authorize] em todos os endpoints
-  * Ownership validation em todos os Use Cases
+#### API Layer (1 arquivo) - ⏳ 67% (4/6 endpoints)
+- ⏳ **ExportsController**:
+  * ✅ `POST /api/v1/exports/transactions` → RequestExport (201 Created) - COMPLETO
+  * ✅ `GET /api/v1/exports/{id}/status` → GetExportStatus (200 OK) - COMPLETO
+  * ✅ `GET /api/v1/exports/{id}` → GetExportById (200 OK) - COMPLETO
+  * ✅ `GET /api/v1/exports/{id}/download` → DownloadExport (File) - COMPLETO
+  * ❌ `GET /api/v1/exports` → GetExports (STUB - retorna lista vazia)
+  * ❌ `DELETE /api/v1/exports/{id}` → DeleteExport (STUB - retorna 204 sem lógica)
+  * Autorização: [Authorize(Roles = "Admin,Financeiro")]
+  * Ownership validation em Use Cases completos
+  * Tratamento de erros semântico
 
-#### DI Configuration
+#### DI Configuration - ✅ 100%
 - ✅ **DependencyInjectionExtensions**:
   * `AddExportUseCases()`: 4 Use Cases registrados (Scoped)
-  * `AddRepositories()`: IExportRepository → ExportRepository (Scoped)
+  * Repositórios e services configurados
   * `AddInfrastructureServices()`: CSV, PDF, FileStorage (Scoped) + HostedService (Singleton)
 - ✅ **Program.cs**: AddExportUseCases() chamado na pipeline
 
-#### Database
+#### Database - ✅ 100%
 - ✅ **L2SLedgerDbContext**: DbSet<Export> Exports adicionado
-- ✅ **Migration**: AddExports criada e pronta para apply
+- ✅ **Migration**: AddExports criada e aplicada
 
-### Endpoints Implementados
-- ✅ `POST /api/exports/transactions` - Solicitar nova exportação (CSV/PDF)
-- ✅ `GET /api/exports/{id}/status` - Consultar status (polling para frontend)
-- ✅ `GET /api/exports/{id}` - Obter detalhes completos
-- ✅ `GET /api/exports/{id}/download` - Download do arquivo (somente Completed)
-- ⏳ `GET /api/exports` - Listar exportações (stub - retorna lista vazia)
-- ⏳ `DELETE /api/exports/{id}` - Excluir exportação (stub - retorna 204)
+### Endpoints Implementados (4/6 funcionais)
+- ✅ `POST /api/v1/exports/transactions` - Solicitar nova exportação (CSV/PDF) - **FUNCIONAL**
+- ✅ `GET /api/v1/exports/{id}/status` - Consultar status (polling para frontend) - **FUNCIONAL**
+- ✅ `GET /api/v1/exports/{id}` - Obter detalhes completos - **FUNCIONAL**
+- ✅ `GET /api/v1/exports/{id}/download` - Download do arquivo (CSV funcional, PDF gera HTML) - **PARCIALMENTE FUNCIONAL**
+- ❌ `GET /api/v1/exports` - Listar exportações com filtros - **STUB (retorna lista vazia)**
+- ❌ `DELETE /api/v1/exports/{id}` - Soft delete de exportação - **STUB (retorna 204 sem lógica)**
 
 ### ADRs Aplicados
 - **ADR-017**: Exportação com CSV/PDF, background jobs, file cleanup (7 dias)
@@ -189,12 +221,22 @@ Implementação **CORE** de funcionalidade de exportação de transações em m�
 - **ADR-029**: Soft delete pattern (ExportRepository.DeleteAsync chama MarkAsDeleted)
 - **ADR-034**: PostgreSQL features (JSONB para ParametersJson)
 
-### Testes Implementados
-- ⏳ 8 testes Domain (ExportTests) - planejados
-- ⏳ 15 testes Application (Use Case Tests) - planejados
-- ⏳ 7 testes Contract (Export Contract Tests) - planejados
-- **Total Fase 8**: 0/30 testes ⏳
-- **Total Projeto**: 290 testes ✅ (nenhuma regressão)
+### Testes Implementados (0/30)
+- ❌ **Domain Tests** (0/8):
+  - ExportTests.cs não criado
+  - Testes planejados: Constructor, MarkAsProcessing, MarkAsCompleted, MarkAsFailed, IsDownloadable, validações de transição
+- ❌ **Application Tests** (0/15):
+  - RequestExportUseCaseTests.cs não criado (4 testes planejados)
+  - GetExportStatusUseCaseTests.cs não criado (3 testes planejados)
+  - DownloadExportUseCaseTests.cs não criado (4 testes planejados)
+  - GetExportByIdUseCaseTests.cs não criado (2 testes planejados)
+  - GetExportsUseCaseTests.cs não criado (2 testes planejados)
+- ❌ **Contract Tests** (0/7):
+  - ExportContractTests.cs não criado
+  - Testes planejados: estrutura de DTOs, serialização, enums
+- **Total Fase 8**: 0/30 testes ❌
+- **Total Projeto**: 290 testes ✅ (baseline - nenhuma regressão)
+- **Meta Fase 8**: 320 testes (290 + 30)
 
 ### Performance & Limits
 - ✅ Export period: Máximo 365 dias por requisição
@@ -209,22 +251,56 @@ Implementação **CORE** de funcionalidade de exportação de transações em m�
 - ✅ Download authorization: IsDownloadable() valida Status == Completed
 - ✅ Input validation: FluentValidation em RequestExportRequest
 
-### Notas de Implementação
+### ✅ Próximos Passos para Concluir Fase 8
+
+#### 🎯 FASE 1: Use Cases + Controller (CRÍTICO) — ~3h
+1. ❌ Implementar **GetExportsUseCase** (1h)
+   - Buscar exportações via repository com filtros
+   - Aplicar ownership validation (Admin vê todas)
+   - Implementar paginação
+   - Mapear para GetExportsResponse
+2. ❌ Implementar **DeleteExportUseCase** (1h)
+   - Validar ownership (Admin-only)
+   - Soft delete via MarkAsDeleted()
+   - Deletar arquivo físico via FileStorage
+3. ❌ Atualizar **ExportsController** (1h)
+   - Integrar GetExportsUseCase no endpoint GET /exports
+   - Integrar DeleteExportUseCase no endpoint DELETE /exports/{id}
+   - Validação manual com Postman/curl
+
+#### 🎯 FASE 2: Testes Domain (IMPORTANTE) — ~1.5h
+4. ❌ Criar **ExportTests.cs** (8 testes)
+   - Constructor, MarkAsProcessing, MarkAsCompleted, MarkAsFailed
+   - IsDownloadable, validações de transição de status
+
+#### 🎯 FASE 3: Testes Application (IMPORTANTE) — ~3h
+5. ❌ Criar **RequestExportUseCaseTests.cs** (4 testes - 45min)
+6. ❌ Criar **GetExportStatusUseCaseTests.cs** (3 testes - 30min)
+7. ❌ Criar **DownloadExportUseCaseTests.cs** (4 testes - 45min)
+8. ❌ Criar **GetExportByIdUseCaseTests.cs** (2 testes - 30min)
+9. ❌ Criar **GetExportsUseCaseTests.cs** (2 testes - 30min)
+
+#### 🎯 FASE 4: Testes Contract (IMPORTANTE) — ~1h
+10. ❌ Criar **ExportContractTests.cs** (7 testes)
+
+#### 🎯 FASE 5: Validação Final (OBRIGATÓRIO) — ~1h
+11. ❌ Rodar `dotnet build` (verificar compilação)
+12. ❌ Rodar `dotnet test` (verificar 320 testes passando)
+13. ❌ Validação manual de todos os 6 endpoints
+14. ❌ Validar background processing (logs Hosted Service)
+15. ❌ Atualizar documentação (changelog.md)
+
+#### 🎯 FASE 6: Refinamento PDF (OPCIONAL) — ~1-2h
+16. ⏳ Implementar **PdfExportService** com biblioteca PDF real (QuestPDF)
+
+**Tempo Total Estimado**: 8-10 horas (7-8h crítico + 1-2h opcional)
+
+### 📝 Notas de Implementação
 1. **PDF Generation**: Atualmente salva HTML com formatação. Substituir por QuestPDF ou iTextSharp em produção para PDF real.
 2. **File Storage**: Local disk (exports/ directory). Migrar para cloud storage (AWS S3, Azure Blob) em produção.
 3. **Progress Calculation**: Simplificado (0/50/100%). Implementar cálculo granular baseado em record count se necessário.
-4. **Endpoints Stub**: `GET /api/exports` e `DELETE /api/exports/{id}` retornam respostas básicas. Implementar GetExportsUseCase e DeleteExportUseCase.
+4. **Endpoints Stub**: `GET /api/v1/exports` e `DELETE /api/v1/exports/{id}` retornam respostas básicas. Implementar GetExportsUseCase e DeleteExportUseCase.
 5. **AutoMapper**: Profile para Export não criado. Mapping manual em Use Cases (considerado OK para PoC).
-
-### Pendências
-- [ ] Criar 30 testes (8 Domain + 15 Application + 7 Contract)
-- [ ] Implementar GetExportsUseCase (listar com paginação)
-- [ ] Implementar DeleteExportUseCase (soft delete)
-- [ ] Criar AutoMapper profile para Export (opcional)
-- [ ] Validar endpoints manualmente (Postman/curl)
-- [ ] Validar Background Service processando exports
-- [ ] Aplicar migration AddExports em dev
-- [ ] Testar file cleanup após 7 dias
 
 ---
 
