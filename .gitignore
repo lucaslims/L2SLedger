@@ -148,8 +148,9 @@ serviceAccountKey.json
 *.crt
 *.p12
 *.pfx
-secrets/
-credentials/
+[Ss]ecrets/
+[Cc]redentials/
+[Kk]eys/
 
 # ----------------------------------------
 # Docker
