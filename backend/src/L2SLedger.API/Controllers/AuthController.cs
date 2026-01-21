@@ -1,11 +1,13 @@
 using System.Security.Claims;
 using L2SLedger.API.Contracts;
 using L2SLedger.Application.DTOs.Auth;
-using L2SLedger.Application.Interfaces;
 using L2SLedger.Application.UseCases.Auth;
 using L2SLedger.Domain.Exceptions;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using AppAuthService = L2SLedger.Application.Interfaces.IAuthenticationService;
 
 namespace L2SLedger.API.Controllers;
 
@@ -17,13 +19,13 @@ namespace L2SLedger.API.Controllers;
 [Route("api/v1/[controller]")]
 public class AuthController : ControllerBase
 {
-    private readonly IAuthenticationService _authService;
+    private readonly AppAuthService _authService;
     private readonly ILogger<AuthController> _logger;
     private const string AuthCookieName = "l2sledger-auth";
     private static readonly TimeSpan CookieExpiration = TimeSpan.FromDays(7);
 
     public AuthController(
-        IAuthenticationService authService,
+        AppAuthService authService,
         ILogger<AuthController> logger)
     {
         _authService = authService;
@@ -46,17 +48,26 @@ public class AuthController : ControllerBase
         {
             var response = await _authService.LoginAsync(request, cancellationToken);
 
-            // Criar cookie de autenticação (ADR-004)
-            var cookieOptions = new CookieOptions
+            // Criar ClaimsPrincipal e usar SignInAsync do ASP.NET Core (ADR-004)
+            var claims = new List<Claim>
             {
-                HttpOnly = true,  // Não acessível via JavaScript
-                Secure = true,    // Apenas HTTPS
-                SameSite = SameSiteMode.Lax,  // Proteção CSRF
-                Expires = DateTimeOffset.UtcNow.Add(CookieExpiration),
-                Path = "/"
+                new(ClaimTypes.NameIdentifier, response.User.Id.ToString()),
+                new(ClaimTypes.Email, response.User.Email),
+                new(ClaimTypes.Name, response.User.DisplayName)
             };
+            claims.AddRange(response.User.Roles.Select(r => new Claim(ClaimTypes.Role, r)));
 
-            Response.Cookies.Append(AuthCookieName, response.User.Id.ToString(), cookieOptions);
+            var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+            var principal = new ClaimsPrincipal(identity);
+
+            await HttpContext.SignInAsync(
+                CookieAuthenticationDefaults.AuthenticationScheme,
+                principal,
+                new AuthenticationProperties
+                {
+                    IsPersistent = true,
+                    ExpiresUtc = DateTimeOffset.UtcNow.Add(CookieExpiration)
+                });
 
             _logger.LogInformation("Login realizado com sucesso para usuário {UserId}", response.User.Id);
 
@@ -110,13 +121,16 @@ public class AuthController : ControllerBase
     [HttpPost("logout")]
     [Authorize]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
-    public IActionResult Logout()
+    public async Task<IActionResult> Logout()
     {
         var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
         
         _logger.LogInformation("Logout realizado para usuário {UserId}", userIdClaim);
 
-        // Remover cookie
+        // SignOut do esquema de autenticação
+        await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+        
+        // Remover cookie explicitamente (fallback)
         Response.Cookies.Delete(AuthCookieName);
 
         return NoContent();

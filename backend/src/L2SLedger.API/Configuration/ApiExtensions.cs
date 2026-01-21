@@ -108,9 +108,7 @@ public static class ApiExtensions
         // Configurar CORS
         app.UseCors("AllowFrontend");
 
-        // Middleware de autenticação customizado (ADR-002, ADR-004)
-        app.UseMiddleware<AuthenticationMiddleware>();
-
+        // Usar autenticação nativa do ASP.NET Core (ADR-002, ADR-004)
         app.UseAuthentication();
         app.UseAuthorization();
 
