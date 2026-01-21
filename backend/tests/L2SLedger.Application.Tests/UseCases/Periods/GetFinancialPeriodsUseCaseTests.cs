@@ -24,6 +24,21 @@ public class GetFinancialPeriodsUseCaseTests
             _mockMapper.Object);
     }
 
+    private static FinancialPeriodDto CreateDto(FinancialPeriod p, string status = "Open") => new()
+    {
+        Id = p.Id,
+        Year = p.Year,
+        Month = p.Month,
+        PeriodName = p.GetPeriodName(),
+        StartDate = p.StartDate,
+        EndDate = p.EndDate,
+        Status = status,
+        TotalIncome = 0,
+        TotalExpense = 0,
+        NetBalance = 0,
+        CreatedAt = p.CreatedAt
+    };
+
     [Fact]
     public async Task ExecuteAsync_NoFilters_ReturnsAllPeriods()
     {
@@ -36,9 +51,7 @@ public class GetFinancialPeriodsUseCaseTests
             new FinancialPeriod(2025, 12)
         };
 
-        var periodDtos = periods.Select(p => new FinancialPeriodDto(
-            p.Id, p.Year, p.Month, p.GetPeriodName(), p.StartDate, p.EndDate,
-            "Open", null, null, null, null, null, null, null, 0, 0, 0, null, p.CreatedAt)).ToList();
+        var periodDtos = periods.Select(p => CreateDto(p)).ToList();
 
         _mockRepository
             .Setup(r => r.GetAllAsync(null, null, null, 1, 12, It.IsAny<CancellationToken>()))
@@ -68,9 +81,7 @@ public class GetFinancialPeriodsUseCaseTests
             new FinancialPeriod(2026, 2)
         };
 
-        var periodDtos = periods.Select(p => new FinancialPeriodDto(
-            p.Id, p.Year, p.Month, p.GetPeriodName(), p.StartDate, p.EndDate,
-            "Open", null, null, null, null, null, null, null, 0, 0, 0, null, p.CreatedAt)).ToList();
+        var periodDtos = periods.Select(p => CreateDto(p)).ToList();
 
         _mockRepository
             .Setup(r => r.GetAllAsync(2026, null, null, 1, 12, It.IsAny<CancellationToken>()))
@@ -99,9 +110,7 @@ public class GetFinancialPeriodsUseCaseTests
             new FinancialPeriod(2025, 1)
         };
 
-        var periodDtos = periods.Select(p => new FinancialPeriodDto(
-            p.Id, p.Year, p.Month, p.GetPeriodName(), p.StartDate, p.EndDate,
-            "Open", null, null, null, null, null, null, null, 0, 0, 0, null, p.CreatedAt)).ToList();
+        var periodDtos = periods.Select(p => CreateDto(p)).ToList();
 
         _mockRepository
             .Setup(r => r.GetAllAsync(null, 1, null, 1, 12, It.IsAny<CancellationToken>()))
@@ -129,9 +138,7 @@ public class GetFinancialPeriodsUseCaseTests
             new FinancialPeriod(2025, 12)
         };
 
-        var periodDtos = periods.Select(p => new FinancialPeriodDto(
-            p.Id, p.Year, p.Month, p.GetPeriodName(), p.StartDate, p.EndDate,
-            "Closed", null, null, null, null, null, null, null, 0, 0, 0, null, p.CreatedAt)).ToList();
+        var periodDtos = periods.Select(p => CreateDto(p, "Closed")).ToList();
 
         _mockRepository
             .Setup(r => r.GetAllAsync(null, null, PeriodStatus.Closed, 1, 12, It.IsAny<CancellationToken>()))
@@ -160,9 +167,7 @@ public class GetFinancialPeriodsUseCaseTests
             new FinancialPeriod(2025, 6)
         };
 
-        var periodDtos = periods.Select(p => new FinancialPeriodDto(
-            p.Id, p.Year, p.Month, p.GetPeriodName(), p.StartDate, p.EndDate,
-            "Open", null, null, null, null, null, null, null, 0, 0, 0, null, p.CreatedAt)).ToList();
+        var periodDtos = periods.Select(p => CreateDto(p)).ToList();
 
         _mockRepository
             .Setup(r => r.GetAllAsync(null, null, null, 2, 5, It.IsAny<CancellationToken>()))
@@ -195,9 +200,7 @@ public class GetFinancialPeriodsUseCaseTests
             new FinancialPeriod(2025, 12)
         };
 
-        var periodDtos = periods.Select(p => new FinancialPeriodDto(
-            p.Id, p.Year, p.Month, p.GetPeriodName(), p.StartDate, p.EndDate,
-            "Open", null, null, null, null, null, null, null, 0, 0, 0, null, p.CreatedAt)).ToList();
+        var periodDtos = periods.Select(p => CreateDto(p)).ToList();
 
         _mockRepository
             .Setup(r => r.GetAllAsync(null, null, null, 1, 12, It.IsAny<CancellationToken>()))

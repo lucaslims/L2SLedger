@@ -27,6 +27,30 @@ public class GetFinancialPeriodByIdUseCaseTests
             _mockMapper.Object);
     }
 
+    private static FinancialPeriodDto CreateDto(
+        FinancialPeriod p,
+        string status = "Open",
+        decimal totalIncome = 0,
+        decimal totalExpense = 0,
+        decimal netBalance = 0,
+        BalanceSnapshot? balanceSnapshot = null) => new()
+    {
+        Id = p.Id,
+        Year = p.Year,
+        Month = p.Month,
+        PeriodName = p.GetPeriodName(),
+        StartDate = p.StartDate,
+        EndDate = p.EndDate,
+        Status = status,
+        ClosedAt = p.ClosedAt,
+        ClosedByUserId = p.ClosedByUserId,
+        TotalIncome = totalIncome,
+        TotalExpense = totalExpense,
+        NetBalance = netBalance,
+        BalanceSnapshot = balanceSnapshot,
+        CreatedAt = p.CreatedAt
+    };
+
     [Fact]
     public async Task ExecuteAsync_ValidId_ReturnsPeriod()
     {
@@ -34,9 +58,7 @@ public class GetFinancialPeriodByIdUseCaseTests
         var periodId = Guid.NewGuid();
         var period = new FinancialPeriod(2026, 1);
 
-        var expectedDto = new FinancialPeriodDto(
-            period.Id, 2026, 1, "2026/01", period.StartDate, period.EndDate,
-            "Open", null, null, null, null, null, null, null, 0, 0, 0, null, period.CreatedAt);
+        var expectedDto = CreateDto(period);
 
         _mockRepository
             .Setup(r => r.GetByIdAsync(periodId, It.IsAny<CancellationToken>()))
@@ -116,10 +138,7 @@ public class GetFinancialPeriodByIdUseCaseTests
         // Close period with snapshot
         period.Close(Guid.NewGuid(), 5000m, 800m, snapshotJson);
 
-        var expectedDto = new FinancialPeriodDto(
-            period.Id, 2026, 1, "2026/01", period.StartDate, period.EndDate,
-            "Closed", period.ClosedAt, period.ClosedByUserId, null,
-            null, null, null, null, 5000m, 800m, 4200m, snapshot, period.CreatedAt);
+        var expectedDto = CreateDto(period, "Closed", 5000m, 800m, 4200m, snapshot);
 
         _mockRepository
             .Setup(r => r.GetByIdAsync(periodId, It.IsAny<CancellationToken>()))

@@ -34,15 +34,28 @@ public class CreateFinancialPeriodUseCaseTests
             _mockLogger.Object);
     }
 
+    private static FinancialPeriodDto CreateDto(FinancialPeriod p, string status = "Open") => new()
+    {
+        Id = p.Id,
+        Year = p.Year,
+        Month = p.Month,
+        PeriodName = p.GetPeriodName(),
+        StartDate = p.StartDate,
+        EndDate = p.EndDate,
+        Status = status,
+        TotalIncome = 0,
+        TotalExpense = 0,
+        NetBalance = 0,
+        CreatedAt = p.CreatedAt
+    };
+
     [Fact]
     public async Task ExecuteAsync_ValidRequest_ReturnsDto()
     {
         // Arrange
         var request = new CreatePeriodRequest(2026, 1);
         var period = new FinancialPeriod(2026, 1);
-        var expectedDto = new FinancialPeriodDto(
-            period.Id, 2026, 1, "2026/01", period.StartDate, period.EndDate,
-            "Open", null, null, null, null, null, null, null, 0, 0, 0, null, period.CreatedAt);
+        var expectedDto = CreateDto(period);
 
         _mockValidator
             .Setup(v => v.ValidateAsync(request, It.IsAny<CancellationToken>()))

@@ -9,7 +9,67 @@ O formato segue o padrão [Keep a Changelog](https://keepachangelog.com/en/1.0.0
 
 ---
 
-## [2026-01-19] - � Correções Críticas: Autenticação, AutoMapper, CORS e Data Protection
+## [2026-01-21] - 🔧 Correção 5: DateTime UTC para PostgreSQL/Npgsql
+
+### 🎯 Contexto
+Após execução das correções 1-4, foi identificado novo erro crítico nos logs relacionado a consultas de banco de dados com filtros de data. O endpoint `/api/v1/Reports/cash-flow` retornava HTTP 500 com erro: `Cannot write DateTime with Kind=Unspecified to PostgreSQL type 'timestamp with time zone'`.
+
+---
+
+### ✅ CORREÇÃO 5: Normalização de DateTime para UTC nas Queries
+
+#### 🔴 Problema Identificado
+- Erro: `System.ArgumentException: Cannot write DateTime with Kind=Unspecified to PostgreSQL type 'timestamp with time zone', only UTC is supported`
+- Causa: Uso de `.Date` em parâmetros DateTime retorna `Kind=Unspecified`
+- Npgsql 6+ requer `Kind=UTC` para colunas `timestamp with time zone`
+- **3 repositórios afetados** com **12 ocorrências** no total
+
+#### 📝 Solução Implementada
+
+**Método helper adicionado em cada repositório:**
+```csharp
+private static DateTime ToUtcDate(DateTime dateTime)
+{
+    return DateTime.SpecifyKind(dateTime.Date, DateTimeKind.Utc);
+}
+```
+
+**TransactionRepository.cs (7 correções):**
+- `GetByFiltersAsync`: startDate e endDate
+- `GetBalanceByCategoryAsync`: startDate e endDate
+- `GetBalanceBeforeDateAsync`: beforeDate
+- `GetDailyBalancesAsync`: startDate e endDate
+- `GetTransactionsWithCategoryAsync`: startDate e endDate
+
+**AdjustmentRepository.cs (2 correções):**
+- `GetByFiltersAsync`: startDate e endDate
+
+**FinancialPeriodRepository.cs (3 correções):**
+- `GetPeriodForDateAsync`: date, StartDate e EndDate
+- Corrigido: Era `DateTime.SpecifyKind(date.Date, DateTimeKind.Unspecified)` → agora `ToUtcDate(date)`
+
+#### 📋 Arquivos Modificados
+- `backend/src/L2SLedger.Infrastructure/Persistence/Repositories/TransactionRepository.cs`
+- `backend/src/L2SLedger.Infrastructure/Persistence/Repositories/AdjustmentRepository.cs`
+- `backend/src/L2SLedger.Infrastructure/Persistence/Repositories/FinancialPeriodRepository.cs`
+
+#### 🧪 Testes Atualizados
+- `GetFinancialPeriodsUseCaseTests.cs` - Helper `CreateDto` adicionado
+- `GetFinancialPeriodByIdUseCaseTests.cs` - Helper `CreateDto` adicionado
+- `CreateFinancialPeriodUseCaseTests.cs` - Helper `CreateDto` adicionado
+- `FinancialPeriodDtoTests.cs` - Sintaxe atualizada para object initializer
+
+#### ✅ Validação
+- Build: ✅ Sucesso
+- Testes: ✅ 54 testes passaram
+
+#### 📚 Referências
+- ADR-034: PostgreSQL como fonte única de dados
+- [api-fix-planning.md](docs/planning/api-planning/api-fix-planning.md) - Problema 5
+
+---
+
+## [2026-01-19] - 🔧 Correções Críticas: Autenticação, AutoMapper, CORS e Data Protection
 
 ### 🎯 Contexto
 Após análise dos logs da aplicação, foram identificados 4 problemas críticos que impediam o funcionamento adequado da API. Este registro documenta todas as correções implementadas seguindo o plano de correção aprovado em `docs/planning/api-planning/api-fix-planning.md`.

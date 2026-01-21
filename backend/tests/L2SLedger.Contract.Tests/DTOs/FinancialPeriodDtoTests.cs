@@ -33,27 +33,28 @@ public class FinancialPeriodDtoTests
     public void FinancialPeriodDto_ShouldSerializeToJson()
     {
         // Arrange
-        var dto = new FinancialPeriodDto(
-            Id: Guid.NewGuid(),
-            Year: 2026,
-            Month: 1,
-            PeriodName: "2026/01",
-            StartDate: new DateTime(2026, 1, 1),
-            EndDate: new DateTime(2026, 1, 31),
-            Status: "Open",
-            ClosedAt: null,
-            ClosedByUserId: null,
-            ClosedByUserName: null,
-            ReopenedAt: null,
-            ReopenedByUserId: null,
-            ReopenedByUserName: null,
-            ReopenReason: null,
-            TotalIncome: 5000.00m,
-            TotalExpense: 3000.00m,
-            NetBalance: 2000.00m,
-            BalanceSnapshot: null,
-            CreatedAt: DateTime.UtcNow
-        );
+        var dto = new FinancialPeriodDto
+        {
+            Id = Guid.NewGuid(),
+            Year = 2026,
+            Month = 1,
+            PeriodName = "2026/01",
+            StartDate = new DateTime(2026, 1, 1),
+            EndDate = new DateTime(2026, 1, 31),
+            Status = "Open",
+            ClosedAt = null,
+            ClosedByUserId = null,
+            ClosedByUserName = null,
+            ReopenedAt = null,
+            ReopenedByUserId = null,
+            ReopenedByUserName = null,
+            ReopenReason = null,
+            TotalIncome = 5000.00m,
+            TotalExpense = 3000.00m,
+            NetBalance = 2000.00m,
+            BalanceSnapshot = null,
+            CreatedAt = DateTime.UtcNow
+        };
 
         // Act
         var json = JsonSerializer.Serialize(dto);
@@ -83,27 +84,28 @@ public class FinancialPeriodDtoTests
             NetBalance: 2000.00m
         );
 
-        var dto = new FinancialPeriodDto(
-            Id: Guid.NewGuid(),
-            Year: 2026,
-            Month: 1,
-            PeriodName: "2026/01",
-            StartDate: new DateTime(2026, 1, 1),
-            EndDate: new DateTime(2026, 1, 31),
-            Status: "Closed",
-            ClosedAt: DateTime.UtcNow,
-            ClosedByUserId: Guid.NewGuid(),
-            ClosedByUserName: "Admin User",
-            ReopenedAt: null,
-            ReopenedByUserId: null,
-            ReopenedByUserName: null,
-            ReopenReason: null,
-            TotalIncome: 5000.00m,
-            TotalExpense: 3000.00m,
-            NetBalance: 2000.00m,
-            BalanceSnapshot: balanceSnapshot,
-            CreatedAt: DateTime.UtcNow
-        );
+        var dto = new FinancialPeriodDto
+        {
+            Id = Guid.NewGuid(),
+            Year = 2026,
+            Month = 1,
+            PeriodName = "2026/01",
+            StartDate = new DateTime(2026, 1, 1),
+            EndDate = new DateTime(2026, 1, 31),
+            Status = "Closed",
+            ClosedAt = DateTime.UtcNow,
+            ClosedByUserId = Guid.NewGuid(),
+            ClosedByUserName = "Admin User",
+            ReopenedAt = null,
+            ReopenedByUserId = null,
+            ReopenedByUserName = null,
+            ReopenReason = null,
+            TotalIncome = 5000.00m,
+            TotalExpense = 3000.00m,
+            NetBalance = 2000.00m,
+            BalanceSnapshot = balanceSnapshot,
+            CreatedAt = DateTime.UtcNow
+        };
 
         // Act
         var json = JsonSerializer.Serialize(dto);
