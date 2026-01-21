@@ -9,6 +9,239 @@ O formato segue o padrão [Keep a Changelog](https://keepachangelog.com/en/1.0.0
 
 ---
 
+## [2026-01-19] - � Correções Críticas: Autenticação, AutoMapper, CORS e Data Protection
+
+### 🎯 Contexto
+Após análise dos logs da aplicação, foram identificados 4 problemas críticos que impediam o funcionamento adequado da API. Este registro documenta todas as correções implementadas seguindo o plano de correção aprovado em `docs/planning/api-planning/api-fix-planning.md`.
+
+---
+
+### ✅ CORREÇÃO 1: Refatoração do Fluxo de Autenticação por Cookie
+
+#### 🔴 Problema Identificado
+- Login retornava 200 OK mas primeira request subsequente falhava com 401
+- Erro "Unprotect ticket failed" nos logs
+- Cookie era criado como plain text (userId) pelo AuthController
+- AuthenticationMiddleware executava SignInAsync em CADA request, criando conflito
+- ASP.NET Cookie Authentication esperava ticket criptografado, não texto puro
+
+#### 📝 Solução Implementada
+
+**AuthController.cs - Método Login:**
+- ❌ Removido: Criação manual de cookie plain text via `Response.Cookies.Append`
+- ✅ Adicionado: `HttpContext.SignInAsync` nativo do ASP.NET Core
+  - Claims: NameIdentifier (userId), Email, Name, Roles
+  - AuthenticationProperties: IsPersistent = true, ExpiresUtc = 7 dias
+  - Usa `CookieAuthenticationDefaults.AuthenticationScheme`
+
+**AuthController.cs - Método Logout:**
+- ✅ Adicionado: `HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme)`
+- ✅ Mantido: `Response.Cookies.Delete(AuthCookieName)` como fallback
+
+**ApiExtensions.cs:**
+- ❌ Removido: `app.UseMiddleware<AuthenticationMiddleware>()`
+- ✅ Mantida ordem correta: UseCors → UseAuthentication → UseAuthorization
+
+**AuthenticationMiddleware.cs:**
+- ℹ️ Arquivo mantido no repositório mas removido da pipeline
+- ℹ️ CookieAuthenticationHandler nativo gerencia tudo automaticamente
+
+#### 📋 Arquivos Modificados
+- `backend/src/L2SLedger.API/Controllers/AuthController.cs`
+- `backend/src/L2SLedger.API/Configuration/ApiExtensions.cs`
+
+#### ✅ Resultado Esperado
+- Login cria cookie criptografado nativo
+- Requests subsequentes autenticadas automaticamente na primeira tentativa
+- Sem erro "Unprotect ticket failed"
+
+---
+
+### ✅ CORREÇÃO 2: Configuração CORS Atualizada
+
+#### 🔴 Problema Identificado
+- Erro: "CORS policy execution failed"
+- Origem `https://localhost:7200` não estava permitida
+- Configuração permitia apenas `http://localhost:5174`
+- Testes via Swagger e arquivos `.http` falhavam
+
+#### 📝 Solução Implementada
+
+**appsettings.Development.json:**
+```json
+"AllowedOrigins": [
+  "http://localhost:5174",
+  "https://localhost:7200",
+  "http://localhost:7200"
+]
+```
+
+#### 📋 Arquivos Modificados
+- `backend/src/L2SLedger.API/appsettings.Development.json`
+
+#### ✅ Resultado Esperado
+- Requests do frontend (localhost:5174) funcionam
+- Requests do Swagger (localhost:7200) funcionam
+- Headers CORS retornados corretamente
+
+---
+
+### ✅ CORREÇÃO 3: FinancialPeriodDto para AutoMapper
+
+#### 🔴 Problema Identificado
+- Erro: "L2SLedger.Application.DTOs.Periods.FinancialPeriodDto needs to have a constructor with 0 args or only optional args"
+- DTO era record com construtor primário contendo 19 parâmetros obrigatórios
+- AutoMapper não consegue criar instâncias de records com construtor primário
+
+#### 📝 Solução Implementada
+
+**Conversão do DTO:**
+- ❌ Removido: `public record FinancialPeriodDto(params...)`
+- ✅ Adicionado: Formato com propriedades `{ get; init; }`
+- ✅ Usado `required` para 11 propriedades não-nulas
+- ✅ Mantidas 8 propriedades nullable sem `required`
+- ✅ Preservadas todas as 19 propriedades originais
+- ✅ Namespace, using statements e comentários XML mantidos
+
+#### 📋 Arquivos Modificados
+- `backend/src/L2SLedger.Application/DTOs/Periods/FinancialPeriodDto.cs`
+
+#### ✅ Resultado Esperado
+- AutoMapper mapeia corretamente de FinancialPeriod para FinancialPeriodDto
+- POST /api/v1/Periods cria período e retorna DTO
+- GET /api/v1/Periods lista períodos sem erro
+
+---
+
+### ✅ CORREÇÃO 4: Data Protection Configuration
+
+#### 🟡 Problema Identificado
+- Ausência de configuração de Data Protection
+- Chaves de criptografia regeneradas a cada reinício da aplicação
+- Cookies de sessão invalidados após restart
+
+#### 📝 Solução Implementada
+
+**AuthenticationExtensions.cs:**
+- ✅ Adicionado método `AddDataProtectionConfiguration`
+- ✅ Persistência de chaves em diretório:
+  - Development: `{CurrentDirectory}/keys`
+  - Production: `/app/keys`
+- ✅ ApplicationName definido como "L2SLedger"
+- ✅ Criação automática do diretório se não existir
+- ✅ Logging de inicialização
+
+**Program.cs:**
+- ✅ Adicionado: `builder.Services.AddDataProtectionConfiguration(builder.Environment)`
+- ✅ Posicionado após `AddCookieAuthenticationConfiguration`
+
+#### 📋 Arquivos Modificados
+- `backend/src/L2SLedger.API/Configuration/AuthenticationExtensions.cs`
+- `backend/src/L2SLedger.API/Program.cs`
+
+#### ✅ Resultado Esperado
+- Chaves persistidas no diretório configurado
+- Cookies permanecem válidos após reinício da aplicação
+- Sessões não são invalidadas por restart
+
+---
+
+### 📊 Resumo das Correções
+
+| # | Correção | Status | Prioridade | Impacto |
+|---|----------|--------|------------|---------|
+| 1 | Autenticação por Cookie | ✅ | 🔴 Crítica | Bloqueante |
+| 2 | Configuração CORS | ✅ | 🟡 Média | Dev experience |
+| 3 | AutoMapper FinancialPeriodDto | ✅ | 🔴 Crítica | Bloqueante |
+| 4 | Data Protection | ✅ | 🟡 Média | Estabilidade |
+
+---
+
+### 📋 ADRs Respeitados
+- ✅ **ADR-002**: Autenticação Firebase (fluxo completo)
+- ✅ **ADR-004**: Cookies seguros (HttpOnly, Secure, SameSite=Lax)
+- ✅ **ADR-020**: AutoMapper (uso correto com records)
+- ✅ **ADR-018**: CORS (configuração adequada)
+
+---
+
+### 🧪 Próximos Passos (Testes Necessários)
+
+**Após Correção 1:**
+- [ ] Login retorna 200 e define cookie
+- [ ] Request subsequente com cookie funciona na PRIMEIRA tentativa
+- [ ] Cookie persiste entre requests
+- [ ] Logout remove cookie corretamente
+- [ ] Endpoint `/auth/me` retorna dados do usuário autenticado
+
+**Após Correção 2:**
+- [ ] Requests do frontend (localhost:5174) funcionam
+- [ ] Requests do Swagger (localhost:7200) funcionam
+- [ ] Headers CORS são retornados corretamente
+
+**Após Correção 3:**
+- [ ] POST /api/v1/Periods cria período e retorna DTO
+- [ ] GET /api/v1/Periods lista períodos
+- [ ] Todos os endpoints de período funcionam
+
+**Após Correção 4:**
+- [ ] Reinício da aplicação mantém sessões válidas
+- [ ] Chaves são persistidas no diretório configurado
+
+---
+
+### 🔧 Ferramenta Utilizada
+- GitHub Copilot (Master Agent + Backend Specialist Agent)
+- Seguindo fluxo: Planejar → Aprovar → Executar
+- Plano de correção: `docs/planning/api-planning/api-fix-planning.md`
+
+---
+
+## [2026-01-19] - �🔧 Correção: Refatoração do Fluxo de Autenticação por Cookie
+
+### 🎯 Problema Identificado
+O fluxo de autenticação estava causando erro "Unprotect ticket failed" e 401 na primeira request após login devido a conflito entre criação manual de cookie e o middleware customizado:
+- ❌ `AuthController.Login` criava cookie plain text com userId
+- ❌ `AuthenticationMiddleware` executava `SignInAsync` em CADA request
+- ❌ ASP.NET Cookie Authentication esperava ticket criptografado, não texto puro
+
+### ✅ Solução Implementada
+
+#### 1. AuthController.cs - Método Login
+- ✅ **REMOVIDO**: Criação manual de cookie plain text
+- ✅ **ADICIONADO**: SignInAsync nativo do ASP.NET Core com ClaimsPrincipal
+  - Claims: NameIdentifier (userId), Email, Name, Roles
+  - IsPersistent = true, ExpiresUtc = 7 dias
+  - Usa `CookieAuthenticationDefaults.AuthenticationScheme`
+
+#### 2. AuthController.cs - Método Logout
+- ✅ **ADICIONADO**: `SignOutAsync` do esquema de autenticação
+- ✅ **MANTIDO**: `Response.Cookies.Delete` como fallback
+
+#### 3. ApiExtensions.cs
+- ✅ **REMOVIDO**: `app.UseMiddleware<AuthenticationMiddleware>()`
+- ✅ Mantida ordem correta: UseCors → UseAuthentication → UseAuthorization
+
+#### 4. AuthenticationMiddleware.cs
+- ℹ️ Arquivo mantido no repositório mas **removido da pipeline**
+- ℹ️ Cookie Authentication nativo do ASP.NET Core gerencia o fluxo automaticamente
+
+### 📋 ADRs Respeitados
+- ✅ **ADR-002**: Firebase como único IdP
+- ✅ **ADR-004**: Cookies HttpOnly, Secure, SameSite=Lax (configurados via Program.cs)
+
+### 🔍 Arquivos Modificados
+- [AuthController.cs](backend/src/L2SLedger.API/Controllers/AuthController.cs) - Login/Logout refatorados
+- [ApiExtensions.cs](backend/src/L2SLedger.API/Configuration/ApiExtensions.cs) - Middleware removido
+
+### 🎯 Resultado Esperado
+- ✅ Login cria cookie criptografado nativo do ASP.NET Core
+- ✅ Requests subsequentes validam cookie automaticamente via CookieAuthenticationHandler
+- ✅ Sem conflitos de SignInAsync múltiplos
+- ✅ Sem erros "Unprotect ticket failed"
+
+---
+
 ## [2026-01-19] - ✅ FASE 8.1 CONCLUÍDA: Validação e Testes Completos (100%)
 
 ### 🎯 Contexto
