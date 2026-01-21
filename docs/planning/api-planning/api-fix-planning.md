@@ -8,7 +8,7 @@
 
 ## 🎯 Resumo Executivo
 
-Após análise detalhada dos logs da aplicação e do código-fonte, foram identificados **4 problemas críticos** que precisam ser corrigidos para garantir o funcionamento adequado da API.
+Após análise detalhada dos logs da aplicação e do código-fonte, foram identificados **5 problemas críticos** que precisam ser corrigidos para garantir o funcionamento adequado da API.
 
 ---
 
@@ -282,14 +282,191 @@ builder.Services.AddDataProtection()
 
 ---
 
+### 🔴 PROBLEMA 5: DateTime Kind=Unspecified Incompatível com PostgreSQL
+
+**Sintomas Observados:**
+
+- Endpoint `/api/v1/Reports/cash-flow` retorna HTTP 500
+- Erro: `System.ArgumentException: Cannot write DateTime with Kind=Unspecified to PostgreSQL type 'timestamp with time zone', only UTC is supported`
+- Afeta relatórios de cash-flow e operações com datas
+
+**Causa Raiz Identificada:**
+
+Nos logs foi encontrado:
+
+```text
+System.ArgumentException: Cannot write DateTime with Kind=Unspecified to PostgreSQL type 'timestamp with time zone', only UTC is supported.
+   at Npgsql.Internal.Converters.DateTimeConverters.TimestampTzWriter.Write(...)
+   at L2SLedger.Infrastructure.Repositories.TransactionRepository.GetBalanceBeforeDateAsync(...)
+```
+
+O problema está presente em **3 repositórios**, onde o uso de `.Date` cria um `DateTime` com `Kind=Unspecified`:
+
+**TransactionRepository.cs (5 ocorrências):**
+```csharp
+// Linha 68 (GetByFiltersAsync) - USADO EM VARIÁVEL
+var startDateOnly = startDate.Value.Date;
+query = query.Where(t => t.TransactionDate >= startDateOnly);
+
+// Linha 73 (GetByFiltersAsync) - USADO EM VARIÁVEL
+var endDateOnly = endDate.Value.Date;
+query = query.Where(t => t.TransactionDate <= endDateOnly);
+
+// Linhas 100-101 (GetBalanceByCategoryAsync)
+&& t.TransactionDate >= startDate.Date
+&& t.TransactionDate <= endDate.Date
+
+// Linha 131 (GetBalanceBeforeDateAsync)
+&& t.TransactionDate < beforeDate.Date
+
+// Linhas 151-152 (GetDailyBalancesAsync)
+&& t.TransactionDate >= startDate.Date
+&& t.TransactionDate <= endDate.Date
+
+// Linha 196 (GetTransactionsWithCategoryAsync)
+&& t.TransactionDate >= startDate.Date && t.TransactionDate <= endDate.Date
+```
+
+**AdjustmentRepository.cs (2 ocorrências):**
+```csharp
+// Linha 73 (GetByFiltersAsync)
+var startDateOnly = startDate.Value.Date;
+query = query.Where(a => a.AdjustmentDate >= startDateOnly);
+
+// Linha 78 (GetByFiltersAsync)
+var endDateOnly = endDate.Value.Date;
+query = query.Where(a => a.AdjustmentDate <= endDateOnly);
+```
+
+**FinancialPeriodRepository.cs (1 ocorrência):**
+```csharp
+// Linha 118-121 (GetPeriodForDateAsync)
+var dateOnly = DateTime.SpecifyKind(date.Date, DateTimeKind.Unspecified);
+return await _context.FinancialPeriods
+    .FirstOrDefaultAsync(
+        p => dateOnly >= p.StartDate.Date && dateOnly <= p.EndDate.Date,
+        cancellationToken);
+```
+
+> ⚠️ **Nota Crítica:** O `FinancialPeriodRepository` já tenta usar `SpecifyKind`, mas define como `Unspecified` quando deveria ser `Utc`, e ainda usa `.Date` nas propriedades `p.StartDate.Date` e `p.EndDate.Date`.
+
+**Por que isso acontece:**
+
+1. O driver Npgsql para PostgreSQL requer que valores `DateTime` enviados para colunas `timestamp with time zone` tenham `Kind=UTC`
+2. A propriedade `.Date` de um `DateTime` retorna um novo `DateTime` com `Kind=Unspecified`
+3. Quando o EF Core tenta converter a query para SQL, o Npgsql rejeita o `DateTime` sem Kind definido
+
+---
+
+### 📌 Correção 5: Normalizar DateTime para UTC nas Queries
+
+**Arquivos Impactados:**
+
+- `backend/src/L2SLedger.Infrastructure/Persistence/Repositories/TransactionRepository.cs` (7 ocorrências)
+- `backend/src/L2SLedger.Infrastructure/Persistence/Repositories/AdjustmentRepository.cs` (2 ocorrências)
+- `backend/src/L2SLedger.Infrastructure/Persistence/Repositories/FinancialPeriodRepository.cs` (3 ocorrências)
+
+**Mudanças Propostas:**
+
+Criar método helper para conversão segura em cada repositório:
+
+```csharp
+private static DateTime ToUtcDate(DateTime dateTime)
+{
+    return DateTime.SpecifyKind(dateTime.Date, DateTimeKind.Utc);
+}
+```
+
+### TransactionRepository.cs
+
+**GetByFiltersAsync (linhas ~68, ~73):**
+```csharp
+if (startDate.HasValue)
+{
+    query = query.Where(t => t.TransactionDate >= ToUtcDate(startDate.Value));
+}
+
+if (endDate.HasValue)
+{
+    query = query.Where(t => t.TransactionDate <= ToUtcDate(endDate.Value));
+}
+```
+
+**GetBalanceByCategoryAsync (linhas ~100-101):**
+```csharp
+&& t.TransactionDate >= ToUtcDate(startDate)
+&& t.TransactionDate <= ToUtcDate(endDate)
+```
+
+**GetBalanceBeforeDateAsync (linha ~131):**
+```csharp
+&& t.TransactionDate < ToUtcDate(beforeDate)
+```
+
+**GetDailyBalancesAsync (linhas ~151-152):**
+```csharp
+&& t.TransactionDate >= ToUtcDate(startDate)
+&& t.TransactionDate <= ToUtcDate(endDate)
+```
+
+**GetTransactionsWithCategoryAsync (linha ~196):**
+```csharp
+&& t.TransactionDate >= ToUtcDate(startDate) && t.TransactionDate <= ToUtcDate(endDate)
+```
+
+### AdjustmentRepository.cs
+
+**GetByFiltersAsync (linhas ~73, ~78):**
+```csharp
+if (startDate.HasValue)
+{
+    query = query.Where(a => a.AdjustmentDate >= ToUtcDate(startDate.Value));
+}
+
+if (endDate.HasValue)
+{
+    query = query.Where(a => a.AdjustmentDate <= ToUtcDate(endDate.Value));
+}
+```
+
+### FinancialPeriodRepository.cs
+
+**GetPeriodForDateAsync (linhas ~118-121):**
+```csharp
+var dateOnly = ToUtcDate(date);
+
+return await _context.FinancialPeriods
+    .FirstOrDefaultAsync(
+        p => dateOnly >= ToUtcDate(p.StartDate) && dateOnly <= ToUtcDate(p.EndDate),
+        cancellationToken);
+```
+
+> ⚠️ **Nota:** No `FinancialPeriodRepository`, também precisamos aplicar `ToUtcDate` nas propriedades `StartDate` e `EndDate` pois elas também usam `.Date` internamente.
+
+**Alternativa Global (Mais Robusta):**
+
+Configurar o Npgsql para tratar `Unspecified` como UTC globalmente no `AppDbContext`:
+
+```csharp
+// No AppDbContext ou configuração
+AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
+```
+
+> ⚠️ **Nota:** A alternativa global é menos recomendada pois mascara o problema. A correção explícita é preferível.
+
+**Justificativa:** PostgreSQL com Npgsql 6+ requer conversão explícita para UTC em colunas `timestamp with time zone`.
+
+---
+
 ## 📊 Ordem de Execução Recomendada
 
 | Ordem | Correção | Prioridade | Complexidade | Impacto |
 | --- | --- | --- | --- | --- |
 | 1️⃣ | Correção 1 - Autenticação | 🔴 Crítica | Alta | Bloqueante |
 | 2️⃣ | Correção 3 - AutoMapper | 🔴 Crítica | Baixa | Bloqueante |
-| 3️⃣ | Correção 2 - CORS | 🟡 Média | Baixa | Dev experience |
-| 4️⃣ | Correção 4 - Data Protection | 🟡 Média | Baixa | Estabilidade |
+| 3️⃣ | Correção 5 - DateTime UTC | 🔴 Crítica | Baixa | Bloqueante |
+| 4️⃣ | Correção 2 - CORS | 🟡 Média | Baixa | Dev experience |
+| 5️⃣ | Correção 4 - Data Protection | 🟡 Média | Baixa | Estabilidade |
 
 ---
 
@@ -319,6 +496,16 @@ builder.Services.AddDataProtection()
 
 - [ ] Reinício da aplicação mantém sessões válidas
 - [ ] Chaves são persistidas no diretório configurado
+
+### Após Correção 5
+
+- [ ] GET /api/v1/Reports/cash-flow retorna 200 OK
+- [ ] GET /api/v1/Transactions com filtros de data retorna 200 OK
+- [ ] GET /api/v1/Adjustments com filtros de data retorna 200 OK
+- [ ] GET /api/v1/Periods/by-date retorna período correto
+- [ ] Relatórios com diferentes ranges de datas funcionam
+- [ ] Datas em diferentes timezones são tratadas corretamente
+- [ ] Não há erros de "DateTime Kind=Unspecified" nos logs
 
 ---
 
@@ -354,6 +541,10 @@ builder.Services.AddDataProtection()
 - `backend/src/L2SLedger.Application/Mappers/FinancialPeriodMappingProfile.cs`
 - `backend/src/L2SLedger.API/appsettings.Development.json`
 - `backend/src/L2SLedger.API/Configuration/ApiExtensions.cs`
+- `backend/src/L2SLedger.Infrastructure/Persistence/Repositories/TransactionRepository.cs`
+- `backend/src/L2SLedger.Infrastructure/Persistence/Repositories/AdjustmentRepository.cs`
+- `backend/src/L2SLedger.Infrastructure/Persistence/Repositories/FinancialPeriodRepository.cs`
+- `backend/src/L2SLedger.API/logs/l2sledger-202601211943.log`
 - `docs/adr/adr-002.md`
 - `docs/adr/adr-004.md`
 
@@ -362,16 +553,20 @@ builder.Services.AddDataProtection()
 ## 🚀 Próximos Passos
 
 1. ✅ **Aprovado** este plano de correção
-2. Acionar agente de execução backend para implementar correções
-3. Rodar testes automatizados
-4. Validar manualmente no ambiente de desenvolvimento
-5. Atualizar `ai-driven/changelog.md`
+2. ✅ Correções 1-4 implementadas (2026-01-19)
+3. ✅ Correção 5 implementada (2026-01-21)
+4. ⏳ Rodar testes automatizados completos
+5. ⏳ Validar manualmente no ambiente de desenvolvimento
+6. ✅ Atualizado `ai-driven/changelog.md`
 
 ---
 
 ## 📜 Histórico de Aprovação
 
 | Data | Ação | Responsável |
-|------|------| --- ------|
+|------|------|-------------|
 | 2026-01-19 | Criação do plano | AI Agent (Planner) |
 | 2026-01-19 | Aprovação | Owner |
+| 2026-01-19 | Implementação correções 1-4 | AI Agent (Executor) |
+| 2026-01-21 | Atualização com Problema 5 | AI Agent (Planner) |
+| 2026-01-21 | Implementação correção 5 | AI Agent (Executor) |

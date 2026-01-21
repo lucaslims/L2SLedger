@@ -17,6 +17,15 @@ public class TransactionRepository : ITransactionRepository
         _context = context;
     }
 
+    /// <summary>
+    /// Converte DateTime para UTC com Kind especificado.
+    /// Requerido pelo Npgsql 6+ para colunas timestamp with time zone.
+    /// </summary>
+    private static DateTime ToUtcDate(DateTime dateTime)
+    {
+        return DateTime.SpecifyKind(dateTime.Date, DateTimeKind.Utc);
+    }
+
     public async Task AddAsync(Transaction transaction, CancellationToken cancellationToken = default)
     {
         await _context.Transactions.AddAsync(transaction, cancellationToken);
@@ -63,14 +72,14 @@ public class TransactionRepository : ITransactionRepository
 
         if (startDate.HasValue)
         {
-            var startDateOnly = startDate.Value.Date;
-            query = query.Where(t => t.TransactionDate >= startDateOnly);
+            var startDateUtc = ToUtcDate(startDate.Value);
+            query = query.Where(t => t.TransactionDate >= startDateUtc);
         }
 
         if (endDate.HasValue)
         {
-            var endDateOnly = endDate.Value.Date;
-            query = query.Where(t => t.TransactionDate <= endDateOnly);
+            var endDateUtc = ToUtcDate(endDate.Value);
+            query = query.Where(t => t.TransactionDate <= endDateUtc);
         }
 
         // Contar total
@@ -94,11 +103,14 @@ public class TransactionRepository : ITransactionRepository
         Guid? categoryId = null,
         CancellationToken cancellationToken = default)
     {
+        var startDateUtc = ToUtcDate(startDate);
+        var endDateUtc = ToUtcDate(endDate);
+        
         var query = _context.Transactions
             .Where(t => t.UserId == userId 
                 && !t.IsDeleted
-                && t.TransactionDate >= startDate.Date
-                && t.TransactionDate <= endDate.Date);
+                && t.TransactionDate >= startDateUtc
+                && t.TransactionDate <= endDateUtc);
 
         if (categoryId.HasValue)
         {
@@ -125,10 +137,12 @@ public class TransactionRepository : ITransactionRepository
         DateTime beforeDate,
         CancellationToken cancellationToken = default)
     {
+        var beforeDateUtc = ToUtcDate(beforeDate);
+        
         var result = await _context.Transactions
             .Where(t => t.UserId == userId 
                 && !t.IsDeleted
-                && t.TransactionDate < beforeDate.Date)
+                && t.TransactionDate < beforeDateUtc)
             .GroupBy(t => t.Type)
             .Select(g => new { g.Key, Total = g.Sum(t => t.Amount) })
             .ToListAsync(cancellationToken);
@@ -145,11 +159,14 @@ public class TransactionRepository : ITransactionRepository
         DateTime endDate,
         CancellationToken cancellationToken = default)
     {
+        var startDateUtc = ToUtcDate(startDate);
+        var endDateUtc = ToUtcDate(endDate);
+        
         var results = await _context.Transactions
             .Where(t => t.UserId == userId 
                 && !t.IsDeleted
-                && t.TransactionDate >= startDate.Date
-                && t.TransactionDate <= endDate.Date)
+                && t.TransactionDate >= startDateUtc
+                && t.TransactionDate <= endDateUtc)
             .GroupBy(t => new { t.TransactionDate, t.Type })
             .Select(g => new 
             { 
@@ -188,12 +205,15 @@ public class TransactionRepository : ITransactionRepository
         DateTime endDate,
         CancellationToken cancellationToken = default)
     {
+        var startDateUtc = ToUtcDate(startDate);
+        var endDateUtc = ToUtcDate(endDate);
+        
         return await _context.Transactions
             .Include(t => t.Category)
             .Where(t => t.UserId == userId 
                 && !t.IsDeleted
-                && t.TransactionDate >= startDate.Date
-                && t.TransactionDate <= endDate.Date)
+                && t.TransactionDate >= startDateUtc
+                && t.TransactionDate <= endDateUtc)
             .OrderBy(t => t.TransactionDate)
             .ThenBy(t => t.CreatedAt)
             .ToListAsync(cancellationToken);

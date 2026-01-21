@@ -19,6 +19,15 @@ public class FinancialPeriodRepository : IFinancialPeriodRepository
     }
 
     /// <summary>
+    /// Converte DateTime para UTC com Kind especificado.
+    /// Requerido pelo Npgsql 6+ para colunas timestamp with time zone.
+    /// </summary>
+    private static DateTime ToUtcDate(DateTime dateTime)
+    {
+        return DateTime.SpecifyKind(dateTime.Date, DateTimeKind.Utc);
+    }
+
+    /// <summary>
     /// Recupera um período financeiro por seu identificador único.
     /// </summary>
     public async Task<FinancialPeriod?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
@@ -114,11 +123,11 @@ public class FinancialPeriodRepository : IFinancialPeriodRepository
     /// </summary>
     public async Task<FinancialPeriod?> GetPeriodForDateAsync(DateTime date, CancellationToken cancellationToken = default)
     {
-        var dateOnly = DateTime.SpecifyKind(date.Date, DateTimeKind.Unspecified);
+        var dateUtc = ToUtcDate(date);
         
         return await _context.FinancialPeriods
             .FirstOrDefaultAsync(
-                p => dateOnly >= p.StartDate.Date && dateOnly <= p.EndDate.Date,
+                p => dateUtc >= p.StartDate && dateUtc <= p.EndDate,
                 cancellationToken);
     }
 }

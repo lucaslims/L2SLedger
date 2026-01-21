@@ -17,6 +17,15 @@ public class AdjustmentRepository : IAdjustmentRepository
         _context = context;
     }
 
+    /// <summary>
+    /// Converte DateTime para UTC com Kind especificado.
+    /// Requerido pelo Npgsql 6+ para colunas timestamp with time zone.
+    /// </summary>
+    private static DateTime ToUtcDate(DateTime dateTime)
+    {
+        return DateTime.SpecifyKind(dateTime.Date, DateTimeKind.Utc);
+    }
+
     public async Task AddAsync(Adjustment adjustment, CancellationToken cancellationToken = default)
     {
         await _context.Adjustments.AddAsync(adjustment, cancellationToken);
@@ -69,14 +78,14 @@ public class AdjustmentRepository : IAdjustmentRepository
 
         if (startDate.HasValue)
         {
-            var startDateOnly = startDate.Value.Date;
-            query = query.Where(a => a.AdjustmentDate >= startDateOnly);
+            var startDateUtc = ToUtcDate(startDate.Value);
+            query = query.Where(a => a.AdjustmentDate >= startDateUtc);
         }
 
         if (endDate.HasValue)
         {
-            var endDateOnly = endDate.Value.Date;
-            query = query.Where(a => a.AdjustmentDate <= endDateOnly);
+            var endDateUtc = ToUtcDate(endDate.Value);
+            query = query.Where(a => a.AdjustmentDate <= endDateUtc);
         }
 
         if (createdByUserId.HasValue)
