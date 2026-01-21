@@ -1,6 +1,7 @@
 using FirebaseAdmin;
 using Google.Apis.Auth.OAuth2;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.DataProtection;
 using Serilog;
 
 namespace L2SLedger.API.Configuration;
@@ -62,6 +63,35 @@ public static class AuthenticationExtensions
             });
 
         services.AddAuthorization();
+
+        return services;
+    }
+
+    /// <summary>
+    /// Configura Data Protection para persistir chaves de criptografia.
+    /// Garante que cookies permanecem válidos após reinício da aplicação.
+    /// Conforme ADR-004 (Segurança de Cookies).
+    /// </summary>
+    public static IServiceCollection AddDataProtectionConfiguration(
+        this IServiceCollection services,
+        IWebHostEnvironment environment)
+    {
+        var keysPath = environment.IsDevelopment()
+            ? Path.Combine(Directory.GetCurrentDirectory(), "keys")
+            : "/app/keys";
+
+        var keysDirectory = new DirectoryInfo(keysPath);
+        if (!keysDirectory.Exists)
+        {
+            keysDirectory.Create();
+            Log.Information("Diretório de chaves Data Protection criado: {KeysPath}", keysPath);
+        }
+
+        services.AddDataProtection()
+            .PersistKeysToFileSystem(keysDirectory)
+            .SetApplicationName("L2SLedger");
+
+        Log.Information("Data Protection configurado com persistência em: {KeysPath}", keysPath);
 
         return services;
     }

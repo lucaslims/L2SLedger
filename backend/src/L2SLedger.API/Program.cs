@@ -41,6 +41,9 @@ try
     // Configurar autenticação e autorização (ADR-001, ADR-002, ADR-004)
     builder.Services.AddCookieAuthenticationConfiguration();
 
+    // Configurar Data Protection para persistir chaves de criptografia (ADR-004)
+    builder.Services.AddDataProtectionConfiguration(builder.Environment);
+
     // Configurar Swagger/OpenAPI
     builder.Services.AddSwaggerConfiguration();
 
