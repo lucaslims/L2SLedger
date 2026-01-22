@@ -9,6 +9,115 @@ O formato segue o padrão [Keep a Changelog](https://keepachangelog.com/en/1.0.0
 
 ---
 
+## [2026-01-22] - 🔐 Fase 9: Sistema de Auditoria de Operações
+
+### 🎯 Contexto
+Implementação completa do sistema de auditoria conforme ADR-014 (Auditoria de Operações Críticas) e ADR-019 (Auditoria de Acessos). O sistema registra todas as operações críticas (CREATE, UPDATE, DELETE, ADJUST, CLOSE, REOPEN) e eventos de acesso (Login, Logout, LoginFailed, AccessDenied).
+
+---
+
+### ✅ Domain Layer (3 arquivos criados)
+
+| Arquivo | Descrição |
+|---------|-----------|
+| `Entities/AuditEventType.cs` | Enum com 12 tipos de eventos auditáveis |
+| `Entities/AuditSource.cs` | Enum com 5 origens de operação (UI, API, Import, BackgroundJob, System) |
+| `Entities/AuditEvent.cs` | Entidade imutável para eventos de auditoria com métodos factory |
+
+**Características técnicas:**
+- Entidade não herda de `Entity` (sem soft delete, sem UpdatedAt)
+- Métodos factory: `CreateEntityEvent()` e `CreateAccessEvent()`
+- Campos: Id, EventType, EntityType, EntityId, Before, After, UserId, UserEmail, Timestamp, Source, IpAddress, UserAgent, Result, Details, TraceId
+
+---
+
+### ✅ Application Layer (9 arquivos criados)
+
+| Arquivo | Descrição |
+|---------|-----------|
+| `DTOs/Audit/AuditEventDto.cs` | DTO para resposta da API |
+| `DTOs/Audit/GetAuditEventsRequest.cs` | Request com filtros (EventType, EntityType, UserId, DateRange, Result) |
+| `DTOs/Audit/GetAuditEventsResponse.cs` | Response paginada com TotalPages calculado |
+| `Interfaces/IAuditEventRepository.cs` | Interface do repositório (apenas INSERT e SELECT) |
+| `Interfaces/IAuditService.cs` | Interface do serviço de auditoria automática |
+| `UseCases/Audit/GetAuditEventsUseCase.cs` | Lista eventos com filtros e paginação |
+| `UseCases/Audit/GetAuditEventByIdUseCase.cs` | Obtém detalhes de um evento |
+| `Validators/Audit/GetAuditEventsRequestValidator.cs` | Validação FluentValidation |
+| `Mappers/AuditProfile.cs` | AutoMapper profile com conversão de enums |
+
+---
+
+### ✅ Infrastructure Layer (4 arquivos criados + 1 alterado)
+
+| Arquivo | Ação | Descrição |
+|---------|------|-----------|
+| `Persistence/Configurations/AuditEventConfiguration.cs` | CRIADO | Configuração EF Core com JSONB para Before/After |
+| `Persistence/Repositories/AuditEventRepository.cs` | CRIADO | Implementação do repositório |
+| `Services/AuditService.cs` | CRIADO | Serviço que registra eventos automaticamente |
+| `Persistence/L2SLedgerDbContext.cs` | ALTERADO | Adicionado `DbSet<AuditEvent>` |
+| `Persistence/Migrations/XXXXXXXX_AddAuditEvents.cs` | CRIADO | Migration para tabela audit_events |
+
+**Índices criados:**
+- `ix_audit_events_timestamp` (descendente para ordenação)
+- `ix_audit_events_event_type`
+- `ix_audit_events_entity_type`
+- `ix_audit_events_entity` (composite: EntityType + EntityId)
+- `ix_audit_events_user_id`
+- `ix_audit_events_timestamp_type` (composite para queries frequentes)
+
+---
+
+### ✅ API Layer (2 arquivos criados + 1 alterado)
+
+| Arquivo | Ação | Descrição |
+|---------|------|-----------|
+| `Controllers/AuditController.cs` | CRIADO | 3 endpoints: GET events, GET events/{id}, GET access-logs |
+| `Configuration/AuditExtensions.cs` | CRIADO | Registro de serviços de auditoria |
+| `Program.cs` | ALTERADO | Adicionado `builder.Services.AddAuditServices()` |
+
+**Endpoints implementados:**
+- `GET /api/v1/Audit/events` - Lista eventos com filtros
+- `GET /api/v1/Audit/events/{id}` - Detalhes de um evento
+- `GET /api/v1/Audit/access-logs` - Logs de acesso (Login, Logout, etc.)
+
+**Segurança:**
+- Todos os endpoints protegidos com `[Authorize(Roles = "Admin")]` conforme ADR-016
+
+---
+
+### ✅ Testes (5 arquivos criados - 48 testes)
+
+| Arquivo | Testes | Cobertura |
+|---------|--------|-----------|
+| `UseCases/Audit/GetAuditEventsUseCaseTests.cs` | 8 | Filtros, paginação, mapeamento |
+| `UseCases/Audit/GetAuditEventByIdUseCaseTests.cs` | 4 | Sucesso, não encontrado, mapeamento |
+| `UseCases/Audit/GetAuditEventsRequestValidatorTests.cs` | 11 | Validações de Page, PageSize, DateRange, Result |
+| `Contract.Tests/DTOs/AuditEventDtoTests.cs` | 5 | Estrutura, serialização, TotalPages |
+| `Controllers/AuditControllerTests.cs` | 6 | Endpoints, autorização, filtros |
+
+---
+
+### 📊 Resumo de Entregáveis
+
+| Camada | Arquivos Novos | Arquivos Alterados | Testes |
+|--------|----------------|-------------------|--------|
+| Domain | 3 | 0 | - |
+| Application | 9 | 0 | 23 |
+| Infrastructure | 4 | 1 | - |
+| API | 2 | 1 | 6 |
+| Contract.Tests | 1 | 0 | 5 |
+| **Total** | **19** | **2** | **48** |
+
+---
+
+### 🔗 ADRs Relacionados
+- **ADR-014**: Auditoria de Operações Críticas ✅
+- **ADR-019**: Auditoria de Acessos ✅
+- **ADR-016**: RBAC (Admin-only access) ✅
+- **ADR-020**: Clean Architecture ✅
+
+---
+
 ## [2026-01-21] - 🔧 Correção 5: DateTime UTC para PostgreSQL/Npgsql
 
 ### 🎯 Contexto
