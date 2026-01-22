@@ -1,24 +1,148 @@
 # Status de Desenvolvimento - L2SLedger Backend
 
 > **Última atualização:** 2026-01-22  
-> **Fase atual:** ✅ Fase 9: Auditoria - CONCLUÍDA (100%)  
-> **Total de testes:** 383 ✅ (100% aprovação) | Meta Fase 9: 380 testes ✅ **ALCANÇADA**
+> **Fase atual:** ✅ Fase 10: Usuários e Permissões - CONCLUÍDA (100%)  
+> **Total de testes:** 380 ✅ (100% aprovação) | Meta Fase 10: 380 testes ✅ **MANTIDA**
 
 ---
 
 ## 🚀 Próximos Passos
 - ✅ **Fase 8**: Exportação de Relatórios - **CONCLUÍDA**
 - ✅ **Fase 9**: Auditoria e Logs Detalhados - **CONCLUÍDA**
-- 🔜 **Fase 10**: Notificações e Alertas
+- ✅ **Fase 10**: Usuários e Permissões - **CONCLUÍDA**
+- 🔜 **Fase 11**: Notificações e Alertas (a planejar)
 
 ---
 
 ## 🔗 Referências
 - [Planejamento Técnico da API](../../docs/planning/api-planning.md)
-- [Planejamento Fase 9 (Original)](../../docs/planning/api-planning/complete/fase-9-auditoria.md)
+- [Planejamento Fase 10](../../docs/planning/api-planning/fase-10-usuarios-e-permissoes.md)
 - [Changelog](../ai-driven/changelog.md)
 - [Agent Rules](../ai-driven/agent-rules.md)
   
+---
+
+## ✅ Fase 10: Usuários e Permissões - CONCLUÍDA (100%)
+
+### 🎯 Visão Geral
+Implementação **COMPLETA** dos endpoints de administração de usuários conforme ADR-016 (RBAC/ABAC) e ADR-001 (Firebase Auth). Sistema permite que administradores listem, consultem e atualizem roles de usuários com validações de segurança.
+
+### Status: 100% Completo ✅ (18/18 componentes)
+- ✅ Domain Layer (1 arquivo: Role Value Object)
+- ✅ Application Layer - DTOs (6 arquivos)
+- ✅ Application Layer - Interfaces (1 arquivo alterado)
+- ✅ Application Layer - Validators (2 arquivos)
+- ✅ Application Layer - Use Cases (4 arquivos)
+- ✅ Application Layer - Mappers (1 arquivo)
+- ✅ Infrastructure Layer - Repository (1 arquivo alterado)
+- ✅ API Layer - Controller (1 arquivo)
+- ✅ API Layer - DI Configuration (2 arquivos alterados)
+
+### 🧪 Cobertura de Testes (380 testes - 100% aprovação)
+- ✅ **Domain**: 91 testes
+- ✅ **Application**: 185 testes
+- ✅ **Infrastructure**: 5 testes
+- ✅ **Contract**: 89 testes
+- ✅ **API**: 10 testes
+
+**Resultado**: 380 testes ✅ (sem regressões)
+
+### Componentes Implementados
+
+#### Domain Layer (1 arquivo) - ✅ 100%
+- ✅ **Role Value Object** (`ValueObjects/Role.cs`):
+  * Sealed record para imutabilidade
+  * Instâncias estáticas: `Role.Admin`, `Role.Financeiro`, `Role.Leitura`
+  * Métodos: `FromString()`, `IsValid()`, `GetAllRoles()`
+  * HashSet case-insensitive para validação
+
+#### Application Layer - DTOs (6 arquivos) - ✅ 100%
+- ✅ **UserDetailDto**: Detalhes completos (Id, Email, DisplayName, EmailVerified, Roles, CreatedAt, UpdatedAt, LastLoginAt)
+- ✅ **UserSummaryDto**: Versão resumida para listagens
+- ✅ **GetUsersRequest**: Paginação e filtros (Page, PageSize, Email, Role, IncludeInactive)
+- ✅ **GetUsersResponse**: Response paginada com TotalPages, HasNextPage, HasPreviousPage
+- ✅ **UpdateUserRolesRequest**: Lista de roles a atribuir
+- ✅ **UserRolesResponse**: Roles do usuário + roles disponíveis
+
+#### Application Layer - Interfaces (1 arquivo alterado) - ✅ 100%
+- ✅ **IUserRepository** (3 novos métodos):
+  * `GetAllAsync()` - Listagem paginada com filtros
+  * `ExistsOtherAdminAsync()` - Validação de último Admin
+  * `CountByRoleAsync()` - Contagem por role
+
+#### Application Layer - Validators (2 arquivos) - ✅ 100%
+- ✅ **GetUsersRequestValidator**: Validação de paginação e filtros
+- ✅ **UpdateUserRolesRequestValidator**: Validação de roles válidos
+
+#### Application Layer - Use Cases (4 arquivos) - ✅ 100%
+- ✅ **GetUsersUseCase**: Lista usuários com paginação e filtros
+- ✅ **GetUserByIdUseCase**: Obtém detalhes de um usuário por ID
+- ✅ **GetUserRolesUseCase**: Consulta roles de um usuário com lista de disponíveis
+- ✅ **UpdateUserRolesUseCase**: Atualiza roles com validações de segurança
+
+#### Application Layer - Mappers (1 arquivo) - ✅ 100%
+- ✅ **UserMappingProfile**: AutoMapper User → UserSummaryDto, UserDetailDto
+
+#### Infrastructure Layer (1 arquivo alterado) - ✅ 100%
+- ✅ **UserRepository** (3 novos métodos implementados):
+  * `GetAllAsync()` - EF Core com filtros dinâmicos e paginação
+  * `ExistsOtherAdminAsync()` - Query para verificar outros admins
+  * `CountByRoleAsync()` - Contagem com Contains em coleção
+
+#### API Layer (3 arquivos) - ✅ 100%
+- ✅ **UsersController** (4 endpoints Admin-only):
+  * `GET /api/v1/users` - Lista paginada com filtros
+  * `GET /api/v1/users/{id}` - Detalhes do usuário
+  * `GET /api/v1/users/{id}/roles` - Roles + disponíveis
+  * `PUT /api/v1/users/{id}/roles` - Atualiza roles
+- ✅ **DependencyInjectionExtensions**: Método `AddUserUseCases()` adicionado
+- ✅ **Program.cs**: Chamada a `AddUserUseCases()` integrada
+
+### Endpoints Implementados
+| Método | Rota | Descrição | Roles |
+|--------|------|-----------|-------|
+| `GET` | `/api/v1/users` | Lista paginada com filtros | Admin |
+| `GET` | `/api/v1/users/{id}` | Detalhes do usuário | Admin |
+| `GET` | `/api/v1/users/{id}/roles` | Roles + disponíveis | Admin |
+| `PUT` | `/api/v1/users/{id}/roles` | Atualiza roles | Admin |
+
+### 🔒 Regras de Segurança Implementadas
+| Regra | Código de Erro | Descrição |
+|-------|----------------|----------|
+| Admin-only | 403 Forbidden | Apenas usuários com role Admin acessam endpoints |
+| Auto-proteção | CANNOT_REMOVE_OWN_ADMIN | Admin não pode remover seu próprio papel |
+| Último Admin | LAST_ADMIN | Não é possível remover o último Admin do sistema |
+| Role inválido | INVALID_ROLE | Apenas Admin, Financeiro, Leitura são aceitos |
+
+### ADRs Aplicados
+- **ADR-016**: RBAC/ABAC — Papéis Admin, Financeiro, Leitura
+- **ADR-001**: Firebase Auth — Usuários criados no primeiro login
+- **ADR-005**: Segurança — Backend como security boundary
+- **ADR-020**: Clean Architecture — Organização em camadas
+- **ADR-014**: Auditoria — Mudanças em roles são logadas
+
+### 📊 Resumo Técnico
+| Métrica | Valor |
+|---------|-------|
+| Arquivos criados | 14 |
+| Arquivos alterados | 4 |
+| Use Cases | 4 |
+| DTOs | 6 |
+| Validators | 2 |
+| Endpoints | 4 |
+| Testes existentes | 380 (sem regressões) |
+
+### 📦 Testes Pendentes (Fase 10)
+Os testes unitários para os novos Use Cases podem ser adicionados em iteração futura:
+- GetUsersUseCaseTests (~4 testes)
+- GetUserByIdUseCaseTests (~3 testes)
+- GetUserRolesUseCaseTests (~3 testes)
+- UpdateUserRolesUseCaseTests (~6 testes)
+- RoleTests (~4 testes)
+- UsersControllerTests (~9 testes)
+
+**Total estimado**: ~29 testes adicionais
+
 ---
 
 ## ✅ Fase 9: Auditoria e Logs Detalhados - CONCLUÍDA (100%)

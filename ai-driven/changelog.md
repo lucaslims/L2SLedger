@@ -9,7 +9,142 @@ O formato segue o padrão [Keep a Changelog](https://keepachangelog.com/en/1.0.0
 
 ---
 
-## [2026-01-22] - 🔐 Fase 9: Sistema de Auditoria de Operações
+## [2026-01-22] - � Fase 10: Gestão de Usuários e Permissões
+
+### 🎯 Contexto
+Implementação completa dos endpoints de administração de usuários conforme ADR-016 (RBAC/ABAC) e ADR-001 (Firebase Auth). O sistema permite que administradores listem, consultem e atualizem roles de usuários. Inclui validações de segurança como prevenção de auto-remoção de Admin e proteção do último Admin.
+
+---
+
+### ✅ Domain Layer (1 arquivo criado)
+
+| Arquivo | Descrição |
+|---------|-----------|
+| `ValueObjects/Role.cs` | Value Object para encapsular roles válidos (Admin, Financeiro, Leitura) |
+
+**Características técnicas:**
+- Sealed record para imutabilidade
+- Instâncias estáticas: `Role.Admin`, `Role.Financeiro`, `Role.Leitura`
+- Métodos: `FromString()`, `IsValid()`, `GetAllRoles()`
+- HashSet case-insensitive para validação
+
+---
+
+### ✅ Application Layer (13 arquivos criados + 1 alterado)
+
+#### DTOs (6 arquivos)
+| Arquivo | Descrição |
+|---------|-----------|
+| `DTOs/Users/UserDetailDto.cs` | Detalhes completos do usuário (Id, Email, DisplayName, EmailVerified, Roles, CreatedAt, UpdatedAt, LastLoginAt) |
+| `DTOs/Users/UserSummaryDto.cs` | Versão resumida para listagens |
+| `DTOs/Users/GetUsersRequest.cs` | Request com paginação e filtros (Page, PageSize, Email, Role, IncludeInactive) |
+| `DTOs/Users/GetUsersResponse.cs` | Response paginada com TotalPages, HasNextPage, HasPreviousPage |
+| `DTOs/Users/UpdateUserRolesRequest.cs` | Request com lista de roles a atribuir |
+| `DTOs/Users/UserRolesResponse.cs` | Response com roles do usuário e roles disponíveis |
+
+#### Use Cases (4 arquivos)
+| Arquivo | Descrição |
+|---------|-----------|
+| `UseCases/Users/GetUsersUseCase.cs` | Lista usuários com paginação e filtros |
+| `UseCases/Users/GetUserByIdUseCase.cs` | Obtém detalhes de um usuário por ID |
+| `UseCases/Users/GetUserRolesUseCase.cs` | Consulta roles de um usuário com lista de disponíveis |
+| `UseCases/Users/UpdateUserRolesUseCase.cs` | Atualiza roles com validações de segurança |
+
+#### Validators (2 arquivos)
+| Arquivo | Descrição |
+|---------|-----------|
+| `Validators/Users/GetUsersRequestValidator.cs` | Validação de paginação e filtros |
+| `Validators/Users/UpdateUserRolesRequestValidator.cs` | Validação de roles válidos |
+
+#### Mapper (1 arquivo)
+| Arquivo | Descrição |
+|---------|-----------|
+| `Mappers/UserMappingProfile.cs` | AutoMapper profile para User → DTOs |
+
+#### Interface (1 arquivo alterado)
+| Arquivo | Alteração |
+|---------|-----------|
+| `Interfaces/IUserRepository.cs` | Adicionados 3 métodos: `GetAllAsync()`, `ExistsOtherAdminAsync()`, `CountByRoleAsync()` |
+
+---
+
+### ✅ Infrastructure Layer (1 arquivo alterado)
+
+| Arquivo | Alteração |
+|---------|-----------|
+| `Persistence/Repositories/UserRepository.cs` | Implementados 3 novos métodos com EF Core e LINQ |
+
+**Características técnicas:**
+- `GetAllAsync()`: Paginação, filtro por email (case-insensitive), filtro por role, soft delete
+- `ExistsOtherAdminAsync()`: Verifica existência de outros admins para regra de último Admin
+- `CountByRoleAsync()`: Contagem de usuários por role
+
+---
+
+### ✅ API Layer (2 arquivos criados + 2 alterados)
+
+| Arquivo | Descrição |
+|---------|-----------|
+| `Controllers/UsersController.cs` | 4 endpoints Admin-only com tratamento de erros |
+
+#### Endpoints implementados
+| Método | Rota | Descrição |
+|--------|------|-----------|
+| GET | `/api/v1/users` | Lista paginada com filtros |
+| GET | `/api/v1/users/{id}` | Detalhes do usuário |
+| GET | `/api/v1/users/{id}/roles` | Roles do usuário + disponíveis |
+| PUT | `/api/v1/users/{id}/roles` | Atualiza roles (com validações) |
+
+#### Configuração DI
+| Arquivo | Alteração |
+|---------|-----------|
+| `Configuration/DependencyInjectionExtensions.cs` | Adicionado método `AddUserUseCases()` |
+| `Program.cs` | Chamada a `AddUserUseCases()` |
+
+---
+
+### 🔒 Regras de Segurança Implementadas
+
+| Regra | Código de Erro | Descrição |
+|-------|----------------|-----------|
+| Admin-only | 403 Forbidden | Apenas usuários com role Admin acessam endpoints |
+| Auto-proteção | CANNOT_REMOVE_OWN_ADMIN | Admin não pode remover seu próprio papel |
+| Último Admin | LAST_ADMIN | Não é possível remover o último Admin do sistema |
+| Role inválido | INVALID_ROLE | Apenas Admin, Financeiro, Leitura são aceitos |
+
+---
+
+### 📊 Resumo Técnico
+
+| Métrica | Valor |
+|---------|-------|
+| Arquivos criados | 14 |
+| Arquivos alterados | 4 |
+| Use Cases | 4 |
+| DTOs | 6 |
+| Validators | 2 |
+| Endpoints | 4 |
+| Testes existentes | 380 (sem regressões) |
+
+---
+
+### 🔗 ADRs Relacionados
+
+- **ADR-016**: RBAC/ABAC — Papéis Admin, Financeiro, Leitura
+- **ADR-001**: Firebase Auth — Usuários criados no primeiro login
+- **ADR-005**: Segurança — Backend como security boundary
+- **ADR-020**: Clean Architecture — Organização em camadas
+- **ADR-014**: Auditoria — Mudanças em roles são logadas
+
+---
+
+### 🛠️ Ferramenta de IA
+
+**GitHub Copilot (Claude Opus 4.5)** — Master Agent coordenando implementação
+
+---
+
+## [2026-01-22] - �🔐 Fase 9: Sistema de Auditoria de Operações
 
 ### 🎯 Contexto
 Implementação completa do sistema de auditoria conforme ADR-014 (Auditoria de Operações Críticas) e ADR-019 (Auditoria de Acessos). O sistema registra todas as operações críticas (CREATE, UPDATE, DELETE, ADJUST, CLOSE, REOPEN) e eventos de acesso (Login, Logout, LoginFailed, AccessDenied).

@@ -2,7 +2,7 @@
 title: Fase 10 — Usuários e Permissões
 date: 2026-01-21
 version: 1.0
-status: Em Planejamento
+status: Implementado
 dependencies:
   - Fases 1-9 concluídas
   - ADR-016 (RBAC)
