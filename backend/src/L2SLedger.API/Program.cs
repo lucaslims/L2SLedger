@@ -37,6 +37,10 @@ try
     builder.Services.AddValidators();
     builder.Services.AddInfrastructureServices();
 
+    // Health Checks e Métricas (ADR-006)
+    builder.Services.AddHealthCheckConfiguration();
+    builder.Services.AddMetricsConfiguration();
+
     // Configurar Controllers e exception handling
     builder.Services.AddControllersConfiguration();
 
@@ -63,8 +67,12 @@ try
     // Configurar pipeline HTTP (exception handler, swagger, status codes, cors, auth)
     app.UseApiConfiguration();
 
-    // Configurar Serilog request logging
-    app.UseSerilogConfiguration();
+    // Configurar observabilidade (Correlation ID + Serilog request logging)
+    app.UseObservabilityConfiguration();
+
+    // Mapear endpoints de Health Checks e Métricas (ADR-006)
+    app.MapHealthCheckEndpoints();
+    app.MapMetricsEndpoint();
 
     Log.Information("L2SLedger API iniciada com sucesso");
 
@@ -78,3 +86,6 @@ finally
 {
     Log.CloseAndFlush();
 }
+
+// Partial class necessária para WebApplicationFactory em testes de integração
+public partial class Program { }
