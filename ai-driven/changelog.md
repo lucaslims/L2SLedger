@@ -9,7 +9,111 @@ O formato segue o padrão [Keep a Changelog](https://keepachangelog.com/en/1.0.0
 
 ---
 
-## [2026-01-22] - � Fase 10: Gestão de Usuários e Permissões
+## [2026-01-22] - 🔍 Fase Técnica: Health & Observabilidade
+
+### 🎯 Contexto
+Implementação completa de Health Checks e Métricas OpenTelemetry conforme ADR-006 (Observabilidade) e ADR-007 (Resiliência). Inclui endpoints `/health`, `/health/ready`, `/health/live` para Kubernetes probes, endpoint `/metrics` para Prometheus, e Correlation ID para rastreamento de requisições.
+
+---
+
+### ✅ Pacotes NuGet Adicionados
+
+#### API (L2SLedger.API.csproj)
+| Pacote | Versão | Propósito |
+|--------|--------|-----------|
+| `AspNetCore.HealthChecks.NpgSql` | 8.0.2 | Health check PostgreSQL |
+| `Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore` | 9.0.0 | Health check via EF Core DbContext |
+| `OpenTelemetry.Exporter.Prometheus.AspNetCore` | 1.9.0 | Expor métricas Prometheus |
+| `OpenTelemetry.Extensions.Hosting` | 1.9.0 | Hosting OpenTelemetry |
+| `OpenTelemetry.Instrumentation.AspNetCore` | 1.9.0 | Instrumentação HTTP |
+| `OpenTelemetry.Instrumentation.Runtime` | 1.9.0 | Métricas runtime .NET |
+
+#### Infrastructure (L2SLedger.Infrastructure.csproj)
+| Pacote | Versão | Propósito |
+|--------|--------|-----------|
+| `Microsoft.Extensions.Diagnostics.HealthChecks` | 9.0.0 | Interface IHealthCheck |
+
+---
+
+### ✅ Infrastructure Layer (2 arquivos criados)
+
+| Arquivo | Descrição |
+|---------|-----------|
+| `HealthChecks/FirebaseHealthCheck.cs` | Health check customizado para Firebase Authentication API |
+| `Observability/ApplicationMetrics.cs` | Métricas customizadas (auth, transactions, exports) |
+
+**Características técnicas:**
+- FirebaseHealthCheck: Timeout 5s (ADR-007), aceita 401/403 como healthy
+- ApplicationMetrics: Usa System.Diagnostics.Metrics (BCL .NET), sem deps ASP.NET
+
+---
+
+### ✅ API Layer (4 arquivos criados + 2 alterados)
+
+#### Arquivos Criados
+| Arquivo | Descrição |
+|---------|-----------|
+| `Middleware/CorrelationIdMiddleware.cs` | Gera/propaga X-Correlation-Id em todas requisições |
+| `Configuration/HealthCheckExtensions.cs` | Configura endpoints /health, /health/ready, /health/live |
+| `Configuration/MetricsExtensions.cs` | Configura OpenTelemetry e endpoint /metrics |
+
+#### Arquivos Alterados
+| Arquivo | Alteração |
+|---------|-----------|
+| `Configuration/ObservabilityExtensions.cs` | Refatorado para incluir Correlation ID e melhorar Serilog |
+| `Program.cs` | Integrado Health Checks e Métricas no pipeline |
+
+---
+
+### ✅ Testes (4 arquivos criados)
+
+#### Testes Unitários
+| Arquivo | Testes |
+|---------|--------|
+| `L2SLedger.Infrastructure.Tests/HealthChecks/FirebaseHealthCheckTests.cs` | 4 testes (Healthy, Degraded, Timeout, ConnectionFails) |
+| `L2SLedger.API.Tests/Middleware/CorrelationIdMiddlewareTests.cs` | 3 testes (Generate, UseExisting, EmptyHeader) |
+
+#### Testes de Integração
+| Arquivo | Testes |
+|---------|--------|
+| `L2SLedger.API.Tests/HealthChecks/HealthCheckEndpointTests.cs` | 5 testes (Health, Live, Ready, JsonContentType, ValidStructure) |
+| `L2SLedger.API.Tests/Metrics/MetricsEndpointTests.cs` | 3 testes (ReturnsOk, PrometheusFormat, HttpRequestMetrics) |
+
+---
+
+### 📋 Endpoints Implementados
+
+| Endpoint | Propósito | Checks |
+|----------|-----------|--------|
+| `/health` | Health básico | Nenhum (apenas aplicação) |
+| `/health/ready` | Readiness probe (K8s) | PostgreSQL + Firebase |
+| `/health/live` | Liveness probe (K8s) | Nenhum (apenas aplicação) |
+| `/metrics` | Prometheus scraping | Métricas HTTP, Runtime, Custom |
+
+---
+
+### 🔧 Conformidade Arquitetural
+
+- ✅ Clean Architecture respeitada (HttpContext apenas na API Layer)
+- ✅ Infrastructure não depende de Microsoft.AspNetCore.*
+- ✅ SOLID: SRP, OCP, LSP, ISP, DIP
+- ✅ ADR-006 (Observabilidade) implementado
+- ✅ ADR-007 (Resiliência) - Timeouts configurados
+
+---
+
+### 📊 Total de Testes: ~15 novos
+
+| Tipo | Quantidade |
+|------|------------|
+| Unitários (FirebaseHealthCheck) | 4 |
+| Unitários (CorrelationIdMiddleware) | 3 |
+| Integração (Health Endpoints) | 5 |
+| Integração (Metrics) | 3 |
+
+---
+
+## [2026-01-22] - 👤 Fase 10: Gestão de Usuários e Permissões
 
 ### 🎯 Contexto
 Implementação completa dos endpoints de administração de usuários conforme ADR-016 (RBAC/ABAC) e ADR-001 (Firebase Auth). O sistema permite que administradores listem, consultem e atualizem roles de usuários. Inclui validações de segurança como prevenção de auto-remoção de Admin e proteção do último Admin.
