@@ -499,24 +499,41 @@ public async Task PostTransaction_ReturnsCreated_WithValidContract()
 
 ### Fase 6 — Módulos Complementares
 
-- [ ] Saldos e relatórios
-- [ ] Exportação (CSV/PDF)
-- [ ] Auditoria (consulta)
-- [ ] Usuários e permissões
+- [x] Saldos e relatórios
+- [~] Exportação (CSV/PDF)
+- [x] Auditoria (consulta)
+- [x] Usuários e permissões
 
 ### Fase 7 — Observabilidade e DevOps
 
-- [ ] Health checks
-- [ ] Métricas Prometheus
-- [ ] Tracing distribuído
+- [x] Health checks
+- [x] Métricas Prometheus
+- [x] Tracing distribuído
 - [ ] Dockerfile e docker-compose
+
+### Fase 8 — Controle de Planos e Comercial (Pós-MVP)
+
+- [ ] Implementar `/api/v1/commercial/me/context`
+- [ ] Implementar endpoints de plano, uso, anúncios
+- [ ] Criar testes de contrato
+
+### Fase 9 — Testes Finais e Documentação (Pós-MVP)
+
+- [ ] Cobertura mínima de testes
+- [ ] Testes de contrato completos
+- [ ] Documentação Swagger atualizada
+- [ ] Revisão de código e segurança
+- [ ] Preparar release notes
+- [ ] Atualizar documentação técnica
+- [ ] Criar guia de implantação
+- [ ] Criar documentação para Frontend visando integração com API usando IA
 
 ---
 
 ## 12. Tecnologias e Dependências
 
 | Categoria | Tecnologia |
-|-----------|------------|
+| --- | --- |
 | Runtime | .NET 10 |
 | Framework | ASP.NET Core Minimal APIs ou Controllers |
 | ORM | Entity Framework Core 10 |
