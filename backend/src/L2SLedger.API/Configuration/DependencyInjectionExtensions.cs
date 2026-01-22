@@ -8,6 +8,7 @@ using L2SLedger.Application.UseCases.Exports;
 using L2SLedger.Application.UseCases.Periods;
 using L2SLedger.Application.UseCases.Reports;
 using L2SLedger.Application.UseCases.Transaction;
+using L2SLedger.Application.UseCases.Users;
 using L2SLedger.Application.Validators.Categories;
 using L2SLedger.Infrastructure.BackgroundServices;
 using L2SLedger.Infrastructure.Identity;
@@ -146,6 +147,20 @@ public static class DependencyInjectionExtensions
         services.AddScoped<DownloadExportUseCase>();
         services.AddScoped<GetExportsUseCase>();
         services.AddScoped<DeleteExportUseCase>();
+
+        return services;
+    }
+
+    /// <summary>
+    /// Registra use cases de usuários.
+    /// ADR-016: Gestão de roles e permissões (Admin-only).
+    /// </summary>
+    public static IServiceCollection AddUserUseCases(this IServiceCollection services)
+    {
+        services.AddScoped<GetUsersUseCase>();
+        services.AddScoped<GetUserByIdUseCase>();
+        services.AddScoped<GetUserRolesUseCase>();
+        services.AddScoped<UpdateUserRolesUseCase>();
 
         return services;
     }
