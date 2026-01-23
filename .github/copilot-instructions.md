@@ -126,6 +126,7 @@ When in doubt:
 1. Check ADRs
 2. Check governance documents
 3. Check `agent-rules.md`
+4. Always update `\ai-driven/changelog.md` with a summary of changes made
 
 If a change requires architectural deviation, **a new ADR is mandatory**.
 

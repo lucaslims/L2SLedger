@@ -95,6 +95,8 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 .pnpm-store/
+package-lock.json
+yarn.lock
 
 # Build outputs
 dist/
@@ -146,8 +148,9 @@ serviceAccountKey.json
 *.crt
 *.p12
 *.pfx
-secrets/
-credentials/
+[Ss]ecrets/
+[Cc]redentials/
+[Kk]eys/
 
 # ----------------------------------------
 # Docker
@@ -211,3 +214,10 @@ local/
 scratch/
 temp/
 tmp/
+
+# Email validation files
+**/validar_emails/*
+
+# Database checker files
+**/db-checker/*
+
