@@ -59,7 +59,9 @@ public class CsvExportService : ICsvExportService
         }
 
         // Salvar arquivo
-        var fileName = $"transactions_{DateTime.UtcNow:yyyyMMddHHmmss}.csv";
+        // Incluir userId para evitar conflitos entre usuários simultâneos e melhorar rastreabilidade
+        var userIdShort = userId.ToString("N")[..8];
+        var fileName = $"transactions_{userIdShort}_{DateTime.UtcNow:yyyyMMddHHmmss}.csv";
         var fileBytes = Encoding.UTF8.GetBytes(csv.ToString());
         var filePath = await _fileStorageService.SaveExportFileAsync(fileBytes, fileName);
 

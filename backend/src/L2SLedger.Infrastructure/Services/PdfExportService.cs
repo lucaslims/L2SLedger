@@ -47,7 +47,9 @@ public class PdfExportService : IPdfExportService
         var html = GenerateHtmlReport(transactions, startDate, endDate);
         
         // Por ora, salvar como HTML (substituir por geração de PDF real em produção)
-        var fileName = $"transactions_{DateTime.UtcNow:yyyyMMddHHmmss}.html";
+        // Incluir userId para evitar conflitos entre usuários simultâneos e melhorar rastreabilidade
+        var userIdShort = userId.ToString("N")[..8];
+        var fileName = $"transactions_{userIdShort}_{DateTime.UtcNow:yyyyMMddHHmmss}.html";
         var fileBytes = Encoding.UTF8.GetBytes(html);
         var filePath = await _fileStorageService.SaveExportFileAsync(fileBytes, fileName);
 
