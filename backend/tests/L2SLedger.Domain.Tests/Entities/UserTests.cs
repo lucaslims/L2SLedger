@@ -1,5 +1,6 @@
 using FluentAssertions;
 using L2SLedger.Domain.Entities;
+using L2SLedger.Domain.Exceptions;
 
 namespace L2SLedger.Domain.Tests.Entities;
 
@@ -165,5 +166,207 @@ public class UserTests
         user.IsDeleted.Should().BeTrue();
         user.UpdatedAt.Should().NotBeNull();
         user.UpdatedAt.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromSeconds(1));
+    }
+
+    // ============ Status Tests ============
+
+    [Fact]
+    public void Constructor_ShouldCreateUserWithStatusPending()
+    {
+        // Arrange & Act
+        var user = new User("firebase-uid", "test@example.com", "Test User", true);
+
+        // Assert
+        user.Status.Should().Be(UserStatus.Pending);
+    }
+
+    [Fact]
+    public void Approve_FromPending_ShouldChangeStatusToActive()
+    {
+        // Arrange
+        var user = new User("firebase-uid", "test@example.com", "Test User", true);
+
+        // Act
+        user.Approve();
+
+        // Assert
+        user.Status.Should().Be(UserStatus.Active);
+    }
+
+    [Fact]
+    public void Approve_FromActive_ShouldThrowInvalidStatusTransitionException()
+    {
+        // Arrange
+        var user = new User("firebase-uid", "test@example.com", "Test User", true);
+        user.Approve();
+
+        // Act
+        var act = () => user.Approve();
+
+        // Assert
+        act.Should().Throw<InvalidStatusTransitionException>()
+            .WithMessage("Não é possível alterar o status de Active para Active.");
+    }
+
+    [Fact]
+    public void Approve_FromSuspended_ShouldThrowInvalidStatusTransitionException()
+    {
+        // Arrange
+        var user = new User("firebase-uid", "test@example.com", "Test User", true);
+        user.Approve();
+        user.Suspend();
+
+        // Act
+        var act = () => user.Approve();
+
+        // Assert
+        act.Should().Throw<InvalidStatusTransitionException>()
+            .WithMessage("Não é possível alterar o status de Suspended para Active.");
+    }
+
+    [Fact]
+    public void Approve_FromRejected_ShouldThrowInvalidStatusTransitionException()
+    {
+        // Arrange
+        var user = new User("firebase-uid", "test@example.com", "Test User", true);
+        user.Reject();
+
+        // Act
+        var act = () => user.Approve();
+
+        // Assert
+        act.Should().Throw<InvalidStatusTransitionException>()
+            .WithMessage("Não é possível alterar o status de Rejected para Active.");
+    }
+
+    [Fact]
+    public void Suspend_FromActive_ShouldChangeStatusToSuspended()
+    {
+        // Arrange
+        var user = new User("firebase-uid", "test@example.com", "Test User", true);
+        user.Approve();
+
+        // Act
+        user.Suspend();
+
+        // Assert
+        user.Status.Should().Be(UserStatus.Suspended);
+    }
+
+    [Fact]
+    public void Suspend_FromPending_ShouldThrowInvalidStatusTransitionException()
+    {
+        // Arrange
+        var user = new User("firebase-uid", "test@example.com", "Test User", true);
+
+        // Act
+        var act = () => user.Suspend();
+
+        // Assert
+        act.Should().Throw<InvalidStatusTransitionException>()
+            .WithMessage("Não é possível alterar o status de Pending para Suspended.");
+    }
+
+    [Fact]
+    public void Suspend_FromRejected_ShouldThrowInvalidStatusTransitionException()
+    {
+        // Arrange
+        var user = new User("firebase-uid", "test@example.com", "Test User", true);
+        user.Reject();
+
+        // Act
+        var act = () => user.Suspend();
+
+        // Assert
+        act.Should().Throw<InvalidStatusTransitionException>()
+            .WithMessage("Não é possível alterar o status de Rejected para Suspended.");
+    }
+
+    [Fact]
+    public void Reject_FromPending_ShouldChangeStatusToRejected()
+    {
+        // Arrange
+        var user = new User("firebase-uid", "test@example.com", "Test User", true);
+
+        // Act
+        user.Reject();
+
+        // Assert
+        user.Status.Should().Be(UserStatus.Rejected);
+    }
+
+    [Fact]
+    public void Reject_FromActive_ShouldThrowInvalidStatusTransitionException()
+    {
+        // Arrange
+        var user = new User("firebase-uid", "test@example.com", "Test User", true);
+        user.Approve();
+
+        // Act
+        var act = () => user.Reject();
+
+        // Assert
+        act.Should().Throw<InvalidStatusTransitionException>()
+            .WithMessage("Não é possível alterar o status de Active para Rejected.");
+    }
+
+    [Fact]
+    public void Reject_FromSuspended_ShouldThrowInvalidStatusTransitionException()
+    {
+        // Arrange
+        var user = new User("firebase-uid", "test@example.com", "Test User", true);
+        user.Approve();
+        user.Suspend();
+
+        // Act
+        var act = () => user.Reject();
+
+        // Assert
+        act.Should().Throw<InvalidStatusTransitionException>()
+            .WithMessage("Não é possível alterar o status de Suspended para Rejected.");
+    }
+
+    [Fact]
+    public void Reactivate_FromSuspended_ShouldChangeStatusToActive()
+    {
+        // Arrange
+        var user = new User("firebase-uid", "test@example.com", "Test User", true);
+        user.Approve();
+        user.Suspend();
+
+        // Act
+        user.Reactivate();
+
+        // Assert
+        user.Status.Should().Be(UserStatus.Active);
+    }
+
+    [Fact]
+    public void Reactivate_FromPending_ShouldThrowInvalidStatusTransitionException()
+    {
+        // Arrange
+        var user = new User("firebase-uid", "test@example.com", "Test User", true);
+
+        // Act
+        var act = () => user.Reactivate();
+
+        // Assert
+        act.Should().Throw<InvalidStatusTransitionException>()
+            .WithMessage("Não é possível alterar o status de Pending para Active.");
+    }
+
+    [Fact]
+    public void Reactivate_FromRejected_ShouldThrowInvalidStatusTransitionException()
+    {
+        // Arrange
+        var user = new User("firebase-uid", "test@example.com", "Test User", true);
+        user.Reject();
+
+        // Act
+        var act = () => user.Reactivate();
+
+        // Assert
+        act.Should().Throw<InvalidStatusTransitionException>()
+            .WithMessage("Não é possível alterar o status de Rejected para Active.");
     }
 }
