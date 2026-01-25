@@ -188,7 +188,7 @@ interface GetTransactionsParams {
 
 // Response (200 OK)
 interface GetTransactionsResponse {
-  items: TransactionDto[];
+  transactions: TransactionDto[];
   totalCount: number;
   page: number;
   pageSize: number;
