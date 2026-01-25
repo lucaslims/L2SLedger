@@ -1,9 +1,11 @@
 # Planejamento Técnico da API — L2SLedger
 
-> **Status:** ✅ Aprovado  
+> **Status:** ✅ Completo - Pendencias de Pós-MVP  
 > **Data:** 2026-01-11  
 > **Versão:** 1.0  
 > **Aprovado em:** 2026-01-11
+> **Data de Execução:** 2026-01-11 a 2026-01-23
+> **Responsável pela Execução:** @lucaslims
 
 ---
 
@@ -17,7 +19,7 @@ Este documento apresenta o **planejamento técnico inicial da API do L2SLedger**
 
 ### 2.1 Estrutura de Camadas (ADR-020)
 
-```
+```plaintext
 backend/
 ├── src/
 │   ├── L2SLedger.Domain/              # Camada de Domínio
