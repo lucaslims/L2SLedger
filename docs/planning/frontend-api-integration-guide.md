@@ -681,7 +681,7 @@ interface GetUsersRequest {
 }
 
 interface GetUsersResponse {
-  items: UserSummaryDto[];
+  users: UserSummaryDto[];
   totalCount: number;
   page: number;
   pageSize: number;
