@@ -1303,7 +1303,7 @@ export interface UpdateCategoryRequest {
 }
 
 export interface GetCategoriesResponse {
-  items: CategoryDto[];
+  categories: CategoryDto[];
   totalCount: number;
 }
 
