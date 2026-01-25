@@ -58,8 +58,12 @@ public class CsvExportService : ICsvExportService
             csv.AppendLine($"{date},{description},{category},{amount},{type}");
         }
 
-        // Salvar arquivo
-        var fileName = $"transactions_{DateTime.UtcNow:yyyyMMddHHmmss}.csv";
+        // Incluir userId completo e componentes adicionais para evitar conflitos entre exportações simultâneas
+        var userIdFull = userId.ToString("N");
+        var timestamp = DateTime.UtcNow.ToString("yyyyMMddHHmmssfff");
+        var uniqueSuffix = Guid.NewGuid().ToString("N")[..8];
+        var fileName = $"transactions_{userIdFull}_{timestamp}_{uniqueSuffix}.csv";
+
         var fileBytes = Encoding.UTF8.GetBytes(csv.ToString());
         var filePath = await _fileStorageService.SaveExportFileAsync(fileBytes, fileName);
 
