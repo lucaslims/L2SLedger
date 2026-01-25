@@ -47,6 +47,7 @@ public class AuthDtoContractTests
             Id = Guid.NewGuid(),
             Email = "test@example.com",
             DisplayName = "Test User",
+            Status = "Active",
             Roles = new List<string> { "Leitura" },
             CreatedAt = DateTime.UtcNow
         };
@@ -72,6 +73,7 @@ public class AuthDtoContractTests
             Id = Guid.NewGuid(),
             Email = "test@example.com",
             DisplayName = "Test User",
+            Status = "Active",
             Roles = new List<string> { "Leitura", "Financeiro" },
             CreatedAt = DateTime.UtcNow
         };
@@ -85,10 +87,11 @@ public class AuthDtoContractTests
 
         // Validar estrutura do contrato
         var properties = typeof(UserDto).GetProperties();
-        properties.Should().HaveCount(5);
+        properties.Should().HaveCount(6);
         properties.Should().Contain(p => p.Name == "Id" && p.PropertyType == typeof(Guid));
         properties.Should().Contain(p => p.Name == "Email" && p.PropertyType == typeof(string));
         properties.Should().Contain(p => p.Name == "DisplayName" && p.PropertyType == typeof(string));
+        properties.Should().Contain(p => p.Name == "Status" && p.PropertyType == typeof(string));
         properties.Should().Contain(p => p.Name == "Roles" && p.PropertyType.IsAssignableTo(typeof(IEnumerable<string>)));
         properties.Should().Contain(p => p.Name == "CreatedAt" && p.PropertyType == typeof(DateTime));
     }
@@ -102,6 +105,7 @@ public class AuthDtoContractTests
             Id = Guid.Parse("12345678-1234-1234-1234-123456789012"),
             Email = "test@example.com",
             DisplayName = "Test User",
+            Status = "Active",
             Roles = new List<string> { "Leitura" },
             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc)
         };
@@ -125,6 +129,7 @@ public class AuthDtoContractTests
             Id = Guid.NewGuid(),
             Email = "test@example.com",
             DisplayName = "Test User",
+            Status = "Active",
             Roles = new List<string> { "Admin" },
             CreatedAt = DateTime.UtcNow
         };
