@@ -76,6 +76,7 @@ public class UserRepository : IUserRepository
         int pageSize,
         string? emailFilter = null,
         string? roleFilter = null,
+        UserStatus? statusFilter = null,
         bool includeInactive = false,
         CancellationToken cancellationToken = default)
     {
@@ -99,6 +100,12 @@ public class UserRepository : IUserRepository
         {
             // EF Core suporta Contains em coleções JSON/primitive collections
             query = query.Where(u => u.Roles.Contains(roleFilter));
+        }
+
+        // Filtro por status
+        if (statusFilter.HasValue)
+        {
+            query = query.Where(u => u.Status == statusFilter.Value);
         }
 
         // Contar total antes de paginar

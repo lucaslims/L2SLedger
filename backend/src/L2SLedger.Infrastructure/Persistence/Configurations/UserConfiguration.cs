@@ -46,6 +46,14 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
             .HasColumnName("email_verified")
             .IsRequired();
 
+        builder.Property(u => u.Status)
+            .HasColumnName("status")
+            .HasConversion<int>()
+            .IsRequired();
+
+        builder.HasIndex(u => u.Status)
+            .HasDatabaseName("ix_users_status");
+
         // Roles como JSON (ADR-010)
         builder.Property(u => u.Roles)
             .HasColumnName("roles")
