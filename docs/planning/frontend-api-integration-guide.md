@@ -333,7 +333,7 @@ interface UpdateCategoryRequest {
 
 // GET /api/v1/categories
 interface GetCategoriesResponse {
-  items: CategoryDto[];
+  categories: CategoryDto[];
   totalCount: number;
 }
 ```
