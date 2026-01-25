@@ -9,6 +9,96 @@ O formato segue o padrão [Keep a Changelog](https://keepachangelog.com/en/1.0.0
 
 ---
 
+## [2026-01-25] - 🔧 Melhorias de Qualidade no Sistema de Status de Usuário
+
+### 🎯 Contexto
+Após revisão de code quality, implementadas melhorias de segurança e testabilidade no sistema de status de usuários recém-implementado. Estas melhorias seguem boas práticas de auditoria e previnem scenarios edge cases críticos.
+
+---
+
+### ✅ Melhorias Implementadas
+
+**1. Prevenção de Auto-Modificação de Status (UpdateUserStatusUseCase)**
+- **Problema:** Admin poderia modificar seu próprio status, potencialmente se suspendendo/rejeitando e perdendo acesso
+- **Solução:** Adicionada validação explícita que impede usuário de modificar seu próprio status
+- **Código de Erro:** `USER_CANNOT_MODIFY_OWN_STATUS` (novo)
+- **Mensagem:** "Você não pode modificar seu próprio status. Solicite a outro administrador."
+- **Arquivo:** `UpdateUserStatusUseCase.cs` — linha ~25
+
+**2. Correção de Auditoria (UpdateUserStatusUseCase)**
+- **Problema:** Método `CloneUserForAudit` retornava mesma referência, causando que auditoria registrasse mesmo estado para "antes" e "depois"
+- **Solução:** Refatorado para criar snapshot do estado (objeto anônimo com campos relevantes) ANTES da modificação
+- **Benefício:** Auditoria agora registra corretamente OldStatus e NewStatus
+- **Arquivo:** `UpdateUserStatusUseCase.cs` — linha ~35-45
+
+**3. Teste de Edge Case Faltante (UserTests)**
+- **Problema:** Não havia teste para tentar suspender usuário já suspenso
+- **Solução:** Adicionado teste `Suspend_FromSuspended_ShouldThrowInvalidStatusTransitionException`
+- **Cobertura:** Validação de transição Suspended → Suspended deve falhar
+- **Arquivo:** `UserTests.cs` — novo teste
+
+**4. Teste de Prevenção de Auto-Modificação**
+- **Novo Teste:** `ExecuteAsync_AdminModifyingOwnStatus_ShouldThrowBusinessRuleException`
+- **Valida:** Admin não pode modificar seu próprio status
+- **Verifica:** Repositório nunca é chamado quando validação falha
+- **Arquivo:** `UpdateUserStatusUseCaseTests.cs` — novo teste
+
+---
+
+### 📋 Novo Código de Erro
+
+| Código | HTTP | Descrição | Quando Ocorre |
+|--------|------|-----------|---------------|
+| `USER_CANNOT_MODIFY_OWN_STATUS` | 403 | Tentativa de auto-modificação | Admin tenta alterar próprio status |
+
+---
+
+### 🔍 Arquivos Modificados (4)
+
+**Domain:**
+- `tests/L2SLedger.Domain.Tests/Entities/UserTests.cs` — +1 teste (edge case)
+
+**Application:**
+- `src/L2SLedger.Application/UseCases/Users/UpdateUserStatusUseCase.cs` — validação anti-self-modification + correção auditoria
+- `tests/L2SLedger.Application.Tests/UseCases/Users/UpdateUserStatusUseCaseTests.cs` — +1 teste + ajustes mock auditoria (4 testes corrigidos)
+
+**API:**
+- `src/L2SLedger.API/Contracts/ErrorCodes.cs` — +1 código erro
+
+---
+
+### ✅ Testes
+
+- **Total:** 432 testes
+- **Passing:** 424 ✅
+- **Skipped:** 8 (integration tests requerem ambiente configurado)
+- **Failed:** 0 ✅
+
+---
+
+### 🎓 Boas Práticas Aplicadas
+
+1. **Princípio do Menor Privilégio:** Admin não pode modificar próprio status (requer outro admin)
+2. **Auditoria Adequada:** Snapshot capturado ANTES de modificação para rastreabilidade
+3. **Testes de Edge Cases:** Transições inválidas todas cobertas
+4. **Fail-Fast:** Validação de auto-modificação ocorre antes de buscar usuário no DB
+
+---
+
+### 📚 Referências
+
+- Best Practice: Audit logging deve capturar estado antes/depois ([Audit.NET patterns](https://github.com/thepirat000/Audit.NET))
+- Security: Princípio do menor privilégio — usuário não deve poder alterar próprios privilégios
+- Testing: Edge cases devem ser explicitamente testados (suspender já suspenso, etc.)
+
+---
+
+**Ferramenta:** GitHub Copilot (Claude Sonnet 4.5)  
+**Prompt Source:** `.github/prompts/L2SLedger-Master-prompt.md`  
+**Context7 Libraries:** `/thepirat000/audit.net`, `/websites/learn_microsoft_en-us_dotnet`
+
+---
+
 ## [2026-01-25] - ✅ Inclusão de Status do Usuário (user-status-plan.md)
 
 ### 🎯 Contexto

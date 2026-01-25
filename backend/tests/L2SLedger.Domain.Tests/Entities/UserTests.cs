@@ -283,6 +283,22 @@ public class UserTests
     }
 
     [Fact]
+    public void Suspend_FromSuspended_ShouldThrowInvalidStatusTransitionException()
+    {
+        // Arrange
+        var user = new User("firebase-uid", "test@example.com", "Test User", true);
+        user.Approve();
+        user.Suspend();
+
+        // Act
+        var act = () => user.Suspend();
+
+        // Assert
+        act.Should().Throw<InvalidStatusTransitionException>()
+            .WithMessage("Não é possível alterar o status de Suspended para Suspended.");
+    }
+
+    [Fact]
     public void Reject_FromPending_ShouldChangeStatusToRejected()
     {
         // Arrange

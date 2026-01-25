@@ -38,6 +38,7 @@ public static class ErrorCodes
     public const string USER_NOT_FOUND = "USER_NOT_FOUND";
     public const string USER_INVALID_STATUS_TRANSITION = "USER_INVALID_STATUS_TRANSITION";
     public const string USER_STATUS_REASON_REQUIRED = "USER_STATUS_REASON_REQUIRED";
+    public const string USER_CANNOT_MODIFY_OWN_STATUS = "USER_CANNOT_MODIFY_OWN_STATUS";
 
     // SYS_ - Erros de sistema
     public const string SYS_INTERNAL_ERROR = "SYS_INTERNAL_ERROR";

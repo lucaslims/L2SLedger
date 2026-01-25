@@ -50,26 +50,45 @@ public class UpdateUserStatusUseCase
         // 1. Validar request
         ValidateRequest(request);
 
-        // 2. Buscar usuário
+        // 2. Verificar se admin está tentando modificar seu próprio status
+        var currentUserId = _currentUserService.GetUserId();
+        if (userId == currentUserId)
+        {
+            throw new BusinessRuleException(
+                "USER_CANNOT_MODIFY_OWN_STATUS",
+                "Você não pode modificar seu próprio status. Solicite a outro administrador.");
+        }
+
+        // 3. Buscar usuário
         var user = await _userRepository.GetByIdAsync(userId, cancellationToken)
             ?? throw new BusinessRuleException(
                 "USER_NOT_FOUND",
                 $"Usuário com ID {userId} não encontrado.");
 
-        // 3. Capturar status anterior para auditoria
+        // 4. Capturar status anterior para auditoria
         var oldStatus = user.Status;
-        var userBefore = CloneUserForAudit(user);
 
-        // 4. Aplicar transição de status
+        // 5. Aplicar transição de status
         ApplyStatusTransition(user, request.Status);
 
-        // 5. Persistir alterações
+        // 6. Persistir alterações
         await _userRepository.UpdateAsync(user, cancellationToken);
 
-        // 6. Registrar auditoria (ADR-014)
-        await _auditService.LogUpdateAsync(userBefore, user, cancellationToken);
+        // 7. Registrar auditoria (ADR-014)
+        // Nota: Para auditoria adequada de status, criar objeto com contexto adicional
+        var auditContext = new
+        {
+            user.Id,
+            user.Email,
+            OldStatus = oldStatus.ToString(),
+            NewStatus = user.Status.ToString(),
+            request.Reason,
+            ModifiedBy = currentUserId,
+            ModifiedAt = DateTime.UtcNow
+        };
+        await _auditService.LogUpdateAsync(auditContext, auditContext, cancellationToken);
 
-        // 7. Log estruturado
+        // 8. Log estruturado
         _logger.LogInformation(
             "Status do usuário {UserId} ({Email}) alterado de {OldStatus} para {NewStatus}. Motivo: {Reason}. Executado por Admin {AdminId}",
             userId,
@@ -77,7 +96,7 @@ public class UpdateUserStatusUseCase
             oldStatus,
             user.Status,
             request.Reason,
-            _currentUserService.GetUserId());
+            currentUserId);
 
         return _mapper.Map<UserDetailDto>(user);
     }
@@ -145,12 +164,5 @@ public class UpdateUserStatusUseCase
         {
             throw new BusinessRuleException(ex.Code, ex.Message, ex);
         }
-    }
-
-    private static Domain.Entities.User CloneUserForAudit(Domain.Entities.User user)
-    {
-        // Criar uma cópia simples para auditoria
-        // O AuditService deve lidar com a serialização
-        return user;
     }
 }

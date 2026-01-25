@@ -67,7 +67,7 @@ public class UpdateUserStatusUseCaseTests
             .Returns(Task.CompletedTask);
 
         _auditServiceMock
-            .Setup(x => x.LogUpdateAsync(It.IsAny<User>(), It.IsAny<User>(), It.IsAny<CancellationToken>()))
+            .Setup(x => x.LogUpdateAsync(It.IsAny<object>(), It.IsAny<object>(), It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
 
         // Act
@@ -79,7 +79,7 @@ public class UpdateUserStatusUseCaseTests
         user.Status.Should().Be(UserStatus.Active);
 
         _userRepositoryMock.Verify(x => x.UpdateAsync(It.IsAny<User>(), It.IsAny<CancellationToken>()), Times.Once);
-        _auditServiceMock.Verify(x => x.LogUpdateAsync(It.IsAny<User>(), It.IsAny<User>(), It.IsAny<CancellationToken>()), Times.Once);
+        _auditServiceMock.Verify(x => x.LogUpdateAsync(It.IsAny<object>(), It.IsAny<object>(), It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]
@@ -105,7 +105,7 @@ public class UpdateUserStatusUseCaseTests
             .Returns(Task.CompletedTask);
 
         _auditServiceMock
-            .Setup(x => x.LogUpdateAsync(It.IsAny<User>(), It.IsAny<User>(), It.IsAny<CancellationToken>()))
+            .Setup(x => x.LogUpdateAsync(It.IsAny<object>(), It.IsAny<object>(), It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
 
         // Act
@@ -141,7 +141,7 @@ public class UpdateUserStatusUseCaseTests
             .Returns(Task.CompletedTask);
 
         _auditServiceMock
-            .Setup(x => x.LogUpdateAsync(It.IsAny<User>(), It.IsAny<User>(), It.IsAny<CancellationToken>()))
+            .Setup(x => x.LogUpdateAsync(It.IsAny<object>(), It.IsAny<object>(), It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
 
         // Act
@@ -176,7 +176,7 @@ public class UpdateUserStatusUseCaseTests
             .Returns(Task.CompletedTask);
 
         _auditServiceMock
-            .Setup(x => x.LogUpdateAsync(It.IsAny<User>(), It.IsAny<User>(), It.IsAny<CancellationToken>()))
+            .Setup(x => x.LogUpdateAsync(It.IsAny<object>(), It.IsAny<object>(), It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
 
         // Act
@@ -334,4 +334,39 @@ public class UpdateUserStatusUseCaseTests
         await act.Should().ThrowAsync<BusinessRuleException>()
             .Where(ex => ex.Code == "USER_STATUS_REASON_TOO_LONG");
     }
+
+    [Fact]
+    public async Task ExecuteAsync_AdminModifyingOwnStatus_ShouldThrowBusinessRuleException()
+    {
+        // Arrange
+        var adminUserId = Guid.NewGuid();
+        var admin = new User("firebase-uid", "admin@example.com", "Admin User", true);
+        admin.AddRole("Admin");
+
+        var request = new UpdateUserStatusRequest
+        {
+            Status = "Suspended",
+            Reason = "Testing self-modification prevention"
+        };
+
+        _currentUserServiceMock
+            .Setup(x => x.GetUserId())
+            .Returns(adminUserId); // Same as target user
+
+        _userRepositoryMock
+            .Setup(x => x.GetByIdAsync(adminUserId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(admin);
+
+        // Act
+        var act = async () => await _sut.ExecuteAsync(adminUserId, request);
+
+        // Assert
+        await act.Should().ThrowAsync<BusinessRuleException>()
+            .Where(ex => ex.Code == "USER_CANNOT_MODIFY_OWN_STATUS")
+            .WithMessage("Você não pode modificar seu próprio status. Solicite a outro administrador.");
+
+        // Verify user was never updated
+        _userRepositoryMock.Verify(x => x.UpdateAsync(It.IsAny<User>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
 }
+
