@@ -17,6 +17,9 @@ public record GetUsersRequest
     /// <summary>Filtrar por role específico.</summary>
     public string? Role { get; init; }
 
+    /// <summary>Filtrar por status do usuário.</summary>
+    public string? Status { get; init; }
+
     /// <summary>Incluir usuários inativos/deletados.</summary>
     public bool IncludeInactive { get; init; } = false;
 }
