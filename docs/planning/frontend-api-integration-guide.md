@@ -1264,7 +1264,7 @@ export interface GetTransactionsParams {
 }
 
 export interface GetTransactionsResponse {
-  items: TransactionDto[];
+  transactions: TransactionDto[];
   totalCount: number;
   page: number;
   pageSize: number;
