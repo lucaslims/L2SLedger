@@ -376,7 +376,7 @@ interface ReopenPeriodRequest {
 
 // GET /api/v1/periods
 interface GetPeriodsResponse {
-  items: FinancialPeriodDto[];
+  periods: FinancialPeriodDto[];
   totalCount: number;
   page: number;
   pageSize: number;
