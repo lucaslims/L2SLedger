@@ -1331,7 +1331,7 @@ export interface ReopenPeriodRequest {
 }
 
 export interface GetPeriodsResponse {
-  items: FinancialPeriodDto[];
+  periods: FinancialPeriodDto[];
   totalCount: number;
   page: number;
   pageSize: number;
