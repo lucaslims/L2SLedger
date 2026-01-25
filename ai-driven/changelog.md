@@ -9,6 +9,175 @@ O formato segue o padrão [Keep a Changelog](https://keepachangelog.com/en/1.0.0
 
 ---
 
+## [2026-01-25] - ✅ Inclusão de Status do Usuário (user-status-plan.md)
+
+### 🎯 Contexto
+Implementação completa do sistema de status de usuários conforme `user-status-plan.md`. Adiciona campo `Status` na entidade `User` para controlar o fluxo de aprovação de cadastros, permitindo que administradores aprovem, suspendam ou rejeitem usuários antes que possam acessar o sistema.
+
+---
+
+### ✅ Domain Layer
+
+**Arquivos Criados:**
+- `src/L2SLedger.Domain/Entities/UserStatus.cs` — Enum com status: Pending, Active, Suspended, Rejected
+- `src/L2SLedger.Domain/Exceptions/InvalidStatusTransitionException.cs` — Exceção de domínio para transições inválidas
+
+**Arquivos Modificados:**
+- `src/L2SLedger.Domain/Entities/User.cs` — Adicionado propriedade `Status` (default: Pending), métodos `Approve()`, `Suspend()`, `Reject()`, `Reactivate()` com validações de transição
+
+**Transições de Status Implementadas:**
+- Pending → Active (Approve)
+- Pending → Rejected (Reject)
+- Active → Suspended (Suspend)
+- Suspended → Active (Reactivate)
+
+**Testes Criados:**
+- `tests/L2SLedger.Domain.Tests/Entities/UserTests.cs` — 11 novos testes para validar todas as transições e exceções
+
+---
+
+### ✅ Infrastructure Layer
+
+**Arquivos Modificados:**
+- `src/L2SLedger.Infrastructure/Persistence/Configurations/UserConfiguration.cs` — Mapeamento do campo Status como integer + índice `ix_users_status`
+- `src/L2SLedger.Infrastructure/Persistence/Repositories/UserRepository.cs` — Adicionado filtro `statusFilter` no método `GetAllAsync`
+- `src/L2SLedger.Application/Interfaces/IUserRepository.cs` — Assinatura atualizada com parâmetro `UserStatus?`
+
+**Migration Criada:**
+- `20260125191215_AddUserStatus.cs` — Adiciona coluna `status` (integer, default 0), índice, e migra usuários existentes para Active (status=1)
+
+---
+
+### ✅ Application Layer
+
+**DTOs Modificados:**
+- `DTOs/Auth/UserDto.cs` — Adicionado campo `Status` (string)
+- `DTOs/Users/UserDetailDto.cs` — Adicionado campo `Status`
+- `DTOs/Users/UserSummaryDto.cs` — Adicionado campo `Status`
+
+**DTOs Criados:**
+- `DTOs/Users/UpdateUserStatusRequest.cs` — Request com `Status` e `Reason` obrigatórios
+
+**Use Cases Modificados:**
+- `UseCases/Auth/AuthenticationService.cs` — Bloqueia login se status ≠ Active, retorna erro semântico específico por status
+- `UseCases/Users/GetUsersUseCase.cs` — Adicionado filtro por status
+
+**Use Cases Criados:**
+- `UseCases/Users/UpdateUserStatusUseCase.cs` — Atualiza status do usuário com validação, auditoria e logging
+
+**Mappers Modificados:**
+- `Mappers/UserMappingProfile.cs` — Mapeamento de `Status` como string em UserDto, UserSummaryDto, UserDetailDto
+
+---
+
+### ✅ API Layer
+
+**Controllers Modificados:**
+- `Controllers/UsersController.cs` — Adicionado parâmetro `status` no `GET /users`, criado endpoint `PUT /users/{id}/status`
+
+**Contracts Modificados:**
+- `Contracts/ErrorCodes.cs` — Adicionados códigos: `AUTH_USER_PENDING`, `AUTH_USER_SUSPENDED`, `AUTH_USER_REJECTED`, `AUTH_USER_INACTIVE`, `USER_NOT_FOUND`, `USER_INVALID_STATUS_TRANSITION`, `USER_STATUS_REASON_REQUIRED`
+
+**Configuration Modificado:**
+- `Configuration/DependencyInjectionExtensions.cs` — Registrado `UpdateUserStatusUseCase` no DI
+
+---
+
+### ✅ Testes
+
+**Contract Tests Modificados:**
+- `tests/L2SLedger.Contract.Tests/DTOs/AuthDtoContractTests.cs` — Todos os testes de UserDto atualizados para incluir campo Status
+
+**Testes de Domínio:**
+- ✅ 11 testes adicionados em `UserTests.cs` (100% passing)
+
+---
+
+### 🔄 Novos Endpoints
+
+| Método | Endpoint | Descrição | Autorização |
+|--------|----------|-----------|-------------|
+| GET | `/api/v1/users?status={status}` | Filtrar usuários por status | Admin |
+| PUT | `/api/v1/users/{id}/status` | Alterar status de usuário | Admin |
+
+---
+
+### 📋 Novos Códigos de Erro (ADR-021)
+
+| Código | HTTP | Descrição |
+|--------|------|-----------|
+| `AUTH_USER_PENDING` | 403 | Usuário aguardando aprovação |
+| `AUTH_USER_SUSPENDED` | 403 | Usuário suspenso |
+| `AUTH_USER_REJECTED` | 403 | Cadastro rejeitado |
+| `USER_INVALID_STATUS_TRANSITION` | 400 | Transição de status inválida |
+| `USER_STATUS_REASON_REQUIRED` | 400 | Motivo obrigatório |
+
+---
+
+### 🎯 ADRs Impactados
+
+- ✅ ADR-001 — Firebase continua como IdP, status é controle interno
+- ✅ ADR-002 — Login adiciona verificação de status
+- ✅ ADR-014 — Mudanças de status geram evento de auditoria
+- ✅ ADR-016 — Admin gerencia status de usuários
+- ✅ ADR-020 — Alteração segue Clean Architecture
+- ✅ ADR-021 — Novos códigos de erro semânticos
+- ✅ ADR-022 — Contratos de API atualizados (campo adicional, backward-compatible)
+- ✅ ADR-035 — Nova migration para banco de dados
+
+---
+
+### 📦 Breaking Changes
+**Nenhum** — Todas as alterações são aditivas e backward-compatible.
+
+---
+
+### ✅ Arquivos Impactados (30 arquivos)
+
+**Domain (3):**
+- `UserStatus.cs` (novo)
+- `InvalidStatusTransitionException.cs` (novo)
+- `User.cs` (modificado)
+
+**Infrastructure (4):**
+- `UserConfiguration.cs`
+- `UserRepository.cs`
+- `IUserRepository.cs`
+- `20260125191215_AddUserStatus.cs` (migration)
+
+**Application (8):**
+- `UserDto.cs`, `UserDetailDto.cs`, `UserSummaryDto.cs`
+- `UpdateUserStatusRequest.cs` (novo)
+- `GetUsersRequest.cs`
+- `AuthenticationService.cs`
+- `GetUsersUseCase.cs`
+- `UpdateUserStatusUseCase.cs` (novo)
+- `UserMappingProfile.cs`
+
+**API (3):**
+- `UsersController.cs`
+- `ErrorCodes.cs`
+- `DependencyInjectionExtensions.cs`
+
+**Tests (2):**
+- `UserTests.cs` (domain)
+- `AuthDtoContractTests.cs` (contracts)
+
+---
+
+### 🧪 Cobertura de Testes
+- ✅ Domain: 11 testes de transição de status (100% passing)
+- ✅ Contract Tests: UserDto atualizado com Status
+- 🔄 Application Tests: Pendentes (login blocking, audit)
+- 🔄 API Tests: Pendentes (endpoints novos)
+
+---
+
+### 📚 Ferramenta de IA
+**GitHub Copilot (Master Orchestrator)** — Execução coordenada do plano aprovado `user-status-plan.md`
+
+---
+
 ## [2026-01-22] - 🔍 Fase Técnica: Health & Observabilidade
 
 ### 🎯 Contexto
