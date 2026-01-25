@@ -11,6 +11,10 @@ public static class ErrorCodes
     public const string AUTH_EMAIL_NOT_VERIFIED = "AUTH_EMAIL_NOT_VERIFIED";
     public const string AUTH_SESSION_EXPIRED = "AUTH_SESSION_EXPIRED";
     public const string AUTH_UNAUTHORIZED = "AUTH_UNAUTHORIZED";
+    public const string AUTH_USER_PENDING = "AUTH_USER_PENDING";
+    public const string AUTH_USER_SUSPENDED = "AUTH_USER_SUSPENDED";
+    public const string AUTH_USER_REJECTED = "AUTH_USER_REJECTED";
+    public const string AUTH_USER_INACTIVE = "AUTH_USER_INACTIVE";
 
     // VAL_ - Validação de dados
     public const string VAL_REQUIRED_FIELD = "VAL_REQUIRED_FIELD";
@@ -29,6 +33,11 @@ public static class ErrorCodes
     public const string PERM_ACCESS_DENIED = "PERM_ACCESS_DENIED";
     public const string PERM_ROLE_REQUIRED = "PERM_ROLE_REQUIRED";
     public const string PERM_INSUFFICIENT_PRIVILEGES = "PERM_INSUFFICIENT_PRIVILEGES";
+
+    // USER_ - Gestão de usuários
+    public const string USER_NOT_FOUND = "USER_NOT_FOUND";
+    public const string USER_INVALID_STATUS_TRANSITION = "USER_INVALID_STATUS_TRANSITION";
+    public const string USER_STATUS_REASON_REQUIRED = "USER_STATUS_REASON_REQUIRED";
 
     // SYS_ - Erros de sistema
     public const string SYS_INTERNAL_ERROR = "SYS_INTERNAL_ERROR";
