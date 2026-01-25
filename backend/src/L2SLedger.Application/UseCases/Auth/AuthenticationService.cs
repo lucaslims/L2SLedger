@@ -79,6 +79,33 @@ public class AuthenticationService : IAuthenticationService
             }
         }
 
+        // Verificar status do usuário (user-status-plan.md)
+        if (user.Status != UserStatus.Active)
+        {
+            _logger.LogWarning(
+                "Tentativa de login com usuário inativo: {UserId}, Status: {Status}",
+                user.Id,
+                user.Status);
+
+            var errorCode = user.Status switch
+            {
+                UserStatus.Pending => "AUTH_USER_PENDING",
+                UserStatus.Suspended => "AUTH_USER_SUSPENDED",
+                UserStatus.Rejected => "AUTH_USER_REJECTED",
+                _ => "AUTH_USER_INACTIVE"
+            };
+
+            var message = user.Status switch
+            {
+                UserStatus.Pending => "Seu cadastro está aguardando aprovação do administrador.",
+                UserStatus.Suspended => "Sua conta foi suspensa. Entre em contato com o administrador.",
+                UserStatus.Rejected => "Seu cadastro foi rejeitado. Entre em contato com o administrador.",
+                _ => "Sua conta está inativa."
+            };
+
+            throw new AuthenticationException(errorCode, message);
+        }
+
         var userDto = _mapper.Map<UserDto>(user);
 
         return new LoginResponse

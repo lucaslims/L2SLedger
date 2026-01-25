@@ -1,6 +1,7 @@
 using AutoMapper;
 using L2SLedger.Application.DTOs.Users;
 using L2SLedger.Application.Interfaces;
+using L2SLedger.Domain.Entities;
 
 namespace L2SLedger.Application.UseCases.Users;
 
@@ -35,11 +36,22 @@ public class GetUsersUseCase
         var page = Math.Max(1, request.Page);
         var pageSize = Math.Clamp(request.PageSize, 1, 100);
 
+        // Parse status filter
+        UserStatus? statusFilter = null;
+        if (!string.IsNullOrWhiteSpace(request.Status))
+        {
+            if (Enum.TryParse<UserStatus>(request.Status, true, out var parsedStatus))
+            {
+                statusFilter = parsedStatus;
+            }
+        }
+
         var (users, totalCount) = await _userRepository.GetAllAsync(
             page,
             pageSize,
             request.Email,
             request.Role,
+            statusFilter,
             request.IncludeInactive,
             cancellationToken);
 
