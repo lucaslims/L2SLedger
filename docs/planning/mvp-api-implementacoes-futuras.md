@@ -10,7 +10,7 @@ Este documento consolida os itens pendentes e planejamento de implementações f
 
 ## 1. Resumo Executivo
 
-Com base na análise do [api-planning.md](api-planning.md) e [STATUS.md](../../backend/STATUS.md), o MVP da API L2SLedger está **~95% completo**. As funcionalidades core estão implementadas e testadas.
+Com base na análise do [api-planning.md](api-planning/api-planning.md) e [STATUS.md](../../backend/STATUS.md), o MVP da API L2SLedger está **~95% completo**. As funcionalidades core estão implementadas e testadas.
 
 ### Status por Fase do MVP
 
