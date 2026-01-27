@@ -8,8 +8,8 @@
 
 ## Estatísticas
 
-* **Total de ADRs**: 44
-* **Última atualização**: 2026-01-15
+* **Total de ADRs**: 45
+* **Última atualização**: 2026-01-27
 
 ---
 
@@ -59,6 +59,7 @@
 | ADR-019     | Auditoria de Acessos e Tentativas Negadas no L2SLedger | [Ver ADR-019](./adr-019.md) |
 | ADR-020     | Clean Architecture e Domain-Driven Design no L2SLedger                   | [Ver ADR-020](./adr-020.md) |
 | ADR-021     | Modelo de Erros Semântico e Fail-Fast no L2SLedger                  | [Ver ADR-021](./adr-021.md) |
+| ADR-021-a   | Catálogo Completo de Códigos de Erro no L2SLedger                   | [Ver ADR-021-a](./adr-021-a.md) |
 | ADR-022     | Contratos Públicos Imutáveis da API no L2SLedger               | [Ver ADR-022](./adr-022.md) |
 | ADR-022-a   | Estratégia de Versionamento de Contratos da API no L2SLedger                 | [Ver ADR-022-a](./adr-022-a.md) |
 | ADR-023     | Não Adoção do Padrão Backend for Frontend (BFF) no L2SLedger                          | [Ver ADR-023](./adr-023.md) |
