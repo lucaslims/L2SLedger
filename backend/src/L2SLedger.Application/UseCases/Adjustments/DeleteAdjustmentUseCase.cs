@@ -1,4 +1,5 @@
 using L2SLedger.Application.Interfaces;
+using L2SLedger.Domain.Constants;
 using L2SLedger.Domain.Exceptions;
 
 namespace L2SLedger.Application.UseCases.Adjustments;
@@ -26,7 +27,7 @@ public class DeleteAdjustmentUseCase
         if (!_currentUserService.IsInRole("Admin"))
         {
             throw new BusinessRuleException(
-                "AUTH_INSUFFICIENT_PERMISSIONS",
+                ErrorCodes.PERM_INSUFFICIENT_PRIVILEGES,
                 "Apenas administradores podem deletar ajustes");
         }
 
@@ -36,14 +37,14 @@ public class DeleteAdjustmentUseCase
         if (adjustment == null)
         {
             throw new BusinessRuleException(
-                "FIN_ADJUSTMENT_NOT_FOUND",
+                ErrorCodes.FIN_ADJUSTMENT_NOT_FOUND,
                 "Ajuste não encontrado");
         }
 
         if (adjustment.IsDeleted)
         {
             throw new BusinessRuleException(
-                "FIN_ADJUSTMENT_ALREADY_DELETED",
+                ErrorCodes.FIN_ADJUSTMENT_ALREADY_DELETED,
                 "Ajuste já foi excluído");
         }
 

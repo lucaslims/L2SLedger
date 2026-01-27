@@ -1,6 +1,7 @@
 using AutoMapper;
 using L2SLedger.Application.DTOs.Users;
 using L2SLedger.Application.Interfaces;
+using L2SLedger.Domain.Constants;
 using L2SLedger.Domain.Entities;
 using L2SLedger.Domain.Exceptions;
 using Microsoft.Extensions.Logging;
@@ -55,14 +56,14 @@ public class UpdateUserStatusUseCase
         if (userId == currentUserId)
         {
             throw new BusinessRuleException(
-                "USER_CANNOT_MODIFY_OWN_STATUS",
+                ErrorCodes.USER_CANNOT_MODIFY_OWN_STATUS,
                 "Você não pode modificar seu próprio status. Solicite a outro administrador.");
         }
 
         // 3. Buscar usuário
         var user = await _userRepository.GetByIdAsync(userId, cancellationToken)
             ?? throw new BusinessRuleException(
-                "USER_NOT_FOUND",
+                ErrorCodes.USER_NOT_FOUND,
                 $"Usuário com ID {userId} não encontrado.");
 
         // 4. Capturar status anterior para auditoria
@@ -106,21 +107,21 @@ public class UpdateUserStatusUseCase
         if (string.IsNullOrWhiteSpace(request.Status))
         {
             throw new BusinessRuleException(
-                "USER_STATUS_REQUIRED",
+                ErrorCodes.USER_STATUS_REQUIRED,
                 "Status é obrigatório.");
         }
 
         if (string.IsNullOrWhiteSpace(request.Reason))
         {
             throw new BusinessRuleException(
-                "USER_STATUS_REASON_REQUIRED",
+                ErrorCodes.USER_STATUS_REASON_REQUIRED,
                 "É obrigatório informar o motivo da alteração de status.");
         }
 
         if (request.Reason.Length > 2000)
         {
             throw new BusinessRuleException(
-                "USER_STATUS_REASON_TOO_LONG",
+                ErrorCodes.USER_STATUS_REASON_TOO_LONG,
                 "O motivo não pode exceder 2000 caracteres.");
         }
     }
@@ -156,7 +157,7 @@ public class UpdateUserStatusUseCase
 
                 default:
                     throw new BusinessRuleException(
-                        "USER_INVALID_STATUS",
+                        ErrorCodes.USER_INVALID_STATUS,
                         $"Status '{newStatus}' inválido. Valores válidos: Active, Suspended, Rejected.");
             }
         }

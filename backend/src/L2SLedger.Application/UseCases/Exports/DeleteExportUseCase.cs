@@ -1,4 +1,5 @@
 using L2SLedger.Application.Interfaces;
+using L2SLedger.Domain.Constants;
 using L2SLedger.Domain.Exceptions;
 using Microsoft.Extensions.Logging;
 
@@ -52,7 +53,7 @@ public class DeleteExportUseCase
                 userId,
                 exportId
             );
-            throw new AuthorizationException("EXPORT_DELETE_UNAUTHORIZED", "Only Admin users can delete exports");
+            throw new AuthorizationException(ErrorCodes.EXPORT_DELETE_UNAUTHORIZED, "Only Admin users can delete exports");
         }
 
         var export = await _exportRepository.GetByIdAsync(exportId);
@@ -60,7 +61,7 @@ public class DeleteExportUseCase
         if (export == null)
         {
             _logger.LogWarning("Export {ExportId} not found for deletion", exportId);
-            throw new NotFoundException("Export", exportId.ToString());
+            throw new NotFoundException(ErrorCodes.EXPORT_NOT_FOUND, exportId.ToString());
         }
 
         // Deletar arquivo físico se existir

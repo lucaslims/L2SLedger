@@ -1,5 +1,7 @@
 using L2SLedger.Application.Interfaces;
+using L2SLedger.Domain.Constants;
 using L2SLedger.Domain.Entities;
+using L2SLedger.Domain.Exceptions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -87,7 +89,7 @@ public class ExportProcessorHostedService : BackgroundService
             // Desserializar parâmetros
             var parameters = System.Text.Json.JsonSerializer.Deserialize<ExportParameters>(export.ParametersJson);
             if (parameters == null)
-                throw new InvalidOperationException("Parâmetros da exportação são inválidos");
+                throw new BusinessRuleException(ErrorCodes.EXPORT_INVALID_PARAMETERS, "Parâmetros da exportação são inválidos");
 
             (string filePath, int recordCount) result;
 

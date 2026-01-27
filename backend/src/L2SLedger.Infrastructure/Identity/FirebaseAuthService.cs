@@ -1,5 +1,6 @@
 using FirebaseAdmin.Auth;
 using L2SLedger.Application.Interfaces;
+using L2SLedger.Domain.Constants;
 using L2SLedger.Domain.Exceptions;
 using Microsoft.Extensions.Logging;
 
@@ -54,7 +55,7 @@ public class FirebaseAuthService : IFirebaseAuthService
             if (string.IsNullOrWhiteSpace(email))
             {
                 throw new AuthenticationException(
-                    "AUTH_INVALID_TOKEN",
+                    ErrorCodes.AUTH_INVALID_TOKEN,
                     "Token Firebase não contém email válido");
             }
 
@@ -71,7 +72,7 @@ public class FirebaseAuthService : IFirebaseAuthService
             _logger.LogWarning(ex, "Token Firebase inválido: {Reason}", ex.Message);
             
             throw new AuthenticationException(
-                "AUTH_INVALID_TOKEN",
+                ErrorCodes.AUTH_INVALID_TOKEN,
                 "Token de autenticação inválido ou expirado",
                 ex);
         }
@@ -80,7 +81,7 @@ public class FirebaseAuthService : IFirebaseAuthService
             _logger.LogError("Timeout ao validar token Firebase");
             
             throw new AuthenticationException(
-                "AUTH_VALIDATION_TIMEOUT",
+                ErrorCodes.AUTH_INVALID_TOKEN,
                 "Timeout ao validar token de autenticação");
         }
     }

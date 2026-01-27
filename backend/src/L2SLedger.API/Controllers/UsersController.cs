@@ -1,6 +1,7 @@
 using L2SLedger.API.Contracts;
 using L2SLedger.Application.DTOs.Users;
 using L2SLedger.Application.UseCases.Users;
+using L2SLedger.Domain.Constants;
 using L2SLedger.Domain.Exceptions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -98,7 +99,7 @@ public class UsersController : ControllerBase
             var user = await _getUserByIdUseCase.ExecuteAsync(id, cancellationToken);
             return Ok(user);
         }
-        catch (BusinessRuleException ex) when (ex.Code == "USER_NOT_FOUND")
+        catch (BusinessRuleException ex) when (ex.Code == ErrorCodes.USER_NOT_FOUND)
         {
             return NotFound(ErrorResponse.Create(ex.Code, ex.Message));
         }
@@ -124,7 +125,7 @@ public class UsersController : ControllerBase
             var response = await _getUserRolesUseCase.ExecuteAsync(id, cancellationToken);
             return Ok(response);
         }
-        catch (BusinessRuleException ex) when (ex.Code == "USER_NOT_FOUND")
+        catch (BusinessRuleException ex) when (ex.Code == ErrorCodes.USER_NOT_FOUND)
         {
             return NotFound(ErrorResponse.Create(ex.Code, ex.Message));
         }
@@ -156,14 +157,13 @@ public class UsersController : ControllerBase
 
             return Ok(user);
         }
-        catch (BusinessRuleException ex) when (ex.Code == "USER_NOT_FOUND")
+        catch (BusinessRuleException ex) when (ex.Code == ErrorCodes.USER_NOT_FOUND)
         {
             return NotFound(ErrorResponse.Create(ex.Code, ex.Message));
         }
-        catch (BusinessRuleException ex) when (ex.Code is "CANNOT_REMOVE_OWN_ADMIN" or "LAST_ADMIN" or "ROLES_REQUIRED" or "ROLE_EMPTY" or "INVALID_ROLE")
-        {
-            return BadRequest(ErrorResponse.Create(ex.Code, ex.Message));
-        }
+        catch (BusinessRuleException ex) when (ex.Code is ErrorCodes.USER_CANNOT_REMOVE_OWN_ADMIN or ErrorCodes.USER_LAST_ADMIN or ErrorCodes.USER_ROLES_REQUIRED or ErrorCodes.USER_ROLE_EMPTY or ErrorCodes.USER_INVALID_ROLE){
+            return BadRequest(ErrorResponse.Create(ex.Code, ex.Message));   
+        }        
     }
 
     /// <summary>
@@ -192,11 +192,11 @@ public class UsersController : ControllerBase
 
             return Ok(user);
         }
-        catch (BusinessRuleException ex) when (ex.Code == "USER_NOT_FOUND")
+        catch (BusinessRuleException ex) when (ex.Code == ErrorCodes.USER_NOT_FOUND)
         {
             return NotFound(ErrorResponse.Create(ex.Code, ex.Message));
         }
-        catch (BusinessRuleException ex) when (ex.Code is "USER_INVALID_STATUS_TRANSITION" or "USER_STATUS_REASON_REQUIRED" or "USER_INVALID_STATUS" or "USER_STATUS_REQUIRED")
+        catch (BusinessRuleException ex) when (ex.Code is ErrorCodes.USER_INVALID_STATUS_TRANSITION or ErrorCodes.USER_STATUS_REASON_REQUIRED or ErrorCodes.USER_INVALID_STATUS or ErrorCodes.USER_STATUS_REQUIRED)
         {
             return BadRequest(ErrorResponse.Create(ex.Code, ex.Message));
         }

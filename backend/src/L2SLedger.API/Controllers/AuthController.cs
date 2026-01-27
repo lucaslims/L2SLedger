@@ -2,6 +2,7 @@ using System.Security.Claims;
 using L2SLedger.API.Contracts;
 using L2SLedger.Application.DTOs.Auth;
 using L2SLedger.Application.UseCases.Auth;
+using L2SLedger.Domain.Constants;
 using L2SLedger.Domain.Exceptions;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
@@ -79,7 +80,7 @@ public class AuthController : ControllerBase
             
             return ex.Code switch
             {
-                "AUTH_EMAIL_NOT_VERIFIED" => BadRequest(ErrorResponse.Create(ex.Code, ex.Message)),
+                ErrorCodes.AUTH_EMAIL_NOT_VERIFIED => BadRequest(ErrorResponse.Create(ex.Code, ex.Message)),
                 _ => Unauthorized(ErrorResponse.Create(ex.Code, ex.Message))
             };
         }
@@ -176,7 +177,7 @@ public class AuthController : ControllerBase
         catch (FluentValidation.ValidationException ex)
         {
             var errors = string.Join(", ", ex.Errors.Select(e => e.ErrorMessage));
-            return BadRequest(ErrorResponse.Create("VALIDATION_ERROR", errors));
+            return BadRequest(ErrorResponse.Create(ErrorCodes.VAL_INVALID_VALUE, errors));
         }
         catch (AuthenticationException ex)
         {

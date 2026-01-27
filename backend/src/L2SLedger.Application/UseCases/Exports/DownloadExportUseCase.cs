@@ -1,4 +1,5 @@
 using L2SLedger.Application.Interfaces;
+using L2SLedger.Domain.Constants;
 using L2SLedger.Domain.Entities;
 using L2SLedger.Domain.Exceptions;
 using Microsoft.Extensions.Logging;
@@ -48,16 +49,16 @@ public class DownloadExportUseCase
         var export = await _exportRepository.GetByIdAsync(exportId);
 
         if (export == null)
-            throw new NotFoundException("EXPORT_NOT_FOUND", $"Export with ID {exportId} not found.");
+            throw new NotFoundException(ErrorCodes.EXPORT_NOT_FOUND, $"Export with ID {exportId} not found.");
 
         // Validar ownership
         if (export.RequestedByUserId != userId && !_currentUserService.IsInRole("Admin"))
-            throw new AuthorizationException("EXPORT_UNAUTHORIZED", "You are not authorized to download this export.");
+            throw new AuthorizationException(ErrorCodes.EXPORT_UNAUTHORIZED, "You are not authorized to download this export.");
 
         // Validar se pode ser baixado
         if (!export.IsDownloadable())
             throw new BusinessRuleException(
-                "EXPORT_NOT_READY",
+                ErrorCodes.EXPORT_NOT_COMPLETED,
                 "Export is not ready for download. Current status: " + export.Status
             );
 

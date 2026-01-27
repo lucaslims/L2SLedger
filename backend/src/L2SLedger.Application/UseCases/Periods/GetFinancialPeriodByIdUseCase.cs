@@ -1,6 +1,7 @@
 using AutoMapper;
 using L2SLedger.Application.DTOs.Periods;
 using L2SLedger.Application.Interfaces;
+using L2SLedger.Domain.Constants;
 using L2SLedger.Domain.Exceptions;
 
 namespace L2SLedger.Application.UseCases.Periods;
@@ -38,7 +39,7 @@ public class GetFinancialPeriodByIdUseCase
         
         // 2. Validate existence
         if (period == null || period.IsDeleted)
-            throw new BusinessRuleException("FIN_PERIOD_NOT_FOUND", "Período não encontrado");
+            throw new BusinessRuleException(ErrorCodes.FIN_PERIOD_NOT_FOUND, "Período não encontrado");
 
         // 3. Map and return DTO (includes deserialized BalanceSnapshot)
         return _mapper.Map<FinancialPeriodDto>(period);

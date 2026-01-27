@@ -1,6 +1,7 @@
 using AutoMapper;
 using L2SLedger.Application.DTOs.Adjustments;
 using L2SLedger.Application.Interfaces;
+using L2SLedger.Domain.Constants;
 using L2SLedger.Domain.Exceptions;
 
 namespace L2SLedger.Application.UseCases.Adjustments;
@@ -35,7 +36,7 @@ public class GetAdjustmentByIdUseCase
         if (adjustment == null)
         {
             throw new BusinessRuleException(
-                "FIN_ADJUSTMENT_NOT_FOUND",
+                ErrorCodes.FIN_ADJUSTMENT_NOT_FOUND,
                 "Ajuste não encontrado");
         }
 
@@ -43,7 +44,7 @@ public class GetAdjustmentByIdUseCase
         if (adjustment.OriginalTransaction.UserId != userId)
         {
             throw new BusinessRuleException(
-                "FIN_ADJUSTMENT_UNAUTHORIZED",
+                ErrorCodes.FIN_ADJUSTMENT_UNAUTHORIZED,
                 "Você não tem permissão para visualizar este ajuste");
         }
 

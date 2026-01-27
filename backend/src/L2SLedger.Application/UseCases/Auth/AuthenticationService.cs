@@ -1,6 +1,7 @@
 using AutoMapper;
 using L2SLedger.Application.DTOs.Auth;
 using L2SLedger.Application.Interfaces;
+using L2SLedger.Domain.Constants;
 using L2SLedger.Domain.Entities;
 using L2SLedger.Domain.Exceptions;
 using Microsoft.Extensions.Logging;
@@ -46,7 +47,7 @@ public class AuthenticationService : IAuthenticationService
         {
             _logger.LogWarning("Tentativa de login com email não verificado: {Email}", firebaseUser.Email);
             throw new AuthenticationException(
-                "AUTH_EMAIL_NOT_VERIFIED",
+                ErrorCodes.AUTH_EMAIL_NOT_VERIFIED,
                 "Email não verificado. Verifique seu email antes de fazer login.");
         }
 
@@ -89,10 +90,10 @@ public class AuthenticationService : IAuthenticationService
 
             var errorCode = user.Status switch
             {
-                UserStatus.Pending => "AUTH_USER_PENDING",
-                UserStatus.Suspended => "AUTH_USER_SUSPENDED",
-                UserStatus.Rejected => "AUTH_USER_REJECTED",
-                _ => "AUTH_USER_INACTIVE"
+                UserStatus.Pending => ErrorCodes.AUTH_USER_PENDING,
+                UserStatus.Suspended => ErrorCodes.AUTH_USER_SUSPENDED,
+                UserStatus.Rejected => ErrorCodes.AUTH_USER_REJECTED,
+                _ => ErrorCodes.AUTH_USER_INACTIVE
             };
 
             var message = user.Status switch
@@ -121,7 +122,7 @@ public class AuthenticationService : IAuthenticationService
         if (user == null)
         {
             throw new AuthenticationException(
-                "AUTH_USER_NOT_FOUND",
+                ErrorCodes.AUTH_USER_NOT_FOUND,
                 "Usuário não encontrado");
         }
 

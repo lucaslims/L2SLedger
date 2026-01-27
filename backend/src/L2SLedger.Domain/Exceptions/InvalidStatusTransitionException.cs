@@ -1,3 +1,5 @@
+using L2SLedger.Domain.Constants;
+
 namespace L2SLedger.Domain.Exceptions;
 
 /// <summary>
@@ -6,13 +8,13 @@ namespace L2SLedger.Domain.Exceptions;
 public class InvalidStatusTransitionException : DomainException
 {
     public InvalidStatusTransitionException(string currentStatus, string newStatus)
-        : base("USER_INVALID_STATUS_TRANSITION", 
+        : base(ErrorCodes.USER_INVALID_STATUS_TRANSITION, 
                $"Não é possível alterar o status de {currentStatus} para {newStatus}.")
     {
     }
 
     public InvalidStatusTransitionException(string message) 
-        : base("USER_INVALID_STATUS_TRANSITION", message)
+        : base(ErrorCodes.USER_INVALID_STATUS_TRANSITION, message)
     {
     }
 }

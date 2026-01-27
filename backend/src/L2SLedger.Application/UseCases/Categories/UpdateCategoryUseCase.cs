@@ -1,7 +1,7 @@
 using AutoMapper;
 using L2SLedger.Application.DTOs.Categories;
 using L2SLedger.Application.Interfaces;
-using L2SLedger.Domain.Exceptions;
+using L2SLedger.Domain.Constants;
 using FluentValidation;
 using FluentValidationException = FluentValidation.ValidationException;
 
@@ -39,7 +39,7 @@ public class UpdateCategoryUseCase
         var category = await _categoryRepository.GetByIdAsync(categoryId, cancellationToken);
         if (category == null)
         {
-            throw new Domain.Exceptions.BusinessRuleException("FIN_CATEGORY_NOT_FOUND", "Categoria não encontrada");
+            throw new Domain.Exceptions.BusinessRuleException(ErrorCodes.FIN_CATEGORY_NOT_FOUND, "Categoria não encontrada");
         }
 
         // Verificar unicidade do nome (excluindo a própria categoria)
@@ -51,7 +51,7 @@ public class UpdateCategoryUseCase
 
         if (existingCategory != null && existingCategory.Id != categoryId)
         {
-            throw new Domain.Exceptions.BusinessRuleException("VAL_DUPLICATE_NAME", "Já existe outra categoria com este nome no mesmo nível hierárquico");
+            throw new Domain.Exceptions.BusinessRuleException(ErrorCodes.VAL_DUPLICATE_NAME, "Já existe outra categoria com este nome no mesmo nível hierárquico");
         }
 
         // Atualizar dados

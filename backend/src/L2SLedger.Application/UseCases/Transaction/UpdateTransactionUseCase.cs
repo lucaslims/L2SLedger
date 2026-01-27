@@ -2,7 +2,9 @@ using FluentValidation;
 using L2SLedger.Application.DTOs.Transaction;
 using L2SLedger.Application.Interfaces;
 using L2SLedger.Application.UseCases.Periods;
+using L2SLedger.Domain.Constants;
 using L2SLedger.Domain.Entities;
+using L2SLedger.Domain.Exceptions;
 
 namespace L2SLedger.Application.UseCases.Transaction;
 
@@ -47,7 +49,7 @@ public class UpdateTransactionUseCase
         var transaction = await _transactionRepository.GetByIdAsync(id, cancellationToken);
         if (transaction == null || transaction.UserId != userId)
         {
-            throw new InvalidOperationException("Transação não encontrada ou não pertence ao usuário");
+            throw new BusinessRuleException(ErrorCodes.FIN_TRANSACTION_NOT_FOUND, "Transação não encontrada ou não pertence ao usuário");
         }
 
         // Validar que o período da data original está aberto (ADR-015: Imutabilidade de períodos)
@@ -63,7 +65,7 @@ public class UpdateTransactionUseCase
         var category = await _categoryRepository.GetByIdAsync(request.CategoryId, cancellationToken);
         if (category == null)
         {
-            throw new InvalidOperationException("Categoria não encontrada");
+            throw new BusinessRuleException(ErrorCodes.FIN_CATEGORY_NOT_FOUND, "Categoria não encontrada");
         }
 
         // Atualizar entidade
