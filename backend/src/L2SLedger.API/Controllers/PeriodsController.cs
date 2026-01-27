@@ -200,7 +200,7 @@ public class PeriodsController : ControllerBase
 
             return Ok(result);
         }
-        catch (BusinessRuleException ex) when (ex.Code == "FIN_PERIOD_NOT_FOUND")
+        catch (BusinessRuleException ex) when (ex.Code == ErrorCodes.FIN_PERIOD_NOT_FOUND)
         {
             return NotFound(ErrorResponse.Create(
                 ex.Code,
