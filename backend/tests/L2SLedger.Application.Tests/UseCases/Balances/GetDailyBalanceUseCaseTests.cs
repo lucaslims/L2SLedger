@@ -3,6 +3,7 @@ using FluentValidation;
 using L2SLedger.Application.DTOs.Balances;
 using L2SLedger.Application.Interfaces;
 using L2SLedger.Application.UseCases.Balances;
+using L2SLedger.Domain.Exceptions;
 using Moq;
 
 namespace L2SLedger.Application.Tests.UseCases.Balances;
@@ -157,7 +158,7 @@ public class GetDailyBalanceUseCaseTests
         Func<Task> act = async () => await _sut.ExecuteAsync(startDate, endDate);
 
         // Assert
-        await act.Should().ThrowAsync<ValidationException>()
+        await act.Should().ThrowAsync<BusinessRuleException>()
             .WithMessage("*período máximo permitido é de 365 dias*");
     }
 

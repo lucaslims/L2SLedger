@@ -1,5 +1,6 @@
 using FluentAssertions;
 using L2SLedger.API.Contracts;
+using L2SLedger.Domain.Constants;
 using System.Text.Json;
 
 namespace L2SLedger.Contract.Tests.Contracts;

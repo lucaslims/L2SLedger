@@ -98,7 +98,7 @@ public class ReopenPeriodUseCaseTests
         var exception = await Assert.ThrowsAsync<BusinessRuleException>(
             () => _useCase.ExecuteAsync(periodId, userId, request));
 
-        exception.Code.Should().Be("FIN_PERIOD_ALREADY_OPEN");
+        exception.Code.Should().Be("FIN_PERIOD_ALREADY_OPENED");
         _mockRepository.Verify(r => r.UpdateAsync(It.IsAny<FinancialPeriod>(), It.IsAny<CancellationToken>()), Times.Never);
     }
 
