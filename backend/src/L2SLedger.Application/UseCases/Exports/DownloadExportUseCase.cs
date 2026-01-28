@@ -69,8 +69,12 @@ public class DownloadExportUseCase
         var contentType = export.Format == ExportFormat.Csv
             ? "text/csv"
             : "application/pdf";
-        var fileName = $"transactions_{export.RequestedAt:yyyyMMdd_HHmmss}.{extension}";
-
+        
+        var userIdFull = userId.ToString("N");
+        var timestamp = DateTime.UtcNow.ToString("yyyyMMddHHmmssfff");
+        var uniqueSuffix = Guid.NewGuid().ToString("N")[..8];
+        var fileName = $"transactions_{userIdFull}_{timestamp}_{uniqueSuffix}.{extension}";
+              
         _logger.LogInformation(
             "Export {ExportId} downloaded by user {UserId}",
             exportId,
