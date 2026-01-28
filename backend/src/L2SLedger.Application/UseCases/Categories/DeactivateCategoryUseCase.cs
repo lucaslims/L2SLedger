@@ -1,5 +1,5 @@
 using L2SLedger.Application.Interfaces;
-using L2SLedger.Domain.Exceptions;
+using L2SLedger.Domain.Constants;
 
 namespace L2SLedger.Application.UseCases.Categories;
 
@@ -21,14 +21,14 @@ public class DeactivateCategoryUseCase
         var category = await _categoryRepository.GetByIdAsync(categoryId, cancellationToken);
         if (category == null)
         {
-            throw new Domain.Exceptions.BusinessRuleException("FIN_CATEGORY_NOT_FOUND", "Categoria não encontrada");
+            throw new Domain.Exceptions.BusinessRuleException(ErrorCodes.FIN_CATEGORY_NOT_FOUND, "Categoria não encontrada");
         }
 
         // Verificar se tem subcategorias ativas
         var activeSubCategoriesCount = await _categoryRepository.CountSubCategoriesAsync(categoryId, activeOnly: true, cancellationToken);
         if (activeSubCategoriesCount > 0)
         {
-            throw new Domain.Exceptions.BusinessRuleException("VAL_BUSINESS_RULE_VIOLATION", "Não é possível desativar uma categoria com subcategorias ativas");
+            throw new Domain.Exceptions.BusinessRuleException(ErrorCodes.VAL_BUSINESS_RULE_VIOLATION, "Não é possível desativar uma categoria com subcategorias ativas");
         }
 
         // Desativar categoria (soft delete)

@@ -1,5 +1,7 @@
+using L2SLedger.API.Contracts;
 using L2SLedger.Application.DTOs.Categories;
 using L2SLedger.Application.UseCases.Categories;
+using L2SLedger.Domain.Constants;
 using L2SLedger.Domain.Exceptions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -81,7 +83,7 @@ public class CategoriesController : ControllerBase
             var category = await _getCategoryByIdUseCase.ExecuteAsync(id, cancellationToken);
             return Ok(category);
         }
-        catch (BusinessRuleException ex) when (ex.Code == "FIN_CATEGORY_NOT_FOUND")
+        catch (BusinessRuleException ex) when (ex.Code == ErrorCodes.FIN_CATEGORY_NOT_FOUND)
         {
             return NotFound(new { error = ex.Message });
         }
@@ -116,15 +118,15 @@ public class CategoriesController : ControllerBase
         }
         catch (FluentValidation.ValidationException ex)
         {
-            return BadRequest(new
-            {
-                error = "Validation failed",
-                errors = ex.Errors.Select(e => new { e.PropertyName, e.ErrorMessage, e.ErrorCode })
-            });
+            return BadRequest(ErrorResponse.Create(
+                ErrorCodes.VAL_VALIDATION_FAILED,
+                "Falha na validação",
+                details: string.Join("; ", ex.Errors.Select(e => $"{e.PropertyName}: {e.ErrorMessage}")),
+                traceId: HttpContext.TraceIdentifier));
         }
         catch (BusinessRuleException ex)
         {
-            return BadRequest(new { error = ex.Message, code = ex.Code });
+            return BadRequest(ErrorResponse.Create(ex.Code, ex.Message, traceId: HttpContext.TraceIdentifier));
         }
         catch (Exception ex)
         {
@@ -157,19 +159,19 @@ public class CategoriesController : ControllerBase
         }
         catch (FluentValidation.ValidationException ex)
         {
-            return BadRequest(new
-            {
-                error = "Validation failed",
-                errors = ex.Errors.Select(e => new { e.PropertyName, e.ErrorMessage, e.ErrorCode })
-            });
+            return BadRequest(ErrorResponse.Create(
+                ErrorCodes.VAL_VALIDATION_FAILED,
+                "Falha na validação",
+                details: string.Join("; ", ex.Errors.Select(e => $"{e.PropertyName}: {e.ErrorMessage}")),
+                traceId: HttpContext.TraceIdentifier));
         }
-        catch (BusinessRuleException ex) when (ex.Code == "FIN_CATEGORY_NOT_FOUND")
+        catch (BusinessRuleException ex) when (ex.Code == ErrorCodes.FIN_CATEGORY_NOT_FOUND)
         {
-            return NotFound(new { error = ex.Message });
+            return NotFound(ErrorResponse.Create(ex.Code, ex.Message, traceId: HttpContext.TraceIdentifier));
         }
         catch (BusinessRuleException ex)
         {
-            return BadRequest(new { error = ex.Message, code = ex.Code });
+            return BadRequest(ErrorResponse.Create(ex.Code, ex.Message, traceId: HttpContext.TraceIdentifier));
         }
         catch (Exception ex)
         {
@@ -198,13 +200,13 @@ public class CategoriesController : ControllerBase
             await _deactivateCategoryUseCase.ExecuteAsync(id, cancellationToken);
             return NoContent();
         }
-        catch (BusinessRuleException ex) when (ex.Code == "FIN_CATEGORY_NOT_FOUND")
+        catch (BusinessRuleException ex) when (ex.Code == ErrorCodes.FIN_CATEGORY_NOT_FOUND)
         {
-            return NotFound(new { error = ex.Message });
+            return NotFound(ErrorResponse.Create(ex.Code, ex.Message, traceId: HttpContext.TraceIdentifier));
         }
         catch (BusinessRuleException ex)
         {
-            return BadRequest(new { error = ex.Message, code = ex.Code });
+            return BadRequest(ErrorResponse.Create(ex.Code, ex.Message, traceId: HttpContext.TraceIdentifier));
         }
         catch (Exception ex)
         {

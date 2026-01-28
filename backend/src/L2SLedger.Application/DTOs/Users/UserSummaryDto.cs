@@ -15,6 +15,9 @@ public record UserSummaryDto
     /// <summary>Nome de exibição do usuário.</summary>
     public required string DisplayName { get; init; }
 
+    /// <summary>Status de aprovação do usuário.</summary>
+    public required string Status { get; init; }
+
     /// <summary>Roles atribuídos ao usuário.</summary>
     public required IReadOnlyList<string> Roles { get; init; }
 

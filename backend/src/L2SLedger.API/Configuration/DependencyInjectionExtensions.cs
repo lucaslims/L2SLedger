@@ -161,6 +161,7 @@ public static class DependencyInjectionExtensions
         services.AddScoped<GetUserByIdUseCase>();
         services.AddScoped<GetUserRolesUseCase>();
         services.AddScoped<UpdateUserRolesUseCase>();
+        services.AddScoped<UpdateUserStatusUseCase>();
 
         return services;
     }

@@ -1,6 +1,8 @@
 using FluentValidation;
 using L2SLedger.Application.DTOs.Balances;
 using L2SLedger.Application.Interfaces;
+using L2SLedger.Domain.Constants;
+using L2SLedger.Domain.Exceptions;
 
 namespace L2SLedger.Application.UseCases.Balances;
 
@@ -38,14 +40,14 @@ public class GetDailyBalanceUseCase
         // Validação de datas
         if (startDate > endDate)
         {
-            throw new ValidationException("A data inicial não pode ser maior que a data final");
+            throw new BusinessRuleException(ErrorCodes.VAL_INVALID_RANGE, "A data inicial não pode ser maior que a data final");
         }
 
         // Validação de período máximo
         var daysDifference = (endDate - startDate).Days + 1;
         if (daysDifference > MaxDaysAllowed)
         {
-            throw new ValidationException($"O período máximo permitido é de {MaxDaysAllowed} dias");
+            throw new BusinessRuleException(ErrorCodes.VAL_INVALID_RANGE, $"O período máximo permitido é de {MaxDaysAllowed} dias");
         }
 
         // Calcular saldo de abertura (saldo acumulado antes do período)

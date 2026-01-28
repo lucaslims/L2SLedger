@@ -1,6 +1,7 @@
 using AutoMapper;
 using L2SLedger.Application.DTOs.Users;
 using L2SLedger.Application.Interfaces;
+using L2SLedger.Domain.Constants;
 using L2SLedger.Domain.Exceptions;
 
 namespace L2SLedger.Application.UseCases.Users;
@@ -38,7 +39,7 @@ public class GetUserByIdUseCase
         if (user is null)
         {
             throw new BusinessRuleException(
-                "USER_NOT_FOUND",
+                ErrorCodes.USER_NOT_FOUND,
                 $"Usuário com ID {userId} não encontrado.");
         }
 

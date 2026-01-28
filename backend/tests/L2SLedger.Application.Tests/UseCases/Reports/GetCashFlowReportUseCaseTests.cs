@@ -4,6 +4,7 @@ using L2SLedger.Application.DTOs.Reports;
 using L2SLedger.Application.Interfaces;
 using L2SLedger.Application.UseCases.Reports;
 using L2SLedger.Domain.Entities;
+using L2SLedger.Domain.Exceptions;
 using Moq;
 using DomainTransaction = L2SLedger.Domain.Entities.Transaction;
 
@@ -223,7 +224,7 @@ public class GetCashFlowReportUseCaseTests
         Func<Task> act = async () => await _sut.ExecuteAsync(startDate, endDate);
 
         // Assert
-        await act.Should().ThrowAsync<ValidationException>()
+        await act.Should().ThrowAsync<BusinessRuleException>()
             .WithMessage("*período máximo permitido é de 90 dias*");
     }
 

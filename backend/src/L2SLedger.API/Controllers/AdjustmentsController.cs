@@ -1,5 +1,7 @@
+using L2SLedger.API.Contracts;
 using L2SLedger.Application.DTOs.Adjustments;
 using L2SLedger.Application.UseCases.Adjustments;
+using L2SLedger.Domain.Constants;
 using L2SLedger.Domain.Exceptions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -58,14 +60,12 @@ public class AdjustmentsController : ControllerBase
         catch (ValidationException ex)
         {
             _logger.LogWarning("Erro de validação ao listar ajustes: {Errors}", ex.Errors);
-            return BadRequest(new
-            {
-                errors = ex.Errors.Select(e => new
-                {
-                    property = e.PropertyName,
-                    message = e.ErrorMessage
-                })
-            });
+            
+            return BadRequest(ErrorResponse.Create(
+                ErrorCodes.VAL_VALIDATION_FAILED,
+                "Erro de validação",
+                details: string.Join("; ", ex.Errors.Select(e => $"{e.PropertyName}: {e.ErrorMessage}")),
+                traceId: HttpContext.TraceIdentifier));
         }
         catch (Exception ex)
         {
@@ -94,12 +94,12 @@ public class AdjustmentsController : ControllerBase
             var adjustment = await _getAdjustmentByIdUseCase.ExecuteAsync(id, cancellationToken);
             return Ok(adjustment);
         }
-        catch (BusinessRuleException ex) when (ex.Code == "FIN_ADJUSTMENT_NOT_FOUND")
+        catch (BusinessRuleException ex) when (ex.Code == ErrorCodes.FIN_ADJUSTMENT_NOT_FOUND)
         {
             _logger.LogWarning("Ajuste não encontrado: {AdjustmentId}", id);
-            return NotFound(new { error = ex.Message, code = ex.Code });
+            return NotFound(ErrorResponse.Create(ex.Code, ex.Message, traceId: HttpContext.TraceIdentifier));
         }
-        catch (BusinessRuleException ex) when (ex.Code == "FIN_ADJUSTMENT_UNAUTHORIZED")
+        catch (BusinessRuleException ex) when (ex.Code == ErrorCodes.FIN_ADJUSTMENT_UNAUTHORIZED)
         {
             _logger.LogWarning("Acesso não autorizado ao ajuste: {AdjustmentId}", id);
             return Forbid();
@@ -145,19 +145,16 @@ public class AdjustmentsController : ControllerBase
         catch (ValidationException ex)
         {
             _logger.LogWarning("Erro de validação ao criar ajuste: {Errors}", ex.Errors);
-            return BadRequest(new
-            {
-                errors = ex.Errors.Select(e => new
-                {
-                    property = e.PropertyName,
-                    message = e.ErrorMessage
-                })
-            });
+            return BadRequest(ErrorResponse.Create(
+                ErrorCodes.VAL_VALIDATION_FAILED,
+                "Erro de validação",
+                details: string.Join("; ", ex.Errors.Select(e => $"{e.PropertyName}: {e.ErrorMessage}")),
+                traceId: HttpContext.TraceIdentifier));
         }
         catch (BusinessRuleException ex)
         {
             _logger.LogWarning(ex, "Erro de regra de negócio ao criar ajuste");
-            return BadRequest(new { error = ex.Message, code = ex.Code });
+            return BadRequest(ErrorResponse.Create(ex.Code, ex.Message, traceId: HttpContext.TraceIdentifier));
         }
         catch (Exception ex)
         {
@@ -191,12 +188,12 @@ public class AdjustmentsController : ControllerBase
 
             return NoContent();
         }
-        catch (BusinessRuleException ex) when (ex.Code == "FIN_ADJUSTMENT_NOT_FOUND")
+        catch (BusinessRuleException ex) when (ex.Code ==  ErrorCodes.FIN_ADJUSTMENT_NOT_FOUND)
         {
             _logger.LogWarning("Ajuste não encontrado: {AdjustmentId}", id);
-            return NotFound(new { error = ex.Message, code = ex.Code });
+            return NotFound(ErrorResponse.Create(ex.Code, ex.Message, traceId: HttpContext.TraceIdentifier));
         }
-        catch (BusinessRuleException ex) when (ex.Code == "AUTH_INSUFFICIENT_PERMISSIONS")
+        catch (BusinessRuleException ex) when (ex.Code == ErrorCodes.PERM_INSUFFICIENT_PRIVILEGES)
         {
             _logger.LogWarning("Permissão insuficiente para deletar ajuste: {AdjustmentId}", id);
             return Forbid();
@@ -204,7 +201,7 @@ public class AdjustmentsController : ControllerBase
         catch (BusinessRuleException ex)
         {
             _logger.LogWarning(ex, "Erro de regra de negócio ao deletar ajuste");
-            return BadRequest(new { error = ex.Message, code = ex.Code });
+            return BadRequest(ErrorResponse.Create(ex.Code, ex.Message, traceId: HttpContext.TraceIdentifier));
         }
         catch (Exception ex)
         {

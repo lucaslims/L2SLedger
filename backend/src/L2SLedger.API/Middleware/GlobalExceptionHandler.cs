@@ -1,5 +1,6 @@
 using L2SLedger.API.Contracts;
 using L2SLedger.Domain.Exceptions;
+using L2SLedger.Domain.Constants;
 using Microsoft.AspNetCore.Diagnostics;
 using System.Net;
 
@@ -27,10 +28,15 @@ public class GlobalExceptionHandler : IExceptionHandler
 
         var (statusCode, errorCode, message) = exception switch
         {
+            NotFoundException notFoundEx => (HttpStatusCode.NotFound, notFoundEx.Code, notFoundEx.Message),
+            AuthorizationException authzEx => (HttpStatusCode.Forbidden, authzEx.Code, authzEx.Message),
             AuthenticationException authEx => (HttpStatusCode.Unauthorized, authEx.Code, authEx.Message),
             BusinessRuleException businessEx => (HttpStatusCode.BadRequest, businessEx.Code, businessEx.Message),
-            FluentValidation.ValidationException => (HttpStatusCode.BadRequest, "VAL_VALIDATION_FAILED", "Falha na validação dos dados"),
-            _ => (HttpStatusCode.InternalServerError, "SYS_INTERNAL_ERROR", "Erro interno do servidor")
+            FluentValidation.ValidationException validationEx => (
+                HttpStatusCode.BadRequest, 
+                ErrorCodes.VAL_VALIDATION_FAILED, 
+                string.Join("; ", validationEx.Errors.Select(e => e.ErrorMessage))),
+            _ => (HttpStatusCode.InternalServerError, ErrorCodes.SYS_INTERNAL_ERROR, "Erro interno do servidor")
         };
 
         var errorResponse = ErrorResponse.Create(

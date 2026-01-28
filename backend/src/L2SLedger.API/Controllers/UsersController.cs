@@ -1,6 +1,7 @@
 using L2SLedger.API.Contracts;
 using L2SLedger.Application.DTOs.Users;
 using L2SLedger.Application.UseCases.Users;
+using L2SLedger.Domain.Constants;
 using L2SLedger.Domain.Exceptions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -20,6 +21,7 @@ public class UsersController : ControllerBase
     private readonly GetUserByIdUseCase _getUserByIdUseCase;
     private readonly GetUserRolesUseCase _getUserRolesUseCase;
     private readonly UpdateUserRolesUseCase _updateUserRolesUseCase;
+    private readonly UpdateUserStatusUseCase _updateUserStatusUseCase;
     private readonly ILogger<UsersController> _logger;
 
     public UsersController(
@@ -27,12 +29,14 @@ public class UsersController : ControllerBase
         GetUserByIdUseCase getUserByIdUseCase,
         GetUserRolesUseCase getUserRolesUseCase,
         UpdateUserRolesUseCase updateUserRolesUseCase,
+        UpdateUserStatusUseCase updateUserStatusUseCase,
         ILogger<UsersController> logger)
     {
         _getUsersUseCase = getUsersUseCase;
         _getUserByIdUseCase = getUserByIdUseCase;
         _getUserRolesUseCase = getUserRolesUseCase;
         _updateUserRolesUseCase = updateUserRolesUseCase;
+        _updateUserStatusUseCase = updateUserStatusUseCase;
         _logger = logger;
     }
 
@@ -43,6 +47,7 @@ public class UsersController : ControllerBase
     /// <param name="pageSize">Quantidade de itens por página (max 100).</param>
     /// <param name="email">Filtrar por email (contém).</param>
     /// <param name="role">Filtrar por role.</param>
+    /// <param name="status">Filtrar por status (Pending, Active, Suspended, Rejected).</param>
     /// <param name="includeInactive">Incluir usuários inativos.</param>
     /// <param name="cancellationToken">Token de cancelamento.</param>
     /// <returns>Lista paginada de usuários.</returns>
@@ -56,6 +61,7 @@ public class UsersController : ControllerBase
         [FromQuery] int pageSize = 20,
         [FromQuery] string? email = null,
         [FromQuery] string? role = null,
+        [FromQuery] string? status = null,
         [FromQuery] bool includeInactive = false,
         CancellationToken cancellationToken = default)
     {
@@ -65,6 +71,7 @@ public class UsersController : ControllerBase
             PageSize = pageSize,
             Email = email,
             Role = role,
+            Status = status,
             IncludeInactive = includeInactive
         };
 
@@ -92,7 +99,7 @@ public class UsersController : ControllerBase
             var user = await _getUserByIdUseCase.ExecuteAsync(id, cancellationToken);
             return Ok(user);
         }
-        catch (BusinessRuleException ex) when (ex.Code == "USER_NOT_FOUND")
+        catch (BusinessRuleException ex) when (ex.Code == ErrorCodes.USER_NOT_FOUND)
         {
             return NotFound(ErrorResponse.Create(ex.Code, ex.Message));
         }
@@ -118,7 +125,7 @@ public class UsersController : ControllerBase
             var response = await _getUserRolesUseCase.ExecuteAsync(id, cancellationToken);
             return Ok(response);
         }
-        catch (BusinessRuleException ex) when (ex.Code == "USER_NOT_FOUND")
+        catch (BusinessRuleException ex) when (ex.Code == ErrorCodes.USER_NOT_FOUND)
         {
             return NotFound(ErrorResponse.Create(ex.Code, ex.Message));
         }
@@ -150,11 +157,46 @@ public class UsersController : ControllerBase
 
             return Ok(user);
         }
-        catch (BusinessRuleException ex) when (ex.Code == "USER_NOT_FOUND")
+        catch (BusinessRuleException ex) when (ex.Code == ErrorCodes.USER_NOT_FOUND)
         {
             return NotFound(ErrorResponse.Create(ex.Code, ex.Message));
         }
-        catch (BusinessRuleException ex) when (ex.Code is "CANNOT_REMOVE_OWN_ADMIN" or "LAST_ADMIN" or "ROLES_REQUIRED" or "ROLE_EMPTY" or "INVALID_ROLE")
+        catch (BusinessRuleException ex) when (ex.Code is ErrorCodes.USER_CANNOT_REMOVE_OWN_ADMIN or ErrorCodes.USER_LAST_ADMIN or ErrorCodes.USER_ROLES_REQUIRED or ErrorCodes.USER_ROLE_EMPTY or ErrorCodes.USER_INVALID_ROLE){
+            return BadRequest(ErrorResponse.Create(ex.Code, ex.Message));   
+        }        
+    }
+
+    /// <summary>
+    /// Atualiza o status de um usuário.
+    /// </summary>
+    /// <param name="id">ID do usuário.</param>
+    /// <param name="request">Novo status e motivo.</param>
+    /// <param name="cancellationToken">Token de cancelamento.</param>
+    /// <returns>Usuário atualizado.</returns>
+    [HttpPut("{id:guid}/status")]
+    [ProducesResponseType(typeof(UserDetailDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<UserDetailDto>> UpdateUserStatus(
+        [FromRoute] Guid id,
+        [FromBody] UpdateUserStatusRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            var user = await _updateUserStatusUseCase.ExecuteAsync(id, request, cancellationToken);
+
+            _logger.LogInformation("Status do usuário {UserId} atualizado para {Status}", id, request.Status);
+
+            return Ok(user);
+        }
+        catch (BusinessRuleException ex) when (ex.Code == ErrorCodes.USER_NOT_FOUND)
+        {
+            return NotFound(ErrorResponse.Create(ex.Code, ex.Message));
+        }
+        catch (BusinessRuleException ex) when (ex.Code is ErrorCodes.USER_INVALID_STATUS_TRANSITION or ErrorCodes.USER_STATUS_REASON_REQUIRED or ErrorCodes.USER_INVALID_STATUS or ErrorCodes.USER_STATUS_REQUIRED)
         {
             return BadRequest(ErrorResponse.Create(ex.Code, ex.Message));
         }

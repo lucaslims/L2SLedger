@@ -3,6 +3,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using L2SLedger.Application.DTOs.Auth;
 using L2SLedger.Application.Interfaces;
+using L2SLedger.Domain.Constants;
 using L2SLedger.Domain.Exceptions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -74,14 +75,14 @@ public class FirebaseAuthenticationService : IFirebaseAuthenticationService
                 response.StatusCode, errorContent);
 
             throw new AuthenticationException(
-                "AUTH_FIREBASE_ERROR",
+                ErrorCodes.AUTH_FIREBASE_ERROR,
                 "Erro ao autenticar com Firebase");
         }
 
         var result = await response.Content.ReadFromJsonAsync<FirebaseSignInResponse>(cancellationToken);
         
         if (result == null)
-            throw new AuthenticationException("AUTH_FIREBASE_ERROR", "Resposta inválida do Firebase");
+            throw new AuthenticationException(ErrorCodes.AUTH_FIREBASE_ERROR, "Resposta inválida do Firebase");
 
         return new FirebaseLoginResponse(
             result.IdToken,

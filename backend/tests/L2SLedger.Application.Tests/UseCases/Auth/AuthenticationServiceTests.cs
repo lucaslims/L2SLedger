@@ -65,15 +65,11 @@ public class AuthenticationServiceTests
             .Setup(x => x.AddAsync(It.IsAny<User>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(newUser);
 
-        // Act
-        var result = await _sut.LoginAsync(request);
-
-        // Assert
-        result.Should().NotBeNull();
-        result.User.Should().NotBeNull();
-        result.User.Email.Should().Be(firebaseUser.Email);
-        result.User.DisplayName.Should().Be(firebaseUser.DisplayName);
-        result.User.Roles.Should().Contain("Leitura");
+        // Act & Assert
+        // Novos usuários são criados com status Pending e não podem fazer login imediatamente
+        var act = async () => await _sut.LoginAsync(request);
+        await act.Should().ThrowAsync<AuthenticationException>()
+            .WithMessage("Seu cadastro está aguardando aprovação do administrador.");
 
         _firebaseAuthServiceMock.Verify(x => x.ValidateTokenAsync(request.FirebaseIdToken, It.IsAny<CancellationToken>()), Times.Once);
         _userRepositoryMock.Verify(x => x.GetByFirebaseUidAsync(firebaseUser.Uid, It.IsAny<CancellationToken>()), Times.Once);
@@ -94,6 +90,7 @@ public class AuthenticationServiceTests
         };
 
         var existingUser = new User(firebaseUser.Uid, firebaseUser.Email, firebaseUser.DisplayName, true);
+        existingUser.Approve(); // Aprovando o usuário para permitir login
 
         _firebaseAuthServiceMock
             .Setup(x => x.ValidateTokenAsync(request.FirebaseIdToken, It.IsAny<CancellationToken>()))
@@ -172,6 +169,7 @@ public class AuthenticationServiceTests
         };
 
         var existingUser = new User(firebaseUser.Uid, firebaseUser.Email, firebaseUser.DisplayName, false);
+        existingUser.Approve(); // Aprovando o usuário para permitir login
 
         _firebaseAuthServiceMock
             .Setup(x => x.ValidateTokenAsync(request.FirebaseIdToken, It.IsAny<CancellationToken>()))
@@ -229,5 +227,177 @@ public class AuthenticationServiceTests
         // Assert
         await act.Should().ThrowAsync<AuthenticationException>()
             .Where(ex => ex.Code == "AUTH_USER_NOT_FOUND");
+    }
+
+    // ============ Status Tests (user-status-plan.md) ============
+
+    [Fact]
+    public async Task LoginAsync_WithPendingUser_ShouldThrowAuthenticationException()
+    {
+        // Arrange
+        var request = new LoginRequest { FirebaseIdToken = "valid-token" };
+        var firebaseUser = new FirebaseUserData
+        {
+            Uid = "firebase-uid-123",
+            Email = "test@example.com",
+            DisplayName = "Test User",
+            EmailVerified = true
+        };
+
+        var existingUser = new User(firebaseUser.Uid, firebaseUser.Email, firebaseUser.DisplayName, true);
+        // User status is Pending by default
+
+        _firebaseAuthServiceMock
+            .Setup(x => x.ValidateTokenAsync(request.FirebaseIdToken, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(firebaseUser);
+
+        _userRepositoryMock
+            .Setup(x => x.GetByFirebaseUidAsync(firebaseUser.Uid, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(existingUser);
+
+        // Act
+        var act = async () => await _sut.LoginAsync(request);
+
+        // Assert
+        await act.Should().ThrowAsync<AuthenticationException>()
+            .Where(ex => ex.Code == "AUTH_USER_PENDING")
+            .WithMessage("*aguardando aprovação*");
+    }
+
+    [Fact]
+    public async Task LoginAsync_WithSuspendedUser_ShouldThrowAuthenticationException()
+    {
+        // Arrange
+        var request = new LoginRequest { FirebaseIdToken = "valid-token" };
+        var firebaseUser = new FirebaseUserData
+        {
+            Uid = "firebase-uid-123",
+            Email = "test@example.com",
+            DisplayName = "Test User",
+            EmailVerified = true
+        };
+
+        var existingUser = new User(firebaseUser.Uid, firebaseUser.Email, firebaseUser.DisplayName, true);
+        existingUser.Approve();
+        existingUser.Suspend();
+
+        _firebaseAuthServiceMock
+            .Setup(x => x.ValidateTokenAsync(request.FirebaseIdToken, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(firebaseUser);
+
+        _userRepositoryMock
+            .Setup(x => x.GetByFirebaseUidAsync(firebaseUser.Uid, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(existingUser);
+
+        // Act
+        var act = async () => await _sut.LoginAsync(request);
+
+        // Assert
+        await act.Should().ThrowAsync<AuthenticationException>()
+            .Where(ex => ex.Code == "AUTH_USER_SUSPENDED")
+            .WithMessage("*suspensa*");
+    }
+
+    [Fact]
+    public async Task LoginAsync_WithRejectedUser_ShouldThrowAuthenticationException()
+    {
+        // Arrange
+        var request = new LoginRequest { FirebaseIdToken = "valid-token" };
+        var firebaseUser = new FirebaseUserData
+        {
+            Uid = "firebase-uid-123",
+            Email = "test@example.com",
+            DisplayName = "Test User",
+            EmailVerified = true
+        };
+
+        var existingUser = new User(firebaseUser.Uid, firebaseUser.Email, firebaseUser.DisplayName, true);
+        existingUser.Reject();
+
+        _firebaseAuthServiceMock
+            .Setup(x => x.ValidateTokenAsync(request.FirebaseIdToken, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(firebaseUser);
+
+        _userRepositoryMock
+            .Setup(x => x.GetByFirebaseUidAsync(firebaseUser.Uid, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(existingUser);
+
+        // Act
+        var act = async () => await _sut.LoginAsync(request);
+
+        // Assert
+        await act.Should().ThrowAsync<AuthenticationException>()
+            .Where(ex => ex.Code == "AUTH_USER_REJECTED")
+            .WithMessage("*rejeitado*");
+    }
+
+    [Fact]
+    public async Task LoginAsync_WithActiveUser_ShouldSucceed()
+    {
+        // Arrange
+        var request = new LoginRequest { FirebaseIdToken = "valid-token" };
+        var firebaseUser = new FirebaseUserData
+        {
+            Uid = "firebase-uid-123",
+            Email = "test@example.com",
+            DisplayName = "Test User",
+            EmailVerified = true
+        };
+
+        var existingUser = new User(firebaseUser.Uid, firebaseUser.Email, firebaseUser.DisplayName, true);
+        existingUser.Approve(); // Status = Active
+
+        _firebaseAuthServiceMock
+            .Setup(x => x.ValidateTokenAsync(request.FirebaseIdToken, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(firebaseUser);
+
+        _userRepositoryMock
+            .Setup(x => x.GetByFirebaseUidAsync(firebaseUser.Uid, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(existingUser);
+
+        // Act
+        var result = await _sut.LoginAsync(request);
+
+        // Assert
+        result.Should().NotBeNull();
+        result.User.Email.Should().Be(existingUser.Email);
+    }
+
+    [Fact]
+    public async Task LoginAsync_WithNewUser_ShouldCreateWithPendingStatus()
+    {
+        // Arrange
+        var request = new LoginRequest { FirebaseIdToken = "valid-token" };
+        var firebaseUser = new FirebaseUserData
+        {
+            Uid = "firebase-uid-123",
+            Email = "test@example.com",
+            DisplayName = "Test User",
+            EmailVerified = true
+        };
+
+        _firebaseAuthServiceMock
+            .Setup(x => x.ValidateTokenAsync(request.FirebaseIdToken, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(firebaseUser);
+
+        _userRepositoryMock
+            .Setup(x => x.GetByFirebaseUidAsync(firebaseUser.Uid, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((User?)null);
+
+        User? capturedUser = null;
+        _userRepositoryMock
+            .Setup(x => x.AddAsync(It.IsAny<User>(), It.IsAny<CancellationToken>()))
+            .Callback<User, CancellationToken>((user, ct) => capturedUser = user)
+            .ReturnsAsync((User user, CancellationToken ct) => user);
+
+        // Act
+        var act = async () => await _sut.LoginAsync(request);
+
+        // Assert
+        await act.Should().ThrowAsync<AuthenticationException>()
+            .Where(ex => ex.Code == "AUTH_USER_PENDING");
+
+        capturedUser.Should().NotBeNull();
+        capturedUser!.Status.Should().Be(UserStatus.Pending);
     }
 }

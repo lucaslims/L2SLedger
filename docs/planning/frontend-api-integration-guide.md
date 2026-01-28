@@ -667,6 +667,7 @@ interface AuditEventDto {
 | GET | `/api/v1/users/{id}` | Detalhes | Admin |
 | GET | `/api/v1/users/{id}/roles` | Roles do usuário | Admin |
 | PUT | `/api/v1/users/{id}/roles` | Atualizar roles | Admin |
+| PUT | `/api/v1/users/{id}/status` | **[NOVO]** Atualizar status | Admin |
 
 ### 9.2 Contratos
 
@@ -677,6 +678,7 @@ interface GetUsersRequest {
   pageSize?: number;      // default: 20, max: 100
   email?: string;         // filtro contains
   role?: string;          // 'Admin', 'Financeiro', 'Leitura'
+  status?: string;        // **[NOVO]** 'Pending', 'Active', 'Suspended', 'Rejected'
   includeInactive?: boolean; // default: false
 }
 
@@ -694,6 +696,7 @@ interface UserSummaryDto {
   id: string;
   email: string;
   displayName: string;
+  status: string;         // **[NOVO]** 'Pending' | 'Active' | 'Suspended' | 'Rejected'
   roles: string[];
   isActive: boolean;
   lastLoginAt?: string;
@@ -705,6 +708,7 @@ interface UserDetailDto {
   email: string;
   displayName: string;
   emailVerified: boolean;
+  status: string;         // **[NOVO]** 'Pending' | 'Active' | 'Suspended' | 'Rejected'
   roles: string[];
   isActive: boolean;
   createdAt: string;
@@ -723,6 +727,12 @@ interface UserRolesResponse {
 interface UpdateUserRolesRequest {
   roles: string[];  // Ex: ['Financeiro', 'Leitura']
 }
+
+// **[NOVO]** PUT /api/v1/users/{id}/status
+interface UpdateUserStatusRequest {
+  status: string;   // 'Active' | 'Suspended' | 'Rejected'
+  reason: string;   // Motivo obrigatório para mudança
+}
 ```
 
 ### 9.3 Regras de Segurança
@@ -732,6 +742,68 @@ interface UpdateUserRolesRequest {
 | Admin não pode remover próprio Admin | `CANNOT_REMOVE_OWN_ADMIN` | 400 |
 | Não pode remover último Admin | `LAST_ADMIN` | 400 |
 | Role inválido | `INVALID_ROLE` | 400 |
+| **[NOVO]** Transição de status inválida | `USER_INVALID_STATUS_TRANSITION` | 400 |
+| **[NOVO]** Motivo obrigatório | `USER_STATUS_REASON_REQUIRED` | 400 |
+
+### 9.4 Status do Usuário
+
+**Status possíveis:**
+
+| Status | Descrição | Pode fazer login? |
+|--------|-----------|-------------------|
+| `Pending` | Aguardando aprovação do Admin | ❌ Não |
+| `Active` | Aprovado e ativo | ✅ Sim |
+| `Suspended` | Suspenso temporariamente | ❌ Não |
+| `Rejected` | Cadastro rejeitado | ❌ Não |
+
+**Transições válidas:**
+
+```mermaid
+graph TD
+    Pending -->|Approve| Active
+    Pending -->|Reject| Rejected
+    Active -->|Suspend| Suspended
+    Suspended -->|Reactivate| Active
+```
+
+**Exemplo de uso:**
+
+```typescript
+// Aprovar um usuário pendente
+const approveUser = async (userId: string) => {
+  const response = await fetch(`/api/v1/users/${userId}/status`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+    body: JSON.stringify({
+      status: 'Active',
+      reason: 'Cadastro aprovado após verificação de documentos'
+    })
+  });
+  
+  if (!response.ok) {
+    const error = await response.json();
+    handleApiError(error);
+  }
+  
+  return response.json();
+};
+
+// Suspender um usuário
+const suspendUser = async (userId: string, reason: string) => {
+  const response = await fetch(`/api/v1/users/${userId}/status`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+    body: JSON.stringify({
+      status: 'Suspended',
+      reason
+    })
+  });
+  
+  return response.json();
+};
+```
 
 ---
 
@@ -755,10 +827,11 @@ interface ErrorResponse {
 
 | Prefixo | Categoria | Códigos | HTTP |
 |---------|-----------|---------|------|
-| `AUTH_` | Autenticação | `AUTH_INVALID_TOKEN`, `AUTH_EMAIL_NOT_VERIFIED`, `AUTH_SESSION_EXPIRED`, `AUTH_UNAUTHORIZED` | 400, 401 |
+| `AUTH_` | Autenticação | `AUTH_INVALID_TOKEN`, `AUTH_EMAIL_NOT_VERIFIED`, `AUTH_SESSION_EXPIRED`, `AUTH_UNAUTHORIZED`, **`AUTH_USER_PENDING`**, **`AUTH_USER_SUSPENDED`**, **`AUTH_USER_REJECTED`**, **`AUTH_USER_INACTIVE`** | 400, 401, 403 |
 | `VAL_` | Validação | `VAL_REQUIRED_FIELD`, `VAL_INVALID_FORMAT`, `VAL_AMOUNT_NEGATIVE`, `VAL_INVALID_DATE`, `VAL_INVALID_RANGE` | 400 |
 | `FIN_` | Financeiro | `FIN_PERIOD_CLOSED`, `FIN_DUPLICATE_ENTRY`, `FIN_INSUFFICIENT_BALANCE`, `FIN_INVALID_TRANSACTION` | 422 |
 | `PERM_` | Permissão | `PERM_ACCESS_DENIED`, `PERM_ROLE_REQUIRED`, `PERM_INSUFFICIENT_PRIVILEGES` | 403 |
+| **`USER_`** | **Usuários** | **`USER_NOT_FOUND`, `USER_INVALID_STATUS_TRANSITION`, `USER_STATUS_REASON_REQUIRED`** | **400, 404** |
 | `SYS_` | Sistema | `SYS_INTERNAL_ERROR`, `SYS_UNAVAILABLE`, `SYS_CONFIGURATION_ERROR` | 500 |
 | `INT_` | Integração | `INT_FIREBASE_UNAVAILABLE`, `INT_DB_CONNECTION`, `INT_EXTERNAL_SERVICE_ERROR` | 502, 503 |
 
@@ -778,6 +851,19 @@ const handleApiError = (error: ErrorResponse) => {
     case 'AUTH_EMAIL_NOT_VERIFIED':
       // Mostrar mensagem específica
       showModal('Email não verificado', 'Por favor, verifique seu email antes de continuar.');
+      break;
+      
+    // **[NOVO]** Tratamento de erros de status de usuário
+    case 'AUTH_USER_PENDING':
+      showModal('Cadastro Pendente', 'Seu cadastro está aguardando aprovação do administrador.');
+      break;
+      
+    case 'AUTH_USER_SUSPENDED':
+      showModal('Conta Suspensa', 'Sua conta foi suspensa. Entre em contato com o administrador.');
+      break;
+      
+    case 'AUTH_USER_REJECTED':
+      showModal('Cadastro Rejeitado', 'Seu cadastro foi rejeitado. Entre em contato com o administrador.');
       break;
       
     case 'FIN_PERIOD_CLOSED':

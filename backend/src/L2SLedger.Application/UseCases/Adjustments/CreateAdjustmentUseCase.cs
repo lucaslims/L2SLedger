@@ -2,6 +2,7 @@ using AutoMapper;
 using FluentValidation;
 using L2SLedger.Application.DTOs.Adjustments;
 using L2SLedger.Application.Interfaces;
+using L2SLedger.Domain.Constants;
 using L2SLedger.Domain.Entities;
 using L2SLedger.Domain.Exceptions;
 
@@ -50,7 +51,7 @@ public class CreateAdjustmentUseCase
         if (originalTransaction == null)
         {
             throw new BusinessRuleException(
-                "FIN_ADJUSTMENT_INVALID_ORIGINAL",
+                ErrorCodes.FIN_ADJUSTMENT_INVALID_ORIGINAL,
                 "Transação original não encontrada");
         }
 
@@ -58,7 +59,7 @@ public class CreateAdjustmentUseCase
         if (originalTransaction.UserId != userId)
         {
             throw new BusinessRuleException(
-                "FIN_ADJUSTMENT_UNAUTHORIZED",
+                ErrorCodes.FIN_ADJUSTMENT_UNAUTHORIZED,
                 "Você não tem permissão para ajustar esta transação");
         }
 

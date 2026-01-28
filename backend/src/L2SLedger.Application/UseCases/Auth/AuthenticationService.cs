@@ -1,6 +1,7 @@
 using AutoMapper;
 using L2SLedger.Application.DTOs.Auth;
 using L2SLedger.Application.Interfaces;
+using L2SLedger.Domain.Constants;
 using L2SLedger.Domain.Entities;
 using L2SLedger.Domain.Exceptions;
 using Microsoft.Extensions.Logging;
@@ -46,7 +47,7 @@ public class AuthenticationService : IAuthenticationService
         {
             _logger.LogWarning("Tentativa de login com email não verificado: {Email}", firebaseUser.Email);
             throw new AuthenticationException(
-                "AUTH_EMAIL_NOT_VERIFIED",
+                ErrorCodes.AUTH_EMAIL_NOT_VERIFIED,
                 "Email não verificado. Verifique seu email antes de fazer login.");
         }
 
@@ -79,6 +80,33 @@ public class AuthenticationService : IAuthenticationService
             }
         }
 
+        // Verificar status do usuário (user-status-plan.md)
+        if (user.Status != UserStatus.Active)
+        {
+            _logger.LogWarning(
+                "Tentativa de login com usuário inativo: {UserId}, Status: {Status}",
+                user.Id,
+                user.Status);
+
+            var errorCode = user.Status switch
+            {
+                UserStatus.Pending => ErrorCodes.AUTH_USER_PENDING,
+                UserStatus.Suspended => ErrorCodes.AUTH_USER_SUSPENDED,
+                UserStatus.Rejected => ErrorCodes.AUTH_USER_REJECTED,
+                _ => ErrorCodes.AUTH_USER_INACTIVE
+            };
+
+            var message = user.Status switch
+            {
+                UserStatus.Pending => "Seu cadastro está aguardando aprovação do administrador.",
+                UserStatus.Suspended => "Sua conta foi suspensa. Entre em contato com o administrador.",
+                UserStatus.Rejected => "Seu cadastro foi rejeitado. Entre em contato com o administrador.",
+                _ => "Sua conta está inativa."
+            };
+
+            throw new AuthenticationException(errorCode, message);
+        }
+
         var userDto = _mapper.Map<UserDto>(user);
 
         return new LoginResponse
@@ -94,7 +122,7 @@ public class AuthenticationService : IAuthenticationService
         if (user == null)
         {
             throw new AuthenticationException(
-                "AUTH_USER_NOT_FOUND",
+                ErrorCodes.AUTH_USER_NOT_FOUND,
                 "Usuário não encontrado");
         }
 
