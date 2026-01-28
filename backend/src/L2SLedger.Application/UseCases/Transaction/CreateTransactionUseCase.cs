@@ -2,7 +2,9 @@ using FluentValidation;
 using L2SLedger.Application.DTOs.Transaction;
 using L2SLedger.Application.Interfaces;
 using L2SLedger.Application.UseCases.Periods;
+using L2SLedger.Domain.Constants;
 using L2SLedger.Domain.Entities;
+using L2SLedger.Domain.Exceptions;
 
 namespace L2SLedger.Application.UseCases.Transaction;
 
@@ -50,7 +52,7 @@ public class CreateTransactionUseCase
         var category = await _categoryRepository.GetByIdAsync(request.CategoryId, cancellationToken);
         if (category == null)
         {
-            throw new InvalidOperationException("Categoria não encontrada");
+            throw new BusinessRuleException(ErrorCodes.FIN_CATEGORY_NOT_FOUND, "Categoria não encontrada");
         }
 
         // Criar entidade

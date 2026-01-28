@@ -520,6 +520,10 @@ namespace L2SLedger.Infrastructure.Persistence.Migrations
                         .HasColumnType("jsonb")
                         .HasColumnName("roles");
 
+                    b.Property<int>("Status")
+                        .HasColumnType("integer")
+                        .HasColumnName("status");
+
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("updated_at");
@@ -535,6 +539,9 @@ namespace L2SLedger.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("IsDeleted")
                         .HasDatabaseName("ix_users_is_deleted");
+
+                    b.HasIndex("Status")
+                        .HasDatabaseName("ix_users_status");
 
                     b.ToTable("users", "public");
                 });

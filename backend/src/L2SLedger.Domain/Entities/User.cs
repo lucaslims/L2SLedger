@@ -1,3 +1,5 @@
+using L2SLedger.Domain.Exceptions;
+
 namespace L2SLedger.Domain.Entities;
 
 /// <summary>
@@ -11,6 +13,7 @@ public class User : Entity
     public string Email { get; private set; }
     public string DisplayName { get; private set; }
     public bool EmailVerified { get; private set; }
+    public UserStatus Status { get; private set; }
     private readonly List<string> _roles = new();
     public IReadOnlyCollection<string> Roles => _roles.AsReadOnly();
 
@@ -20,6 +23,7 @@ public class User : Entity
         FirebaseUid = string.Empty;
         Email = string.Empty;
         DisplayName = string.Empty;
+        Status = UserStatus.Pending;
     }
 
     public User(string firebaseUid, string email, string displayName, bool emailVerified) 
@@ -35,6 +39,7 @@ public class User : Entity
         Email = email;
         DisplayName = displayName ?? email;
         EmailVerified = emailVerified;
+        Status = UserStatus.Pending;
         
         // Usuário padrão começa com role Leitura
         _roles.Add("Leitura");
@@ -82,4 +87,52 @@ public class User : Entity
     public bool HasRole(string role) => _roles.Contains(role);
 
     public bool IsAdmin() => _roles.Contains("Admin");
+
+    /// <summary>
+    /// Aprova o usuário, alterando status de Pending para Active.
+    /// </summary>
+    public void Approve()
+    {
+        if (Status != UserStatus.Pending)
+            throw new InvalidStatusTransitionException(Status.ToString(), UserStatus.Active.ToString());
+
+        Status = UserStatus.Active;
+        UpdateTimestamp();
+    }
+
+    /// <summary>
+    /// Suspende o usuário, alterando status de Active para Suspended.
+    /// </summary>
+    public void Suspend()
+    {
+        if (Status != UserStatus.Active)
+            throw new InvalidStatusTransitionException(Status.ToString(), UserStatus.Suspended.ToString());
+
+        Status = UserStatus.Suspended;
+        UpdateTimestamp();
+    }
+
+    /// <summary>
+    /// Rejeita o cadastro do usuário, alterando status de Pending para Rejected.
+    /// </summary>
+    public void Reject()
+    {
+        if (Status != UserStatus.Pending)
+            throw new InvalidStatusTransitionException(Status.ToString(), UserStatus.Rejected.ToString());
+
+        Status = UserStatus.Rejected;
+        UpdateTimestamp();
+    }
+
+    /// <summary>
+    /// Reativa o usuário, alterando status de Suspended para Active.
+    /// </summary>
+    public void Reactivate()
+    {
+        if (Status != UserStatus.Suspended)
+            throw new InvalidStatusTransitionException(Status.ToString(), UserStatus.Active.ToString());
+
+        Status = UserStatus.Active;
+        UpdateTimestamp();
+    }
 }

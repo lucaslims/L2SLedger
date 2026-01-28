@@ -1,5 +1,7 @@
+using L2SLedger.API.Contracts;
 using L2SLedger.Application.DTOs.Audit;
 using L2SLedger.Application.UseCases.Audit;
+using L2SLedger.Domain.Constants;
 using L2SLedger.Domain.Exceptions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -95,10 +97,10 @@ public class AuditController : ControllerBase
             var auditEvent = await _getAuditEventByIdUseCase.ExecuteAsync(id, cancellationToken);
             return Ok(auditEvent);
         }
-        catch (BusinessRuleException ex) when (ex.Code == "AUDIT_EVENT_NOT_FOUND")
+        catch (BusinessRuleException ex) when (ex.Code == ErrorCodes.AUDIT_EVENT_NOT_FOUND)
         {
             _logger.LogWarning("Evento de auditoria não encontrado: {EventId}", id);
-            return NotFound(new { error = ex.Message, code = ex.Code });
+            return NotFound(ErrorResponse.Create(ex.Code, ex.Message, traceId: HttpContext.TraceIdentifier));
         }
         catch (Exception ex)
         {

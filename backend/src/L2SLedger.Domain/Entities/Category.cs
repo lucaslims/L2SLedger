@@ -1,3 +1,4 @@
+using L2SLedger.Domain.Constants;
 using L2SLedger.Domain.Exceptions;
 
 namespace L2SLedger.Domain.Entities;
@@ -33,10 +34,10 @@ public class Category : Entity
     public Category(string name, string? description = null, Guid? parentCategoryId = null) : base()
     {
         if (string.IsNullOrWhiteSpace(name))
-            throw new BusinessRuleException("CAT_INVALID_NAME", "Nome da categoria é obrigatório");
+            throw new BusinessRuleException(ErrorCodes.FIN_CATEGORY_INVALID_NAME, "Nome da categoria é obrigatório");
 
         if (name.Length > 100)
-            throw new BusinessRuleException("CAT_NAME_TOO_LONG", "Nome da categoria não pode exceder 100 caracteres");
+            throw new BusinessRuleException(ErrorCodes.FIN_CATEGORY_NAME_TOO_LONG, "Nome da categoria não pode exceder 100 caracteres");
 
         Name = name.Trim();
         Description = description?.Trim();
@@ -47,10 +48,10 @@ public class Category : Entity
     public void UpdateName(string name)
     {
         if (string.IsNullOrWhiteSpace(name))
-            throw new BusinessRuleException("CAT_INVALID_NAME", "Nome da categoria é obrigatório");
+            throw new BusinessRuleException(ErrorCodes.FIN_CATEGORY_INVALID_NAME, "Nome da categoria é obrigatório");
 
         if (name.Length > 100)
-            throw new BusinessRuleException("CAT_NAME_TOO_LONG", "Nome da categoria não pode exceder 100 caracteres");
+            throw new BusinessRuleException(ErrorCodes.FIN_CATEGORY_NAME_TOO_LONG, "Nome da categoria não pode exceder 100 caracteres");
 
         Name = name.Trim();
         UpdateTimestamp();

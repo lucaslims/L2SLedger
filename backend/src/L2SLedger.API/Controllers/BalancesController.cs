@@ -1,6 +1,7 @@
+using L2SLedger.API.Contracts;
 using L2SLedger.Application.DTOs.Balances;
 using L2SLedger.Application.UseCases.Balances;
-using FluentValidation;
+using L2SLedger.Domain.Exceptions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -56,10 +57,10 @@ public class BalancesController : ControllerBase
             
             return Ok(result);
         }
-        catch (ValidationException ex)
+        catch (BusinessRuleException ex)
         {
             _logger.LogWarning(ex, "Erro de validação ao obter saldos");
-            return BadRequest(new { error = ex.Message });
+            return BadRequest(ErrorResponse.Create(ex.Code, ex.Message, traceId: HttpContext.TraceIdentifier));
         }
         catch (Exception ex)
         {
@@ -93,10 +94,10 @@ public class BalancesController : ControllerBase
             
             return Ok(result);
         }
-        catch (ValidationException ex)
+        catch (BusinessRuleException ex)
         {
             _logger.LogWarning(ex, "Erro de validação ao obter saldos diários");
-            return BadRequest(new { error = ex.Message });
+            return BadRequest(ErrorResponse.Create(ex.Code, ex.Message, traceId: HttpContext.TraceIdentifier));
         }
         catch (Exception ex)
         {

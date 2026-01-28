@@ -1,3 +1,6 @@
+using L2SLedger.Domain.Constants;
+using L2SLedger.Domain.Exceptions;
+
 namespace L2SLedger.Domain.Entities;
 
 /// <summary>
@@ -94,7 +97,7 @@ public class Export : Entity
     public void MarkAsProcessing()
     {
         if (Status != ExportStatus.Pending)
-            throw new InvalidOperationException("Only pending exports can be marked as processing.");
+            throw new BusinessRuleException(ErrorCodes.EXPORT_INVALID_STATE, "Only pending exports can be marked as processing.");
 
         Status = ExportStatus.Processing;
         ProcessingStartedAt = DateTime.UtcNow;
@@ -106,7 +109,7 @@ public class Export : Entity
     public void MarkAsCompleted(string filePath, long fileSizeBytes, int recordCount)
     {
         if (Status != ExportStatus.Processing)
-            throw new InvalidOperationException("Only processing exports can be marked as completed.");
+            throw new BusinessRuleException(ErrorCodes.EXPORT_INVALID_STATE, "Only processing exports can be marked as completed.");
 
         Status = ExportStatus.Completed;
         FilePath = filePath;
@@ -121,7 +124,7 @@ public class Export : Entity
     public void MarkAsFailed(string errorMessage)
     {
         if (Status != ExportStatus.Processing)
-            throw new InvalidOperationException("Only processing exports can be marked as failed.");
+            throw new BusinessRuleException(ErrorCodes.EXPORT_INVALID_STATE, "Only processing exports can be marked as failed.");
 
         Status = ExportStatus.Failed;
         ErrorMessage = errorMessage;

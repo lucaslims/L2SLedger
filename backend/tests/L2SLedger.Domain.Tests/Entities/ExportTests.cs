@@ -1,4 +1,5 @@
 using L2SLedger.Domain.Entities;
+using L2SLedger.Domain.Exceptions;
 using Xunit;
 
 namespace L2SLedger.Domain.Tests.Entities;
@@ -58,7 +59,7 @@ public class ExportTests
         export.MarkAsProcessing(); // Agora está Processing
 
         // Act & Assert
-        var exception = Assert.Throws<InvalidOperationException>(() => export.MarkAsProcessing());
+        var exception = Assert.Throws<BusinessRuleException>(() => export.MarkAsProcessing());
         Assert.Contains("Only pending exports can be marked as processing", exception.Message);
     }
 
@@ -91,7 +92,7 @@ public class ExportTests
         var export = new Export("Transactions", ExportFormat.Pdf, "{}", _validUserId);
 
         // Act & Assert
-        var exception = Assert.Throws<InvalidOperationException>(() =>
+        var exception = Assert.Throws<BusinessRuleException>(() =>
             export.MarkAsCompleted("/path/file.pdf", 2048L, 50));
         Assert.Contains("Only processing exports can be marked as completed", exception.Message);
     }
@@ -121,7 +122,7 @@ public class ExportTests
         var export = new Export("Transactions", ExportFormat.Pdf, "{}", _validUserId);
 
         // Act & Assert
-        var exception = Assert.Throws<InvalidOperationException>(() =>
+        var exception = Assert.Throws<BusinessRuleException>(() =>
             export.MarkAsFailed("Some error"));
         Assert.Contains("Only processing exports can be marked as failed", exception.Message);
     }

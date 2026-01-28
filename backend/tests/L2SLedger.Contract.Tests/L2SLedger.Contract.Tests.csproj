@@ -22,6 +22,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\L2SLedger.API\L2SLedger.API.csproj" />
     <ProjectReference Include="..\..\src\L2SLedger.Application\L2SLedger.Application.csproj" />
+    <ProjectReference Include="..\..\src\L2SLedger.Domain\L2SLedger.Domain.csproj" />
   </ItemGroup>
 
 </Project>

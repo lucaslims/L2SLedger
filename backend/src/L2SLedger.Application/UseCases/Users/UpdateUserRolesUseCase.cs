@@ -1,6 +1,7 @@
 using AutoMapper;
 using L2SLedger.Application.DTOs.Users;
 using L2SLedger.Application.Interfaces;
+using L2SLedger.Domain.Constants;
 using L2SLedger.Domain.Exceptions;
 using L2SLedger.Domain.ValueObjects;
 using Microsoft.Extensions.Logging;
@@ -51,7 +52,7 @@ public class UpdateUserRolesUseCase
         // 2. Buscar usuário
         var user = await _userRepository.GetByIdAsync(userId, cancellationToken)
             ?? throw new BusinessRuleException(
-                "USER_NOT_FOUND",
+                ErrorCodes.USER_NOT_FOUND,
                 $"Usuário com ID {userId} não encontrado.");
 
         // 3. Obter usuário atual (Admin executando a ação)
@@ -86,7 +87,7 @@ public class UpdateUserRolesUseCase
         if (roles is null || roles.Count == 0)
         {
             throw new BusinessRuleException(
-                "ROLES_REQUIRED",
+                ErrorCodes.VAL_REQUIRED_FIELD,
                 "Pelo menos uma role deve ser especificada.");
         }
 
@@ -95,14 +96,14 @@ public class UpdateUserRolesUseCase
             if (string.IsNullOrWhiteSpace(role))
             {
                 throw new BusinessRuleException(
-                    "ROLE_EMPTY",
+                    ErrorCodes.VAL_REQUIRED_FIELD,
                     "Role não pode ser vazio.");
             }
 
             if (!Role.IsValid(role))
             {
                 throw new BusinessRuleException(
-                    "INVALID_ROLE",
+                    ErrorCodes.VAL_INVALID_VALUE,
                     $"Role inválido: {role}. Valores permitidos: {string.Join(", ", Role.GetAllRoles())}");
             }
         }
@@ -122,7 +123,7 @@ public class UpdateUserRolesUseCase
         if (isRemovingAdminFromSelf)
         {
             throw new BusinessRuleException(
-                "CANNOT_REMOVE_OWN_ADMIN",
+                ErrorCodes.PERM_INSUFFICIENT_PRIVILEGES,
                 "Você não pode remover seu próprio papel de Admin.");
         }
 
@@ -134,7 +135,7 @@ public class UpdateUserRolesUseCase
             if (!existsOtherAdmin)
             {
                 throw new BusinessRuleException(
-                    "LAST_ADMIN",
+                    ErrorCodes.PERM_INSUFFICIENT_PRIVILEGES,
                     "Não é possível remover o papel de Admin do último administrador do sistema.");
             }
         }

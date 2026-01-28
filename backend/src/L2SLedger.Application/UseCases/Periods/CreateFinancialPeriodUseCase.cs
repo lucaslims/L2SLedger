@@ -2,6 +2,7 @@ using AutoMapper;
 using FluentValidation;
 using L2SLedger.Application.DTOs.Periods;
 using L2SLedger.Application.Interfaces;
+using L2SLedger.Domain.Constants;
 using L2SLedger.Domain.Entities;
 using L2SLedger.Domain.Exceptions;
 using Microsoft.Extensions.Logging;
@@ -53,7 +54,7 @@ public class CreateFinancialPeriodUseCase
         var exists = await _periodRepository.ExistsAsync(request.Year, request.Month, cancellationToken);
         if (exists)
             throw new BusinessRuleException(
-                "FIN_PERIOD_ALREADY_EXISTS",
+                ErrorCodes.FIN_PERIOD_ALREADY_EXISTS,
                 $"Período {request.Year}/{request.Month:D2} já existe");
 
         // 3. Create new period

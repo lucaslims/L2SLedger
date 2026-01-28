@@ -1,6 +1,7 @@
+using L2SLedger.API.Contracts;
 using L2SLedger.Application.DTOs.Reports;
 using L2SLedger.Application.UseCases.Reports;
-using FluentValidation;
+using L2SLedger.Domain.Exceptions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -50,10 +51,10 @@ public class ReportsController : ControllerBase
             
             return Ok(result);
         }
-        catch (ValidationException ex)
+        catch (BusinessRuleException ex)
         {
             _logger.LogWarning(ex, "Erro de validação ao obter relatório de fluxo de caixa");
-            return BadRequest(new { error = ex.Message });
+            return BadRequest(ErrorResponse.Create(ex.Code, ex.Message, traceId: HttpContext.TraceIdentifier));
         }
         catch (Exception ex)
         {

@@ -2,6 +2,7 @@ using System.Text.Json;
 using AutoMapper;
 using L2SLedger.Application.DTOs.Periods;
 using L2SLedger.Application.Interfaces;
+using L2SLedger.Domain.Constants;
 using L2SLedger.Domain.Exceptions;
 using Microsoft.Extensions.Logging;
 
@@ -48,12 +49,12 @@ public class ClosePeriodUseCase
         // 1. Retrieve period
         var period = await _periodRepository.GetByIdAsync(periodId, cancellationToken);
         if (period == null || period.IsDeleted)
-            throw new BusinessRuleException("FIN_PERIOD_NOT_FOUND", "Período não encontrado");
+            throw new BusinessRuleException(ErrorCodes.FIN_PERIOD_NOT_FOUND, "Período não encontrado");
 
         // 2. Validate state (already closed?)
         if (period.IsClosed())
             throw new BusinessRuleException(
-                "FIN_PERIOD_ALREADY_CLOSED",
+                ErrorCodes.FIN_PERIOD_ALREADY_CLOSED,
                 $"Período {period.GetPeriodName()} já está fechado");
 
         // 3. Calculate balance snapshot

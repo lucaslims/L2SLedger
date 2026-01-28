@@ -1,6 +1,7 @@
 using AutoMapper;
 using L2SLedger.Application.DTOs.Audit;
 using L2SLedger.Application.Interfaces;
+using L2SLedger.Domain.Constants;
 using L2SLedger.Domain.Exceptions;
 
 namespace L2SLedger.Application.UseCases.Audit;
@@ -31,7 +32,7 @@ public class GetAuditEventByIdUseCase
         if (auditEvent is null)
         {
             throw new BusinessRuleException(
-                "AUDIT_EVENT_NOT_FOUND",
+                ErrorCodes.AUDIT_EVENT_NOT_FOUND,
                 $"Evento de auditoria com ID {id} não encontrado."
             );
         }

@@ -1,4 +1,5 @@
 using FluentAssertions;
+using L2SLedger.Domain.Constants;
 using L2SLedger.Domain.Entities;
 using L2SLedger.Domain.Exceptions;
 
@@ -34,7 +35,7 @@ public class CategoryTests
         // Assert
         act.Should().Throw<BusinessRuleException>()
             .WithMessage("*Nome da categoria é obrigatório*")
-            .Where(ex => ex.Code == "CAT_INVALID_NAME");
+            .Where(ex => ex.Code == ErrorCodes.FIN_CATEGORY_INVALID_NAME);
     }
 
     [Fact]
@@ -46,7 +47,7 @@ public class CategoryTests
         // Assert
         act.Should().Throw<BusinessRuleException>()
             .WithMessage("*Nome da categoria é obrigatório*")
-            .Where(ex => ex.Code == "CAT_INVALID_NAME");
+            .Where(ex => ex.Code == ErrorCodes.FIN_CATEGORY_INVALID_NAME);
     }
 
     [Fact]
@@ -61,7 +62,7 @@ public class CategoryTests
         // Assert
         act.Should().Throw<BusinessRuleException>()
             .WithMessage("*não pode exceder 100 caracteres*")
-            .Where(ex => ex.Code == "CAT_NAME_TOO_LONG");
+            .Where(ex => ex.Code == ErrorCodes.FIN_CATEGORY_NAME_TOO_LONG);
     }
 
     [Fact]
@@ -108,7 +109,7 @@ public class CategoryTests
         // Assert
         act.Should().Throw<BusinessRuleException>()
             .WithMessage("*Nome da categoria é obrigatório*")
-            .Where(ex => ex.Code == "CAT_INVALID_NAME");
+            .Where(ex => ex.Code == ErrorCodes.FIN_CATEGORY_INVALID_NAME);
     }
 
     [Fact]
@@ -124,7 +125,7 @@ public class CategoryTests
         // Assert
         act.Should().Throw<BusinessRuleException>()
             .WithMessage("*não pode exceder 100 caracteres*")
-            .Where(ex => ex.Code == "CAT_NAME_TOO_LONG");
+            .Where(ex => ex.Code == ErrorCodes.FIN_CATEGORY_NAME_TOO_LONG);
     }
 
     [Fact]

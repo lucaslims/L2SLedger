@@ -1,6 +1,7 @@
 using FluentAssertions;
 using L2SLedger.Application.Interfaces;
 using L2SLedger.Application.UseCases.Adjustments;
+using L2SLedger.Domain.Constants;
 using L2SLedger.Domain.Entities;
 using L2SLedger.Domain.Exceptions;
 using Moq;
@@ -65,7 +66,7 @@ public class DeleteAdjustmentUseCaseTests
         // Assert
         await act.Should().ThrowAsync<BusinessRuleException>()
             .WithMessage("*administradores podem deletar ajustes*")
-            .Where(ex => ex.Code == "AUTH_INSUFFICIENT_PERMISSIONS");
+            .Where(ex => ex.Code == ErrorCodes.PERM_INSUFFICIENT_PRIVILEGES);
 
         _adjustmentRepositoryMock.Verify(x => x.GetByIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()), Times.Never);
     }

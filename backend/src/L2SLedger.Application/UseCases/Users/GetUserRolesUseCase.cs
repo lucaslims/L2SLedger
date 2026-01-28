@@ -1,5 +1,6 @@
 using L2SLedger.Application.DTOs.Users;
 using L2SLedger.Application.Interfaces;
+using L2SLedger.Domain.Constants;
 using L2SLedger.Domain.Exceptions;
 using L2SLedger.Domain.ValueObjects;
 
@@ -34,7 +35,7 @@ public class GetUserRolesUseCase
         if (user is null)
         {
             throw new BusinessRuleException(
-                "USER_NOT_FOUND",
+                ErrorCodes.USER_NOT_FOUND,
                 $"Usuário com ID {userId} não encontrado.");
         }
 

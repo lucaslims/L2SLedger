@@ -46,9 +46,16 @@ public class PdfExportService : IPdfExportService
         // Nota: Em produção, usar biblioteca como QuestPDF ou iTextSharp
         var html = GenerateHtmlReport(transactions, startDate, endDate);
         
-        // Por ora, salvar como HTML (substituir por geração de PDF real em produção)
-        var fileName = $"transactions_{DateTime.UtcNow:yyyyMMddHHmmss}.html";
+        
+        // Incluir userId completo e componentes adicionais para evitar conflitos entre exportações simultâneas
+        var userIdFull = userId.ToString("N");
+        var timestamp = DateTime.UtcNow.ToString("yyyyMMddHHmmssfff");
+        var uniqueSuffix = Guid.NewGuid().ToString("N")[..8];
+        var fileName = $"transactions_{userIdFull}_{timestamp}_{uniqueSuffix}.html";
+
         var fileBytes = Encoding.UTF8.GetBytes(html);
+
+        // Por ora, salvar como HTML (substituir por geração de PDF real em produção)
         var filePath = await _fileStorageService.SaveExportFileAsync(fileBytes, fileName);
 
         _logger.LogInformation(

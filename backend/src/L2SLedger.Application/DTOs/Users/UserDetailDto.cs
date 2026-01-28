@@ -18,6 +18,9 @@ public record UserDetailDto
     /// <summary>Indica se o email foi verificado.</summary>
     public required bool EmailVerified { get; init; }
 
+    /// <summary>Status de aprovação do usuário.</summary>
+    public required string Status { get; init; }
+
     /// <summary>Roles atribuídos ao usuário.</summary>
     public required IReadOnlyList<string> Roles { get; init; }
 

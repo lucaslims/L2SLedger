@@ -1,5 +1,7 @@
 using L2SLedger.Application.Interfaces;
 using L2SLedger.Application.UseCases.Periods;
+using L2SLedger.Domain.Constants;
+using L2SLedger.Domain.Exceptions;
 
 namespace L2SLedger.Application.UseCases.Transaction;
 
@@ -31,7 +33,7 @@ public class DeleteTransactionUseCase
         var transaction = await _transactionRepository.GetByIdAsync(id, cancellationToken);
         if (transaction == null || transaction.UserId != userId)
         {
-            throw new InvalidOperationException("Transação não encontrada ou não pertence ao usuário");
+            throw new BusinessRuleException(ErrorCodes.FIN_TRANSACTION_NOT_FOUND, "Transação não encontrada ou não pertence ao usuário");
         }
 
         // Validar que o período está aberto (ADR-015: Imutabilidade de períodos)

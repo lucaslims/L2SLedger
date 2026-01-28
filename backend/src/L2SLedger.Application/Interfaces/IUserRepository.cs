@@ -25,6 +25,7 @@ public interface IUserRepository
     /// <param name="pageSize">Quantidade de itens por página.</param>
     /// <param name="emailFilter">Filtro por email (contém).</param>
     /// <param name="roleFilter">Filtro por role específico.</param>
+    /// <param name="statusFilter">Filtro por status do usuário.</param>
     /// <param name="includeInactive">Incluir usuários soft-deleted.</param>
     /// <param name="cancellationToken">Token de cancelamento.</param>
     /// <returns>Tupla com lista de usuários e contagem total.</returns>
@@ -33,6 +34,7 @@ public interface IUserRepository
         int pageSize,
         string? emailFilter = null,
         string? roleFilter = null,
+        UserStatus? statusFilter = null,
         bool includeInactive = false,
         CancellationToken cancellationToken = default);
 

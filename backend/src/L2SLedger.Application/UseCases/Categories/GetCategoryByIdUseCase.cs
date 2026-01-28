@@ -1,7 +1,7 @@
 using AutoMapper;
 using L2SLedger.Application.DTOs.Categories;
 using L2SLedger.Application.Interfaces;
-using L2SLedger.Domain.Exceptions;
+using L2SLedger.Domain.Constants;
 
 namespace L2SLedger.Application.UseCases.Categories;
 
@@ -27,7 +27,7 @@ public class GetCategoryByIdUseCase
 
         if (category == null)
         {
-            throw new Domain.Exceptions.BusinessRuleException("FIN_CATEGORY_NOT_FOUND", "Categoria não encontrada");
+            throw new Domain.Exceptions.BusinessRuleException(ErrorCodes.FIN_CATEGORY_NOT_FOUND, "Categoria não encontrada");
         }
 
         return _mapper.Map<CategoryDto>(category);

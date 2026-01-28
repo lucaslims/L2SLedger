@@ -1,7 +1,9 @@
 using FluentValidation;
 using L2SLedger.Application.DTOs.Balances;
 using L2SLedger.Application.Interfaces;
+using L2SLedger.Domain.Constants;
 using L2SLedger.Domain.Entities;
+using L2SLedger.Domain.Exceptions;
 
 namespace L2SLedger.Application.UseCases.Balances;
 
@@ -47,7 +49,7 @@ public class GetBalanceUseCase
         // Validação de datas
         if (effectiveStartDate > effectiveEndDate)
         {
-            throw new ValidationException("A data inicial não pode ser maior que a data final");
+            throw new BusinessRuleException(ErrorCodes.VAL_INVALID_RANGE, "A data inicial não pode ser maior que a data final");
         }
 
         // Obter saldos agregados por categoria

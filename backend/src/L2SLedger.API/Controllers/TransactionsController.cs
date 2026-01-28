@@ -1,5 +1,8 @@
+using L2SLedger.API.Contracts;
 using L2SLedger.Application.DTOs.Transaction;
 using L2SLedger.Application.UseCases.Transaction;
+using L2SLedger.Domain.Constants;
+using L2SLedger.Domain.Exceptions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using FluentValidation;
@@ -94,7 +97,10 @@ public class TransactionsController : ControllerBase
 
             if (transaction == null)
             {
-                return NotFound(new { error = "Transação não encontrada" });
+                return NotFound(ErrorResponse.Create(
+                    ErrorCodes.FIN_TRANSACTION_NOT_FOUND,
+                    "Transação não encontrada",
+                    traceId: HttpContext.TraceIdentifier));
             }
 
             return Ok(transaction);
@@ -134,19 +140,16 @@ public class TransactionsController : ControllerBase
         catch (ValidationException ex)
         {
             _logger.LogWarning("Erro de validação ao criar transação: {Errors}", ex.Errors);
-            return BadRequest(new
-            {
-                errors = ex.Errors.Select(e => new
-                {
-                    property = e.PropertyName,
-                    message = e.ErrorMessage
-                })
-            });
+            return BadRequest(ErrorResponse.Create(
+                ErrorCodes.VAL_VALIDATION_FAILED,
+                "Erro de validação",
+                details: string.Join("; ", ex.Errors.Select(e => $"{e.PropertyName}: {e.ErrorMessage}")),
+                traceId: HttpContext.TraceIdentifier));
         }
-        catch (InvalidOperationException ex)
+        catch (BusinessRuleException ex)
         {
-            _logger.LogWarning(ex, "Erro de operação ao criar transação");
-            return BadRequest(new { error = ex.Message });
+            _logger.LogWarning(ex, "Erro de regra de negócio ao criar transação");
+            return BadRequest(ErrorResponse.Create(ex.Code, ex.Message, traceId: HttpContext.TraceIdentifier));
         }
         catch (Exception ex)
         {
@@ -183,25 +186,22 @@ public class TransactionsController : ControllerBase
         catch (ValidationException ex)
         {
             _logger.LogWarning("Erro de validação ao atualizar transação {TransactionId}: {Errors}", id, ex.Errors);
-            return BadRequest(new
-            {
-                errors = ex.Errors.Select(e => new
-                {
-                    property = e.PropertyName,
-                    message = e.ErrorMessage
-                })
-            });
+            return BadRequest(ErrorResponse.Create(
+                ErrorCodes.VAL_VALIDATION_FAILED,
+                "Erro de validação",
+                details: string.Join("; ", ex.Errors.Select(e => $"{e.PropertyName}: {e.ErrorMessage}")),
+                traceId: HttpContext.TraceIdentifier));
         }
-        catch (InvalidOperationException ex)
+        catch (BusinessRuleException ex)
         {
-            _logger.LogWarning(ex, "Erro de operação ao atualizar transação {TransactionId}", id);
+            _logger.LogWarning(ex, "Erro de regra de negócio ao atualizar transação {TransactionId}", id);
             
-            if (ex.Message.Contains("não encontrada"))
+            if (ex.Code == ErrorCodes.FIN_TRANSACTION_NOT_FOUND)
             {
-                return NotFound(new { error = ex.Message });
+                return NotFound(ErrorResponse.Create(ex.Code, ex.Message, traceId: HttpContext.TraceIdentifier));
             }
             
-            return BadRequest(new { error = ex.Message });
+            return BadRequest(ErrorResponse.Create(ex.Code, ex.Message, traceId: HttpContext.TraceIdentifier));
         }
         catch (Exception ex)
         {
@@ -232,10 +232,10 @@ public class TransactionsController : ControllerBase
 
             return NoContent();
         }
-        catch (InvalidOperationException ex)
+        catch (BusinessRuleException ex)
         {
             _logger.LogWarning(ex, "Erro ao excluir transação {TransactionId}", id);
-            return NotFound(new { error = ex.Message });
+            return NotFound(ErrorResponse.Create(ex.Code, ex.Message, traceId: HttpContext.TraceIdentifier));
         }
         catch (Exception ex)
         {

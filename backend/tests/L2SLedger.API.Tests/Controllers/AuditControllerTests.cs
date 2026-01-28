@@ -9,6 +9,7 @@ using L2SLedger.Application.UseCases.Audit;
 using L2SLedger.Application.Validators.Audit;
 using L2SLedger.Domain.Entities;
 using L2SLedger.Domain.Exceptions;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Moq;
@@ -53,6 +54,12 @@ public class AuditControllerTests
             getAuditEventsUseCase,
             getAuditEventByIdUseCase,
             _loggerMock.Object);
+
+        // Configurar HttpContext para evitar NullReferenceException ao acessar TraceIdentifier
+        _sut.ControllerContext = new ControllerContext
+        {
+            HttpContext = new DefaultHttpContext()
+        };
     }
 
     [Fact]

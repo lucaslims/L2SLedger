@@ -2,6 +2,7 @@ using System.Security.Claims;
 using L2SLedger.API.Contracts;
 using L2SLedger.Application.DTOs.Periods;
 using L2SLedger.Application.UseCases.Periods;
+using L2SLedger.Domain.Constants;
 using L2SLedger.Domain.Exceptions;
 using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
@@ -76,7 +77,7 @@ public class PeriodsController : ControllerBase
             if (period == null)
             {
                 return NotFound(ErrorResponse.Create(
-                    "FIN_PERIOD_NOT_FOUND",
+                    ErrorCodes.FIN_PERIOD_NOT_FOUND,
                     "Período financeiro não encontrado",
                     traceId: HttpContext.TraceIdentifier));
             }
@@ -86,7 +87,7 @@ public class PeriodsController : ControllerBase
         catch (BusinessRuleException ex) when (ex.Message.Contains("não encontrado"))
         {
             return NotFound(ErrorResponse.Create(
-                "FIN_PERIOD_NOT_FOUND",
+                 ErrorCodes.FIN_PERIOD_NOT_FOUND,
                 ex.Message,
                 traceId: HttpContext.TraceIdentifier));
         }
@@ -133,12 +134,12 @@ public class PeriodsController : ControllerBase
             
             var details = string.Join("; ", ex.Errors.Select(e => $"{e.PropertyName}: {e.ErrorMessage}"));
             return BadRequest(ErrorResponse.Create(
-                "VAL_INVALID_REQUEST",
+                ErrorCodes.VAL_INVALID_VALUE,
                 "Erro de validação",
                 details,
                 HttpContext.TraceIdentifier));
         }
-        catch (BusinessRuleException ex) when (ex.Code == "FIN_PERIOD_ALREADY_EXISTS")
+        catch (BusinessRuleException ex) when (ex.Code == ErrorCodes.FIN_PERIOD_ALREADY_EXISTS)
         {
             return UnprocessableEntity(ErrorResponse.Create(
                 ex.Code,
@@ -148,7 +149,7 @@ public class PeriodsController : ControllerBase
         catch (BusinessRuleException ex)
         {
             return UnprocessableEntity(ErrorResponse.Create(
-                ex.Code ?? "FIN_PERIOD_INVALID_OPERATION",
+                ex.Code ?? ErrorCodes.FIN_PERIOD_INVALID_OPERATION,
                 ex.Message,
                 traceId: HttpContext.TraceIdentifier));
         }
@@ -186,7 +187,7 @@ public class PeriodsController : ControllerBase
             if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
             {
                 return Unauthorized(ErrorResponse.Create(
-                    "AUTH_INVALID_TOKEN",
+                    ErrorCodes.AUTH_INVALID_TOKEN,
                     "Token de autenticação inválido",
                     traceId: HttpContext.TraceIdentifier));
             }
@@ -199,7 +200,7 @@ public class PeriodsController : ControllerBase
 
             return Ok(result);
         }
-        catch (BusinessRuleException ex) when (ex.Code == "FIN_PERIOD_NOT_FOUND")
+        catch (BusinessRuleException ex) when (ex.Code == ErrorCodes.FIN_PERIOD_NOT_FOUND)
         {
             return NotFound(ErrorResponse.Create(
                 ex.Code,
@@ -209,7 +210,7 @@ public class PeriodsController : ControllerBase
         catch (BusinessRuleException ex)
         {
             return UnprocessableEntity(ErrorResponse.Create(
-                ex.Code ?? "FIN_PERIOD_INVALID_OPERATION",
+                ex.Code ?? ErrorCodes.FIN_PERIOD_INVALID_OPERATION,
                 ex.Message,
                 traceId: HttpContext.TraceIdentifier));
         }
@@ -251,7 +252,7 @@ public class PeriodsController : ControllerBase
             if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
             {
                 return Unauthorized(ErrorResponse.Create(
-                    "AUTH_INVALID_TOKEN",
+                    ErrorCodes.AUTH_INVALID_TOKEN,
                     "Token de autenticação inválido",
                     traceId: HttpContext.TraceIdentifier));
             }
@@ -272,12 +273,12 @@ public class PeriodsController : ControllerBase
 
             var details = string.Join("; ", ex.Errors.Select(e => $"{e.PropertyName}: {e.ErrorMessage}"));
             return BadRequest(ErrorResponse.Create(
-                "VAL_INVALID_REQUEST",
+                ErrorCodes.VAL_INVALID_VALUE,
                 "Erro de validação",
                 details,
                 HttpContext.TraceIdentifier));
         }
-        catch (BusinessRuleException ex) when (ex.Code == "FIN_PERIOD_NOT_FOUND")
+        catch (BusinessRuleException ex) when (ex.Code == ErrorCodes.FIN_PERIOD_NOT_FOUND)
         {
             return NotFound(ErrorResponse.Create(
                 ex.Code,
@@ -287,7 +288,7 @@ public class PeriodsController : ControllerBase
         catch (BusinessRuleException ex)
         {
             return UnprocessableEntity(ErrorResponse.Create(
-                ex.Code ?? "FIN_PERIOD_INVALID_OPERATION",
+                ex.Code ?? ErrorCodes.FIN_PERIOD_INVALID_OPERATION,
                 ex.Message,
                 traceId: HttpContext.TraceIdentifier));
         }
