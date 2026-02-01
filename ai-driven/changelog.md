@@ -9,7 +9,177 @@ O formato segue o padrão [Keep a Changelog](https://keepachangelog.com/en/1.0.0
 
 ---
 
-## [2026-01-26] - � Padronização ErrorResponse em Controllers + Final Sweep
+## [2026-02-01] - 🚀 Fase 0: Setup Inicial do Frontend
+
+### 🎯 Contexto
+Implementação da **Fase 0** do frontend conforme [SPEC.md](../docs/planning/frontend-planning/SPEC.md). Setup completo da estrutura base do projeto React com TypeScript, incluindo configuração de ferramentas, bundler, testes, e arquitetura de segurança com lazy loading.
+
+---
+
+### ✅ Mudanças Implementadas
+
+**1. Configuração do Projeto (8 arquivos)**
+
+- `package.json` — Dependências e scripts (React 18, Vite 5, TypeScript 5, TanStack Query, Firebase, Vitest, Storybook)
+- `tsconfig.json` — Configuração TypeScript com path aliases (@/*)
+- `tsconfig.node.json` — Config para arquivos de build
+- `vite.config.ts` — Vite + PWA + Code splitting manual (bundles: main, public, protected)
+- `vitest.config.ts` — Configuração de testes com cobertura mínima 85%
+- `tailwind.config.ts` — Tailwind com tema customizado (primary sky-500, income/expense colors)
+- `postcss.config.js` — PostCSS + Autoprefixer
+- `components.json` — Shadcn/ui config
+
+**2. Linting e Formatação (3 arquivos)**
+
+- `.eslintrc.cjs` — ESLint + TypeScript + React + Prettier
+- `.prettierrc` — Prettier com plugin Tailwind
+- `.gitignore` — Ignorar node_modules, dist, .env, coverage
+
+**3. Estrutura de Código (30+ arquivos)**
+
+**Shared Layer:**
+- `lib/utils/cn.ts` — Helper para merge classes Tailwind
+- `lib/utils/formatters.ts` — Formatação datas, moedas, números (PT-BR)
+- `lib/utils/constants.ts` — Constantes globais (rotas, status, roles, query keys)
+- `lib/firebase/config.ts` — Firebase config + validação
+- `lib/firebase/auth.ts` — Helpers Firebase Auth (signIn, signUp, sendVerification)
+- `lib/api/client.ts` — API Client (Fetch wrapper, credentials: 'include')
+- `lib/api/endpoints.ts` — Endpoints da API
+- `lib/queryClient.ts` — React Query config (staleTime 5min, retry 1)
+- `types/errors.types.ts` — ErrorResponse, ErrorCodes (67 códigos), ApiError
+- `types/common.types.ts` — PaginatedResponse, UserStatus, TransactionType, UserRole
+- `types/api.types.ts` — UserDto, LoginRequest, LoginResponse
+- `styles/globals.css` — Tailwind + CSS variables (tema light/dark)
+
+**Providers:**
+- `app/providers/QueryProvider.tsx` — React Query + DevTools
+- `app/providers/AuthProvider.tsx` — Auth context (Firebase + backend /auth/me)
+- `app/providers/index.tsx` — Composição de providers
+
+**Routing:**
+- `app/routes/ProtectedRoute.tsx` — Guard rotas protegidas (verifica status, lazy loading)
+- `app/routes/PublicRoute.tsx` — Guard rotas públicas (redirect se autenticado)
+- `app/routes/AdminRoute.tsx` — Guard rotas admin (verifica role Admin)
+- `app/routes/index.tsx` — Configuração completa de rotas
+
+**Components:**
+- `shared/components/feedback/LoadingScreen.tsx` — Tela loading inicial (bundle main)
+
+**Pages (Placeholders):**
+- `features/auth/pages/LoginPage.tsx` — Placeholder login
+- `features/auth/pages/RegisterPage.tsx` — Placeholder cadastro
+- `features/auth/pages/VerifyEmailPage.tsx` — Placeholder verificação email
+- `features/auth/pages/PendingApprovalPage.tsx` — Tela "Aguardando Aprovação"
+- `features/dashboard/pages/DashboardPage.tsx` — Placeholder dashboard
+
+**4. Testes (2 arquivos)**
+
+- `tests/setup.ts` — Setup Vitest (cleanup, mock env vars)
+- `vitest.config.ts` — Coverage 85% mínimo
+
+**5. Storybook (2 arquivos)**
+
+- `.storybook/main.ts` — Config Storybook + addons
+- `.storybook/preview.ts` — Preview config + globals.css
+
+**6. Public Assets (3 arquivos)**
+
+- `public/manifest.json` — PWA manifest
+- `public/robots.txt` — SEO robots
+- `index.html` — HTML entry point (Google Fonts Inter, meta tags PWA)
+
+**7. Infrastructure (4 arquivos)**
+
+- `Dockerfile` — Multi-stage build (Node → Nginx)
+- `.github/workflows/frontend-ci.yml` — CI (lint, tests, build)
+- `.github/workflows/storybook-deploy.yml` — Deploy Storybook → GitHub Pages
+- `playwright.config.ts` — Placeholder E2E (será configurado Fase 1)
+
+**8. Documentação (2 arquivos)**
+
+- `frontend/README.md` — Quick start, stack, scripts
+- `.env.example` + `.env.development` — Environment variables template
+
+**9. App Entry Point (3 arquivos)**
+
+- `app/main.tsx` — Entry point React (StrictMode)
+- `app/App.tsx` — Root component (Providers + Routes)
+- `vite-env.d.ts` — TypeScript declarations para Vite env
+
+---
+
+### 🏗️ Arquitetura de Segurança Implementada
+
+**Code Splitting:**
+- `main.js` — Core (React, Router, Auth check, Loading)
+- `public.js` — Páginas públicas (Login, Register, Verify, Pending)
+- `protected.js` — Páginas protegidas (lazy load após auth)
+- `admin.js` — Páginas admin (lazy load após role check)
+
+**Fluxo de Segurança:**
+1. Usuário acessa URL
+2. Carrega `main.js` (sem código protegido)
+3. Verifica sessão backend (`GET /auth/me`)
+4. Se `Active` → carrega `protected.js`
+5. Se `Pending/Suspended/Rejected` → exibe página de status
+6. Se não autenticado → redireciona login
+
+**Guards:**
+- `ProtectedRoute` — Bloqueia acesso sem auth ou status != Active
+- `AdminRoute` — Bloqueia acesso sem role Admin
+- `PublicRoute` — Redireciona autenticados para dashboard
+
+---
+
+### 📋 Checklist Fase 0 (17/17 ✅)
+
+- [x] 0.1 — Estrutura de pastas
+- [x] 0.2 — Vite + TypeScript
+- [x] 0.3 — Tailwind CSS
+- [x] 0.4 — Shadcn/ui config
+- [x] 0.5 — React Query
+- [x] 0.6 — React Router
+- [x] 0.7 — Firebase SDK
+- [x] 0.8 — API Client
+- [x] 0.9 — Vitest + Testing Library
+- [x] 0.10 — Storybook
+- [x] 0.11 — PWA (vite-plugin-pwa)
+- [x] 0.12 — ESLint + Prettier
+- [x] 0.13 — Layouts base
+- [x] 0.14 — LoadingScreen
+- [x] 0.15 — Code Splitting
+- [x] 0.16 — Dockerfile
+- [x] 0.17 — CI básico
+
+---
+
+### 🧪 Próximos Passos
+
+**Fase 1: Autenticação** (16 horas)
+- Implementar LoginForm, RegisterForm
+- Hooks useLogin, useRegister, useLogout
+- Integração completa Firebase + Backend
+- Testes unitários + E2E
+
+---
+
+### 🔗 Referências
+
+- [SPEC.md](../docs/planning/frontend-planning/SPEC.md)
+- [ADR-040](../docs/adr/adr-040.md) — Estratégia de testes frontend
+- [ADR-021-A](../docs/adr/adr-021-a.md) — Catálogo de códigos de erro
+- [user-status-plan.md](../docs/planning/api-planning/user-status-plan.md)
+
+---
+
+### 👤 Executado Por
+
+**Master Agent** (orquestração)  
+**Data:** 2026-02-01
+
+---
+
+## [2026-01-26] - 🔄 Padronização ErrorResponse em Controllers + Final Sweep
 
 ### 🎯 Contexto
 Varredura final para garantir que **todas as exceções** usem `ErrorCodes.cs` e **todos os controllers** retornem `ErrorResponse` padronizado ao invés de objetos anônimos.
