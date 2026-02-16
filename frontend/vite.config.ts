@@ -92,7 +92,7 @@ export default defineConfig({
     target: 'es2020',
   },
   server: {
-    port: 3000,
+    port: 5173,
     strictPort: true,
     host: true,
     proxy: {
@@ -104,7 +104,7 @@ export default defineConfig({
     },
   },
   preview: {
-    port: 3000,
+    port: 5173,
     strictPort: true,
     host: true,
   },

@@ -1,8 +1,9 @@
-import { lazy } from 'react';
+import { lazy, Suspense } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { ROUTES } from '@/shared/lib/utils/constants';
 import { ProtectedRoute } from './ProtectedRoute';
 import { PublicRoute } from './PublicRoute';
+import { LoadingScreen } from '@/shared/components/feedback/LoadingScreen';
 // import { AdminRoute } from './AdminRoute';
 
 // Public pages (loaded in public bundle)
@@ -10,6 +11,8 @@ const LoginPage = lazy(() => import('@/features/auth/pages/LoginPage'));
 const RegisterPage = lazy(() => import('@/features/auth/pages/RegisterPage'));
 const VerifyEmailPage = lazy(() => import('@/features/auth/pages/VerifyEmailPage'));
 const PendingApprovalPage = lazy(() => import('@/features/auth/pages/PendingApprovalPage'));
+const SuspendedPage = lazy(() => import('@/features/auth/pages/SuspendedPage'));
+const RejectedPage = lazy(() => import('@/features/auth/pages/RejectedPage'));
 
 // Protected pages (lazy loaded after auth confirmation)
 const DashboardPage = lazy(() => import('@/features/dashboard/pages/DashboardPage'));
@@ -28,7 +31,8 @@ const DashboardPage = lazy(() => import('@/features/dashboard/pages/DashboardPag
 export function AppRoutes() {
   return (
     <BrowserRouter>
-      <Routes>
+      <Suspense fallback={<LoadingScreen />}>
+        <Routes>
         {/* Home - redirect to dashboard or login */}
         <Route
           path={ROUTES.HOME}
@@ -63,7 +67,8 @@ export function AppRoutes() {
 
         {/* Status pages (accessible by authenticated users with specific status) */}
         <Route path={ROUTES.PENDING_APPROVAL} element={<PendingApprovalPage />} />
-        {/* TODO: SuspendedPage, RejectedPage */}
+        <Route path={ROUTES.SUSPENDED} element={<SuspendedPage />} />
+        <Route path={ROUTES.REJECTED} element={<RejectedPage />} />
 
         {/* Protected routes */}
         <Route
@@ -87,7 +92,8 @@ export function AppRoutes() {
 
         {/* 404 */}
         <Route path="*" element={<Navigate to={ROUTES.HOME} replace />} />
-      </Routes>
+        </Routes>
+      </Suspense>
     </BrowserRouter>
   );
 }

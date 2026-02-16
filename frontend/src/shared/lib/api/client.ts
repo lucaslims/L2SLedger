@@ -1,7 +1,8 @@
 import type { ErrorResponse } from '@/shared/types/errors.types';
 import { ApiError } from '@/shared/types/errors.types';
+import { getEnv } from '@/shared/lib/env';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api/v1';
+const API_BASE_URL = getEnv('VITE_API_BASE_URL') || '/api/v1';
 
 interface FetchOptions extends RequestInit {
   params?: Record<string, string | number | boolean | undefined | null>;

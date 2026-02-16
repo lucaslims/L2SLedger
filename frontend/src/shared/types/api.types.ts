@@ -20,7 +20,7 @@ export interface CurrentUserResponse {
 }
 
 export interface LoginRequest {
-  firebaseToken: string;
+  firebaseIdToken: string;
 }
 
 export interface LoginResponse {

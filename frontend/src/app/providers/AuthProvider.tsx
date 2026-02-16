@@ -45,6 +45,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       if (user) {
         try {
           // Verificar sessão no backend
+          // IMPORTANTE: O cookie HttpOnly deve ter sido criado pelo backend após POST /auth/login
           const response = await apiClient.get<CurrentUserResponse>(API_ENDPOINTS.AUTH_ME);
           setCurrentUser(response.user);
         } catch (error) {
