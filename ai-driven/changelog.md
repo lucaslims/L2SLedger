@@ -9,6 +9,104 @@ O formato segue o padrão [Keep a Changelog](https://keepachangelog.com/en/1.0.0
 
 ---
 
+## [2026-02-17] - Correção de QueryKey em BalanceChart.stories.tsx
+
+### Contexto
+
+Correção de bug no Storybook onde o `BalanceChart` exibia "Erro ao carregar dados do gráfico" para todas as stories, incluindo a story `WithData` que deveria mostrar dados mockados.
+
+### Tipo
+Frontend — Correção de Bug (Storybook Mock)
+
+### Impacto
+- Stories do `BalanceChart` agora carregam dados mockados corretamente
+- Story `WithData` exibe o gráfico com 14 dias de dados
+- Stories `Empty` e `Loading` continuam funcionando
+
+### Arquivos Modificados
+- `src/features/dashboard/components/BalanceChart.stories.tsx` — Corrigido queryKey de `'dailyBalances'` para `'daily-balances'`
+
+### Detalhes Técnicos
+**Problema**: Mock usava queryKey `['dailyBalances', undefined, undefined]` (camelCase), mas o hook `useDailyBalances()` usa `['daily-balances', undefined, undefined]` (kebab-case da constante `QUERY_KEYS.DAILY_BALANCES`).
+
+**Solução**: Alinhar queryKey no mock com a constante real: `['daily-balances', undefined, undefined]`.
+
+### Validação
+- ✅ Storybook build bem-sucedido (22s)
+- ✅ Zero erros de TypeScript
+- ✅ QueryKey alinhado com hook real
+
+### Ferramenta
+GitHub Copilot (Claude Sonnet 4.5)
+
+---
+
+## [2026-02-17] - Correção de Sombreamento de Error em Stories
+
+### Contexto
+
+Correção de erro de TypeScript nas stories do dashboard causado por `export const Error` sombreando o construtor global `Error`, impedindo o uso de `new Error()` dentro dos arquivos.
+
+### Tipo
+Frontend — Correção de Bug (TypeScript)
+
+### Impacto
+- Zero erros de compilação TypeScript
+- Storybook builda com sucesso
+- Stories de estado de erro agora exportadas como `ErrorState`
+
+### Arquivos Modificados
+- `src/features/dashboard/components/BalanceChart.stories.tsx` — Renomeado export `Error` → `ErrorState`
+- `src/features/dashboard/components/RecentTransactions.stories.tsx` — Renomeado export `Error` → `ErrorState`
+
+### Detalhes Técnicos
+**Problema**: `export const Error: Story` estava sombreando `globalThis.Error`, causando erro TS2351 "This expression is not constructable" ao tentar `new Error()` dentro do módulo.
+
+**Solução**: Renomear exports para `ErrorState` para evitar conflito de namespace.
+
+### Validação
+- ✅ Zero erros de TypeScript
+- ✅ Storybook build bem-sucedido (24s)
+- ✅ 41/41 testes unitários passando
+
+### Ferramenta
+GitHub Copilot (Claude Sonnet 4.5)
+
+---
+
+## [2026-02-17] - Correção de Teste LoginForm + Storybook Dashboard Stories
+
+### Contexto
+
+1. Correção do teste pré-existente `LoginForm.test.tsx` — asserção `expect.any(Object)` não correspondia à chamada real de `mutate(data)` que passa apenas 1 argumento.
+2. Criação de Storybook stories para todos os 4 componentes de dashboard, conforme planejado nas tasks 2.15 do SPEC.md e checklist do fase-2-dashboard.md.
+
+### Tipo
+Frontend — Testes e Documentação Visual
+
+### Impacto
+- Suite de testes agora 41/41 passing (antes 40/41)
+- Storybook funcional com 12 stories documentando todos os estados visuais dos componentes de dashboard
+
+### Arquivos Modificados
+- `src/features/auth/__tests__/LoginForm.test.tsx` — Removido `expect.any(Object)` da asserção de `mockMutate`
+
+### Arquivos Criados
+- `src/features/dashboard/components/BalanceCard.stories.tsx` — 6 stories (Income, Expense, Balance, ZeroValue, LargeValue, AllVariants)
+- `src/features/dashboard/components/QuickActions.stories.tsx` — 1 story (Default) com MemoryRouter decorator
+- `src/features/dashboard/components/RecentTransactions.stories.tsx` — 4 stories (WithData, Empty, Loading, Error) com QueryClient mock
+- `src/features/dashboard/components/BalanceChart.stories.tsx` — 4 stories (WithData, Empty, Loading, Error) com QueryClient mock e Tremor AreaChart
+
+### Validação
+- ✅ 41/41 testes unitários passando
+- ✅ Storybook build bem-sucedido (23s)
+- ✅ Stories usam autodocs e tags para documentação automática
+
+### Ferramenta
+GitHub Copilot (Claude Opus 4.6)
+
+---
+
 ## [2026-02-17] - Implementação da Fase 2: Dashboard Frontend
 
 ### Contexto
