@@ -33,7 +33,7 @@ public class AuditControllerTests
     {
         _auditEventRepositoryMock = new Mock<IAuditEventRepository>();
         _loggerMock = new Mock<ILogger<AuditController>>();
-        
+
         var config = new MapperConfiguration(cfg =>
         {
             cfg.AddProfile<AuditProfile>();

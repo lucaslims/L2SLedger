@@ -75,9 +75,9 @@ public class CategoryRepository : ICategoryRepository
     {
         return await _context.Categories
             .AsNoTracking()
-            .AnyAsync(c => c.Name == name 
-                && c.ParentCategoryId == parentCategoryId 
-                && !c.IsDeleted 
+            .AnyAsync(c => c.Name == name
+                && c.ParentCategoryId == parentCategoryId
+                && !c.IsDeleted
                 && c.IsActive, cancellationToken);
     }
 

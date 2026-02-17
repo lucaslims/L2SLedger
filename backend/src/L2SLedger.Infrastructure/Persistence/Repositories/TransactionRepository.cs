@@ -105,9 +105,9 @@ public class TransactionRepository : ITransactionRepository
     {
         var startDateUtc = ToUtcDate(startDate);
         var endDateUtc = ToUtcDate(endDate);
-        
+
         var query = _context.Transactions
-            .Where(t => t.UserId == userId 
+            .Where(t => t.UserId == userId
                 && !t.IsDeleted
                 && t.TransactionDate >= startDateUtc
                 && t.TransactionDate <= endDateUtc);
@@ -119,11 +119,11 @@ public class TransactionRepository : ITransactionRepository
 
         var results = await query
             .GroupBy(t => new { t.CategoryId, t.Type })
-            .Select(g => new 
-            { 
-                g.Key.CategoryId, 
-                g.Key.Type, 
-                Total = g.Sum(t => t.Amount) 
+            .Select(g => new
+            {
+                g.Key.CategoryId,
+                g.Key.Type,
+                Total = g.Sum(t => t.Amount)
             })
             .ToListAsync(cancellationToken);
 
@@ -138,9 +138,9 @@ public class TransactionRepository : ITransactionRepository
         CancellationToken cancellationToken = default)
     {
         var beforeDateUtc = ToUtcDate(beforeDate);
-        
+
         var result = await _context.Transactions
-            .Where(t => t.UserId == userId 
+            .Where(t => t.UserId == userId
                 && !t.IsDeleted
                 && t.TransactionDate < beforeDateUtc)
             .GroupBy(t => t.Type)
@@ -161,18 +161,18 @@ public class TransactionRepository : ITransactionRepository
     {
         var startDateUtc = ToUtcDate(startDate);
         var endDateUtc = ToUtcDate(endDate);
-        
+
         var results = await _context.Transactions
-            .Where(t => t.UserId == userId 
+            .Where(t => t.UserId == userId
                 && !t.IsDeleted
                 && t.TransactionDate >= startDateUtc
                 && t.TransactionDate <= endDateUtc)
             .GroupBy(t => new { t.TransactionDate, t.Type })
-            .Select(g => new 
-            { 
-                Date = g.Key.TransactionDate, 
-                g.Key.Type, 
-                Total = g.Sum(t => t.Amount) 
+            .Select(g => new
+            {
+                Date = g.Key.TransactionDate,
+                g.Key.Type,
+                Total = g.Sum(t => t.Amount)
             })
             .ToListAsync(cancellationToken);
 
@@ -207,10 +207,10 @@ public class TransactionRepository : ITransactionRepository
     {
         var startDateUtc = ToUtcDate(startDate);
         var endDateUtc = ToUtcDate(endDate);
-        
+
         return await _context.Transactions
             .Include(t => t.Category)
-            .Where(t => t.UserId == userId 
+            .Where(t => t.UserId == userId
                 && !t.IsDeleted
                 && t.TransactionDate >= startDateUtc
                 && t.TransactionDate <= endDateUtc)

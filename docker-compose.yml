@@ -1,0 +1,77 @@
+# ══════════════════════════════════════════════════════════════════
+# docker-compose.yml — LOCAL DEVELOPMENT ONLY
+# ══════════════════════════════════════════════════════════════════
+# Usage:
+#   cp .env.example .env   # fill in local values
+#   docker compose up -d
+#
+# For production, see docker-compose.prod.yml
+#
+# Note: In production, Caddy runs on the VM as the reverse proxy.
+# Locally, access services directly via their exposed ports:
+#   - Backend:  http://localhost:8080
+#   - Frontend: http://localhost:3000
+# ══════════════════════════════════════════════════════════════════
+
+services:
+  # ── Backend (.NET 9) ──────────────────────────────────────────
+  backend:
+    container_name: l2sledger-backend
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    environment:
+      - ASPNETCORE_ENVIRONMENT=${ASPNETCORE_ENVIRONMENT:-Development}
+      - ConnectionStrings__DefaultConnection=Host=postgres;Port=5432;Database=l2sledger;Username=${POSTGRES_USER:-l2sledger};Password=${POSTGRES_PASSWORD:-l2sledger}
+      - JWT__Secret=${JWT_SECRET}
+      - JWT__Issuer=${JWT_ISSUER:-https://localhost}
+      - JWT__Audience=${JWT_AUDIENCE:-l2sledger}
+      - Firebase__WebAPIKey=${VITE_FIREBASE_API_KEY}
+      - Firebase__CredentialPath=/secrets/firebase-credential.json
+      - Cors__AllowedOrigins=${CORS_ALLOWED_ORIGINS:-http://localhost}
+    volumes:
+      - ${FIREBASE_CREDENTIAL_PATH:-./secrets/firebase-credential.json}:/secrets/firebase-credential.json:ro
+    ports:
+      - "8080:8080"
+    networks:
+      - l2snet
+      - shared-db-network
+      - caddy-network
+    restart: unless-stopped
+
+  # ── Frontend (React + Vite via serve) ────────────────────────
+  frontend:
+    container_name: l2sledger-frontend
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    environment:
+      - VITE_API_BASE_URL=${VITE_API_BASE_URL:-http://localhost:8080/api}
+      - VITE_FIREBASE_API_KEY=${VITE_FIREBASE_API_KEY}
+      - VITE_FIREBASE_AUTH_DOMAIN=${VITE_FIREBASE_AUTH_DOMAIN}
+      - VITE_FIREBASE_PROJECT_ID=${VITE_FIREBASE_PROJECT_ID}
+      - VITE_FIREBASE_STORAGE_BUCKET=${VITE_FIREBASE_STORAGE_BUCKET}
+      - VITE_FIREBASE_MESSAGING_SENDER_ID=${VITE_FIREBASE_MESSAGING_SENDER_ID}
+      - VITE_FIREBASE_APP_ID=${VITE_FIREBASE_APP_ID}
+      - VITE_ENABLE_DEVTOOLS=${VITE_ENABLE_DEVTOOLS:-true}
+      - NODE_ENV=${NODE_ENV:-development}
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    networks:
+      - l2snet
+      - caddy-network
+    restart: unless-stopped
+
+volumes:
+  postgres-data:
+  redis-data:
+
+networks:
+  l2snet:
+    driver: bridge
+  shared-db-network:
+    external: true
+  caddy-network:           
+    external: true

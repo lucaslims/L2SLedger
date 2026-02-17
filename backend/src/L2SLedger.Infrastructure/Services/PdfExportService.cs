@@ -45,8 +45,8 @@ public class PdfExportService : IPdfExportService
         // Gerar PDF simples (HTML-to-PDF básico)
         // Nota: Em produção, usar biblioteca como QuestPDF ou iTextSharp
         var html = GenerateHtmlReport(transactions, startDate, endDate);
-        
-        
+
+
         // Incluir userId completo e componentes adicionais para evitar conflitos entre exportações simultâneas
         var userIdFull = userId.ToString("N");
         var timestamp = DateTime.UtcNow.ToString("yyyyMMddHHmmssfff");
@@ -90,21 +90,21 @@ public class PdfExportService : IPdfExportService
         html.AppendLine(".income { color: green; }");
         html.AppendLine(".expense { color: red; }");
         html.AppendLine("</style></head><body>");
-        
+
         html.AppendLine("<h1>L2SLedger - Transaction Report</h1>");
         html.AppendLine($"<p><strong>Period:</strong> {periodText}</p>");
-        
+
         html.AppendLine("<div class='summary'>");
         html.AppendLine($"<p><strong>Total Income:</strong> <span class='income'>R$ {totalIncome:N2}</span></p>");
         html.AppendLine($"<p><strong>Total Expense:</strong> <span class='expense'>R$ {totalExpense:N2}</span></p>");
         html.AppendLine($"<p><strong>Net Balance:</strong> R$ {netBalance:N2}</p>");
         html.AppendLine($"<p><strong>Total Transactions:</strong> {transactions.Count}</p>");
         html.AppendLine("</div>");
-        
+
         html.AppendLine("<table>");
         html.AppendLine("<thead><tr><th>Date</th><th>Description</th><th>Category</th><th>Amount</th><th>Type</th></tr></thead>");
         html.AppendLine("<tbody>");
-        
+
         foreach (var transaction in transactions.OrderBy(t => t.TransactionDate))
         {
             var cssClass = transaction.Type == TransactionType.Income ? "income" : "expense";
@@ -116,10 +116,10 @@ public class PdfExportService : IPdfExportService
             html.AppendLine($"<td>{transaction.Type}</td>");
             html.AppendLine("</tr>");
         }
-        
+
         html.AppendLine("</tbody></table>");
         html.AppendLine("</body></html>");
-        
+
         return html.ToString();
     }
 }

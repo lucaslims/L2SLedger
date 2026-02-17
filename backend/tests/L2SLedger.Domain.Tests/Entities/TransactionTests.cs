@@ -44,7 +44,7 @@ public class TransactionTests
         // Act & Assert
         var exception = Assert.Throws<ArgumentException>(() =>
             new Transaction("", 100m, TransactionType.Expense, DateTime.Today, _validCategoryId, _validUserId));
-        
+
         Assert.Contains("Descrição é obrigatória", exception.Message);
     }
 
@@ -57,7 +57,7 @@ public class TransactionTests
         // Act & Assert
         var exception = Assert.Throws<ArgumentException>(() =>
             new Transaction(longDescription, 100m, TransactionType.Expense, DateTime.Today, _validCategoryId, _validUserId));
-        
+
         Assert.Contains("não pode exceder 200 caracteres", exception.Message);
     }
 
@@ -67,7 +67,7 @@ public class TransactionTests
         // Act & Assert
         var exception = Assert.Throws<ArgumentException>(() =>
             new Transaction("Teste", 0m, TransactionType.Expense, DateTime.Today, _validCategoryId, _validUserId));
-        
+
         Assert.Contains("deve ser maior que zero", exception.Message);
     }
 
@@ -77,7 +77,7 @@ public class TransactionTests
         // Act & Assert
         var exception = Assert.Throws<ArgumentException>(() =>
             new Transaction("Teste", -100m, TransactionType.Expense, DateTime.Today, _validCategoryId, _validUserId));
-        
+
         Assert.Contains("deve ser maior que zero", exception.Message);
     }
 
@@ -87,7 +87,7 @@ public class TransactionTests
         // Act & Assert
         var exception = Assert.Throws<ArgumentException>(() =>
             new Transaction("Teste", 100m, TransactionType.Expense, DateTime.Today, Guid.Empty, _validUserId));
-        
+
         Assert.Contains("CategoryId é obrigatório", exception.Message);
     }
 
@@ -97,7 +97,7 @@ public class TransactionTests
         // Act & Assert
         var exception = Assert.Throws<ArgumentException>(() =>
             new Transaction("Teste", 100m, TransactionType.Expense, DateTime.Today, _validCategoryId, Guid.Empty));
-        
+
         Assert.Contains("UserId é obrigatório", exception.Message);
     }
 
@@ -107,7 +107,7 @@ public class TransactionTests
         // Act & Assert
         var exception = Assert.Throws<ArgumentException>(() =>
             new Transaction("Teste", 100m, TransactionType.Expense, DateTime.Today, _validCategoryId, _validUserId, null, true, 0));
-        
+
         Assert.Contains("Dia de recorrência deve estar entre 1 e 31", exception.Message);
     }
 
@@ -203,7 +203,7 @@ public class TransactionTests
         // Act & Assert
         var exception = Assert.Throws<BusinessRuleException>(() =>
             transaction.Update("Nova", 200m, TransactionType.Expense, DateTime.Today, _validCategoryId));
-        
+
         Assert.Equal("FIN_TRANSACTION_DELETED", exception.Code);
     }
 
@@ -265,7 +265,7 @@ public class TransactionTests
         // Act & Assert
         var exception = Assert.Throws<BusinessRuleException>(() =>
             transaction.MarkAsDeleted());
-        
+
         Assert.Equal("FIN_TRANSACTION_ALREADY_DELETED", exception.Code);
     }
 }

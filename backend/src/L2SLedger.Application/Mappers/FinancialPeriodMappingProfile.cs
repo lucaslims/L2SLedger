@@ -17,13 +17,13 @@ public class FinancialPeriodMappingProfile : Profile
         CreateMap<FinancialPeriod, FinancialPeriodDto>()
             .ForMember(dest => dest.PeriodName, opt => opt.MapFrom(src => src.GetPeriodName()))
             .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status.ToString()))
-            .ForMember(dest => dest.ClosedByUserName, opt => opt.MapFrom(src => 
+            .ForMember(dest => dest.ClosedByUserName, opt => opt.MapFrom(src =>
                 src.ClosedByUser != null ? src.ClosedByUser.DisplayName : null))
-            .ForMember(dest => dest.ReopenedByUserName, opt => opt.MapFrom(src => 
+            .ForMember(dest => dest.ReopenedByUserName, opt => opt.MapFrom(src =>
                 src.ReopenedByUser != null ? src.ReopenedByUser.DisplayName : null))
-            .ForMember(dest => dest.BalanceSnapshot, opt => opt.MapFrom(src => 
-                !string.IsNullOrEmpty(src.BalanceSnapshotJson) 
-                    ? JsonSerializer.Deserialize<BalanceSnapshot>(src.BalanceSnapshotJson, (JsonSerializerOptions?)null) 
+            .ForMember(dest => dest.BalanceSnapshot, opt => opt.MapFrom(src =>
+                !string.IsNullOrEmpty(src.BalanceSnapshotJson)
+                    ? JsonSerializer.Deserialize<BalanceSnapshot>(src.BalanceSnapshotJson, (JsonSerializerOptions?)null)
                     : null));
     }
 }

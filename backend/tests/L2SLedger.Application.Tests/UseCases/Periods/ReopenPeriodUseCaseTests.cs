@@ -239,7 +239,7 @@ public class ReopenPeriodUseCaseTests
         // This test documents that Admin authorization is validated in the controller layer
         // The use case itself doesn't validate roles (ADR-020: Clean Architecture)
         // ADR-016: RBAC - Only Admin can reopen periods (enforced by controller)
-        
+
         // Arrange
         var periodId = Guid.NewGuid();
         var userId = Guid.NewGuid();

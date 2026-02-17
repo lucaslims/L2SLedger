@@ -18,7 +18,7 @@ public class User : Entity
     public IReadOnlyCollection<string> Roles => _roles.AsReadOnly();
 
     // Constructor for EF Core
-    private User() : base() 
+    private User() : base()
     {
         FirebaseUid = string.Empty;
         Email = string.Empty;
@@ -26,7 +26,7 @@ public class User : Entity
         Status = UserStatus.Pending;
     }
 
-    public User(string firebaseUid, string email, string displayName, bool emailVerified) 
+    public User(string firebaseUid, string email, string displayName, bool emailVerified)
         : base()
     {
         if (string.IsNullOrWhiteSpace(firebaseUid))
@@ -40,7 +40,7 @@ public class User : Entity
         DisplayName = displayName ?? email;
         EmailVerified = emailVerified;
         Status = UserStatus.Pending;
-        
+
         // Usuário padrão começa com role Leitura
         _roles.Add("Leitura");
     }

@@ -86,7 +86,7 @@ public class GetBalanceUseCase
                 totalExpense += amount;
             }
 
-            categoryBalances[catId].NetBalance = 
+            categoryBalances[catId].NetBalance =
                 categoryBalances[catId].Income - categoryBalances[catId].Expense;
         }
 
