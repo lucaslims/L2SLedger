@@ -34,22 +34,22 @@ public class GetFinancialPeriodByIdUseCaseTests
         decimal totalExpense = 0,
         decimal netBalance = 0,
         BalanceSnapshot? balanceSnapshot = null) => new()
-    {
-        Id = p.Id,
-        Year = p.Year,
-        Month = p.Month,
-        PeriodName = p.GetPeriodName(),
-        StartDate = p.StartDate,
-        EndDate = p.EndDate,
-        Status = status,
-        ClosedAt = p.ClosedAt,
-        ClosedByUserId = p.ClosedByUserId,
-        TotalIncome = totalIncome,
-        TotalExpense = totalExpense,
-        NetBalance = netBalance,
-        BalanceSnapshot = balanceSnapshot,
-        CreatedAt = p.CreatedAt
-    };
+        {
+            Id = p.Id,
+            Year = p.Year,
+            Month = p.Month,
+            PeriodName = p.GetPeriodName(),
+            StartDate = p.StartDate,
+            EndDate = p.EndDate,
+            Status = status,
+            ClosedAt = p.ClosedAt,
+            ClosedByUserId = p.ClosedByUserId,
+            TotalIncome = totalIncome,
+            TotalExpense = totalExpense,
+            NetBalance = netBalance,
+            BalanceSnapshot = balanceSnapshot,
+            CreatedAt = p.CreatedAt
+        };
 
     [Fact]
     public async Task ExecuteAsync_ValidId_ReturnsPeriod()

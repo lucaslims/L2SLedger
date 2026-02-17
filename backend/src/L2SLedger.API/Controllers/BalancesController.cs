@@ -54,7 +54,7 @@ public class BalancesController : ControllerBase
                 endDate,
                 categoryId,
                 cancellationToken);
-            
+
             return Ok(result);
         }
         catch (BusinessRuleException ex)
@@ -91,7 +91,7 @@ public class BalancesController : ControllerBase
                 startDate,
                 endDate,
                 cancellationToken);
-            
+
             return Ok(result);
         }
         catch (BusinessRuleException ex)

@@ -44,7 +44,7 @@ public class AdjustmentTests
         // Act & Assert
         var exception = Assert.Throws<ArgumentException>(() =>
             new Adjustment(Guid.Empty, 100m, AdjustmentType.Correction, "Justificativa válida", _validDate, _validUserId));
-        
+
         Assert.Contains("OriginalTransactionId é obrigatório", exception.Message);
     }
 
@@ -54,7 +54,7 @@ public class AdjustmentTests
         // Act & Assert
         var exception = Assert.Throws<ArgumentException>(() =>
             new Adjustment(_validTransactionId, 0m, AdjustmentType.Correction, "Justificativa válida", _validDate, _validUserId));
-        
+
         Assert.Contains("Amount não pode ser zero", exception.Message);
     }
 
@@ -64,7 +64,7 @@ public class AdjustmentTests
         // Act & Assert
         var exception = Assert.Throws<ArgumentException>(() =>
             new Adjustment(_validTransactionId, 100m, AdjustmentType.Correction, "", _validDate, _validUserId));
-        
+
         Assert.Contains("Justificativa é obrigatória", exception.Message);
     }
 
@@ -74,7 +74,7 @@ public class AdjustmentTests
         // Act & Assert
         var exception = Assert.Throws<ArgumentException>(() =>
             new Adjustment(_validTransactionId, 100m, AdjustmentType.Correction, "Curto", _validDate, _validUserId));
-        
+
         Assert.Contains("no mínimo 10 caracteres", exception.Message);
     }
 
@@ -87,7 +87,7 @@ public class AdjustmentTests
         // Act & Assert
         var exception = Assert.Throws<ArgumentException>(() =>
             new Adjustment(_validTransactionId, 100m, AdjustmentType.Correction, longReason, _validDate, _validUserId));
-        
+
         Assert.Contains("não pode exceder 500 caracteres", exception.Message);
     }
 
@@ -97,7 +97,7 @@ public class AdjustmentTests
         // Act & Assert
         var exception = Assert.Throws<ArgumentException>(() =>
             new Adjustment(_validTransactionId, 100m, AdjustmentType.Correction, "Justificativa válida", _validDate, Guid.Empty));
-        
+
         Assert.Contains("CreatedByUserId é obrigatório", exception.Message);
     }
 
@@ -138,7 +138,7 @@ public class AdjustmentTests
         // Act & Assert
         var exception = Assert.Throws<BusinessRuleException>(() =>
             adjustment.ValidateAgainstOriginal(null!));
-        
+
         Assert.Equal("FIN_ADJUSTMENT_INVALID_ORIGINAL", exception.Code);
     }
 
@@ -168,7 +168,7 @@ public class AdjustmentTests
         // Act & Assert
         var exception = Assert.Throws<BusinessRuleException>(() =>
             adjustment.ValidateAgainstOriginal(transaction));
-        
+
         Assert.Equal("FIN_ADJUSTMENT_ORIGINAL_DELETED", exception.Code);
     }
 
@@ -197,7 +197,7 @@ public class AdjustmentTests
         // Act & Assert
         var exception = Assert.Throws<BusinessRuleException>(() =>
             adjustment.ValidateAgainstOriginal(transaction));
-        
+
         Assert.Equal("FIN_ADJUSTMENT_REVERSAL_EXCEEDS", exception.Code);
     }
 

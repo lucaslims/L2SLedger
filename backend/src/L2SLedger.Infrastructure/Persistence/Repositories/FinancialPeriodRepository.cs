@@ -124,7 +124,7 @@ public class FinancialPeriodRepository : IFinancialPeriodRepository
     public async Task<FinancialPeriod?> GetPeriodForDateAsync(DateTime date, CancellationToken cancellationToken = default)
     {
         var dateUtc = ToUtcDate(date);
-        
+
         return await _context.FinancialPeriods
             .FirstOrDefaultAsync(
                 p => dateUtc >= p.StartDate && dateUtc <= p.EndDate,

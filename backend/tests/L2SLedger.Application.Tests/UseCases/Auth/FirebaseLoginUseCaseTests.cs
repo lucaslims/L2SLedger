@@ -63,7 +63,7 @@ public class FirebaseLoginUseCaseTests
         Assert.Equal(expectedResponse.IdToken, result.IdToken);
         Assert.Equal(expectedResponse.Email, result.Email);
         Assert.Equal(expectedResponse.LocalId, result.LocalId);
-        
+
         _firebaseAuthServiceMock.Verify(
             s => s.SignInWithEmailPasswordAsync(request.Email, request.Password, It.IsAny<CancellationToken>()),
             Times.Once);

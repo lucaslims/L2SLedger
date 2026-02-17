@@ -9,7 +9,7 @@ namespace L2SLedger.Application.Interfaces;
 public interface IUserRepository
 {
     // === Métodos existentes ===
-    
+
     Task<User?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default);
     Task<User?> GetByFirebaseUidAsync(string firebaseUid, CancellationToken cancellationToken = default);
     Task<User?> GetByEmailAsync(string email, CancellationToken cancellationToken = default);

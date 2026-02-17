@@ -13,13 +13,13 @@ public class Category : Entity
     public string Name { get; private set; }
     public string? Description { get; private set; }
     public bool IsActive { get; private set; }
-    
+
     /// <summary>
     /// ID da categoria pai (null se for categoria raiz).
     /// Suporta apenas 1 nível de hierarquia (pai -> filho).
     /// </summary>
     public Guid? ParentCategoryId { get; private set; }
-    
+
     // Navigation property
     public Category? ParentCategory { get; private set; }
     private readonly List<Category> _subCategories = new();

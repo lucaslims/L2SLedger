@@ -18,7 +18,7 @@ public class AuthDtoContractTests
 
         // Assert
         dto.FirebaseIdToken.Should().Be("test-token");
-        
+
         // Validar estrutura do contrato
         var properties = typeof(LoginRequest).GetProperties();
         properties.Should().HaveCount(1);
@@ -58,7 +58,7 @@ public class AuthDtoContractTests
         // Assert
         dto.User.Should().NotBeNull();
         dto.User.Email.Should().Be("test@example.com");
-        
+
         // Validar estrutura do contrato
         var properties = typeof(LoginResponse).GetProperties();
         properties.Should().Contain(p => p.Name == "User" && p.PropertyType == typeof(UserDto));
