@@ -8,8 +8,8 @@
 
 ## Estatísticas
 
-* **Total de ADRs**: 45
-* **Última atualização**: 2026-01-27
+* **Total de ADRs**: 46
+* **Última atualização**: 2026-02-17
 
 ---
 
@@ -25,7 +25,7 @@
 | **Auditoria & Controle de Acesso**| 014–017, 019             |
 | **Arquitetura & Padrões**         | 020–027, 022-a           |
 | **Ambientes & Dados**             | 028–030                  |
-| **CI/CD & Infraestrutura**        | 031–033                  |
+| **CI/CD & Infraestrutura**        | 031–033, 043             |
 | **Banco de Dados & Persistência** | 034–036                  |
 | **Qualidade & Testes**            | 037–040                  |
 | **IA & Modelos de Agentes**       | 041                      |
@@ -83,6 +83,7 @@
 | ADR-041     | Seleção de Modelos de IA por Papel de Agente no L2SLedger               | [Ver ADR-041](./adr-041.md) |
 | ADR-042     | Modelo de Comercialização SaaS e Planos de Assinatura no L2SLedger      | [Ver ADR-042](./adr-042.md) |
 | ADR-042-a   | Contratos Comerciais Consumidos pelo Frontend no L2SLedger              | [Ver ADR-042-a](./adr-042-a.md) |
+| ADR-043     | Estratégia de Deploy Automático (DEMO) e com Aprovação (PROD)           | [Ver ADR-043](./adr-043.md) |
 
 ---
 
