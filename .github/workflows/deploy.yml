@@ -1,0 +1,186 @@
+name: Deploy to PROD (Manual + Approval)
+
+on:
+  workflow_dispatch:
+    inputs:
+      image_tag:
+        description: 'Image tag to deploy (e.g., v1.2.3 or sha-abc1234)'
+        required: true
+        type: string
+      service:
+        description: 'Service to deploy'
+        required: true
+        type: choice
+        options:
+          - all
+          - backend
+          - frontend
+
+# Only one deploy at a time
+concurrency:
+  group: production-deploy
+  cancel-in-progress: false
+
+env:
+  REGISTRY: ghcr.io
+  COMPOSE_FILE: docker-compose.prod.yml
+
+permissions:
+  contents: read
+  packages: read
+
+jobs:
+  # ── Validate ──────────────────────────────────────────────────
+  validate:
+    name: Validate Image Tag
+    runs-on: ubuntu-latest
+    outputs:
+      backend_image: ${{ steps.resolve.outputs.backend_image }}
+      frontend_image: ${{ steps.resolve.outputs.frontend_image }}
+
+    steps:
+      - name: Resolve image references
+        id: resolve
+        run: |
+          OWNER="${{ github.repository_owner }}"
+          TAG="${{ inputs.image_tag }}"
+          echo "backend_image=${{ env.REGISTRY }}/${OWNER}/l2sledger-backend:${TAG}" >> "$GITHUB_OUTPUT"
+          echo "frontend_image=${{ env.REGISTRY }}/${OWNER}/l2sledger-frontend:${TAG}" >> "$GITHUB_OUTPUT"
+          echo "::notice::Deploying tag: ${TAG} for service: ${{ inputs.service }}"
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Verify backend image exists
+        if: inputs.service == 'all' || inputs.service == 'backend'
+        run: docker manifest inspect ${{ steps.resolve.outputs.backend_image }}
+
+      - name: Verify frontend image exists
+        if: inputs.service == 'all' || inputs.service == 'frontend'
+        run: docker manifest inspect ${{ steps.resolve.outputs.frontend_image }}
+
+  # ── Deploy ────────────────────────────────────────────────────
+  deploy:
+    name: Deploy to PROD VM
+    needs: validate
+    runs-on: ubuntu-latest
+    environment:
+      name: production
+      url: https://${{ secrets.PROD_DOMAIN || 'yourdomain.com' }}
+    # ⚠️ IMPORTANT: Configure environment protection rules in GitHub:
+    # Settings → Environments → production → Required reviewers
+    # This enforces manual approval before deploying to production
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: |
+            docker-compose.prod.yml
+
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.VM_HOST }}
+          username: ${{ secrets.VM_USER }}
+          key: ${{ secrets.VM_SSH_KEY }}
+          port: ${{ secrets.VM_SSH_PORT || 22 }}
+          script: |
+            set -euo pipefail
+
+            echo "═══ Authenticating to GHCR ═══"
+            echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+
+            cd ${{ secrets.VM_DEPLOY_PATH || '/opt/l2sledger' }}
+
+            echo "═══ Setting image tag ═══"
+            export IMAGE_TAG="${{ inputs.image_tag }}"
+            export GHCR_OWNER="${{ github.repository_owner }}"
+
+            SERVICE="${{ inputs.service }}"
+
+            if [ "$SERVICE" = "all" ] || [ "$SERVICE" = "backend" ]; then
+              echo "═══ Pulling backend image ═══"
+              docker compose -f docker-compose.prod.yml pull backend
+
+              echo "═══ Restarting backend ═══"
+              docker compose -f docker-compose.prod.yml up -d --no-deps backend
+            fi
+
+            if [ "$SERVICE" = "all" ] || [ "$SERVICE" = "frontend" ]; then
+              echo "═══ Pulling frontend image ═══"
+              docker compose -f docker-compose.prod.yml pull frontend
+
+              echo "═══ Restarting frontend ═══"
+              docker compose -f docker-compose.prod.yml up -d --no-deps frontend
+            fi
+
+            echo "═══ Cleaning old images ═══"
+            docker image prune -f --filter "until=168h"
+
+            echo "═══ Health check ═══"
+            sleep 10
+            docker compose -f docker-compose.prod.yml ps
+
+            echo "═══ Deploy complete ═══"
+
+      - name: Verify backend health
+        if: inputs.service == 'all' || inputs.service == 'backend'
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.VM_HOST }}
+          username: ${{ secrets.VM_USER }}
+          key: ${{ secrets.VM_SSH_KEY }}
+          port: ${{ secrets.VM_SSH_PORT || 22 }}
+          script: |
+            set -euo pipefail
+            max_retries=10
+            count=0
+            until curl -sf http://localhost:8080/api/v1/health > /dev/null 2>&1; do
+              count=$((count + 1))
+              if [ $count -ge $max_retries ]; then
+                echo "::error::Backend health check failed after ${max_retries} retries"
+                docker logs l2sledger-backend --tail 50
+                exit 1
+              fi
+              echo "Waiting for backend... (${count}/${max_retries})"
+              sleep 5
+            done
+            echo "Backend is healthy"
+
+      - name: Verify frontend health
+        if: inputs.service == 'all' || inputs.service == 'frontend'
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.VM_HOST }}
+          username: ${{ secrets.VM_USER }}
+          key: ${{ secrets.VM_SSH_KEY }}
+          port: ${{ secrets.VM_SSH_PORT || 22 }}
+          script: |
+            set -euo pipefail
+            max_retries=10
+            count=0
+            until curl -sf http://localhost:3000/ > /dev/null 2>&1; do
+              count=$((count + 1))
+              if [ $count -ge $max_retries ]; then
+                echo "::error::Frontend health check failed after ${max_retries} retries"
+                docker logs l2sledger-frontend --tail 50
+                exit 1
+              fi
+              echo "Waiting for frontend... (${count}/${max_retries})"
+              sleep 5
+            done
+            echo "Frontend is healthy"
+
+      - name: Create deployment summary
+        if: always()
+        run: |
+          echo "## 🚀 PRODUCTION Deployment Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Tag:** \`${{ inputs.image_tag }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "**Service:** \`${{ inputs.service }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "**Deployed by:** @${{ github.actor }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Timestamp:** $(date -u '+%Y-%m-%d %H:%M:%S UTC')" >> $GITHUB_STEP_SUMMARY
