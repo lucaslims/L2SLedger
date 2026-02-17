@@ -9,6 +9,238 @@ O formato segue o padrão [Keep a Changelog](https://keepachangelog.com/en/1.0.0
 
 ---
 
+## [2026-02-17] - Implementação de Deploy Automático para DEMO e Aprovação Obrigatória para PROD
+
+### Contexto
+
+O projeto necessitava de um processo de deploy que permitisse validações rápidas em ambiente DEMO (para testes internos e demonstrações) sem comprometer a governança de releases em produção. A solução anterior exigia deploy manual para todos os ambientes, causando lentidão em ciclos de validação.
+
+### Tipo
+CI/CD & Infraestrutura
+
+### Impacto
+Operacional — Agiliza deployments em DEMO enquanto mantém controle rigoroso em PROD.
+
+### ADRs Relacionados
+- **ADR-028** — Ambientes (DEV/DEMO/PROD)
+- **ADR-031** — GitHub Actions como plataforma de CI/CD
+- **ADR-043** (novo) — Estratégia de Deploy Automático (DEMO) e com Aprovação (PROD)
+
+### Mudanças
+
+#### Criados
+- `.github/workflows/deploy-demo.yml` — Deploy automático para DEMO
+  - Dispara em push para `main`, `release/**`, `hotfix/**`
+  - Usa detecção de mudanças via `dorny/paths-filter`
+  - Tag baseada em SHA (`sha-abc1234`)
+  - Health checks automáticos
+  - Requer secrets: `DEMO_VM_HOST`, `DEMO_VM_USER`, `DEMO_VM_SSH_KEY`
+
+- `docs/adr/adr-043.md` — ADR documentando a estratégia de deploy
+  - Contexto: Necessidade de agilidade (DEMO) + governança (PROD)
+  - Decisão: Dois workflows distintos
+  - Arquitetura: deploy-demo.yml (automático) vs deploy.yml (manual + aprovação)
+  - Segurança: Isolamento de secrets, ambientes distintos
+  - Consequências: Agilidade mantendo conformidade
+
+#### Modificados
+- `.github/workflows/deploy.yml` — Adaptado para PROD com aprovação
+  - Renomeado de "Deploy to Production" para "Deploy to PROD (Manual + Approval)"
+  - Adicionado `environment: production` (GitHub Environments)
+  - Aprovação obrigatória antes do deploy
+  - Tag obrigatória com semantic versioning (`v1.2.3`)
+  - Deployment summary melhorado
+
+- `docs/adr/adr-index.md` — Atualizado
+  - Total de ADRs: 45 → 46
+  - Data de atualização: 2026-02-17
+  - Categoria "CI/CD & Infraestrutura": 031–033 → 031–033, 043
+  - Entrada ADR-043 adicionada à tabela principal
+
+- `docs/deployment/5-production-deploy.md` — Atualizado
+  - Título: "Deploy em Produção" → "Deploy em Produção e DEMO"
+  - Nova seção "Estratégia de Deploy" explicando os dois workflows
+  - **Método 1:** Deploy Automático para DEMO (GitHub Actions)
+  - **Método 2:** Deploy Manual com Aprovação para PROD (GitHub Actions)
+  - **Método 3:** Deploy Manual SSH (Emergência) — renumerado
+  - Referência ao ADR-043
+
+### Requisitos de Configuração
+
+Para utilizar os workflows, é necessário configurar no GitHub:
+
+**Environments:**
+- `demo` — Sem reviewers, permite deploy automático
+- `production` — Com reviewers obrigatórios (1+ pessoas), URL: https://yourdomain.com
+
+**Secrets (repository):**
+- `DEMO_VM_HOST` — IP ou hostname da VM DEMO
+- `DEMO_VM_USER` — Usuário SSH para DEMO
+- `DEMO_VM_SSH_KEY` — Chave privada SSH para DEMO
+- `PROD_VM_HOST` — IP ou hostname da VM PROD (se diferente)
+- `PROD_VM_USER` — Usuário SSH para PROD
+- `PROD_VM_SSH_KEY` — Chave privada SSH para PROD
+
+### Fontes de Verdade Consultadas
+- `docs/adr/adr-028.md` — Ambientes
+- `docs/adr/adr-031.md` — GitHub Actions
+- `.github/workflows/deploy.yml` (original)
+- `docs/deployment/5-production-deploy.md` (original)
+- `docs/governance/flow-planejar-aprovar-executar.md`
+
+### Ferramenta
+GitHub Copilot (Claude Sonnet 4.5)
+
+---
+
+## [2026-02-16] - Criação de Documentação de Deploy
+
+### Contexto
+
+Informações sobre configuração, deploy e operação do L2SLedger estavam dispersas em múltiplos arquivos (`backend/RUNNING.md`, `frontend/README.md`, `docs/devops-strategy.md`, etc.). Desenvolvedores e DevOps precisavam "caçar" informações, não existia troubleshooting guide, nem procedimentos de rollback/recovery documentados.
+
+### Tipo
+Documentação
+
+### Impacto
+Estrutural — consolidação de informações dispersas em guias coerentes e organizados.
+
+### ADRs Relacionados
+Nenhum (complementar — não contradiz nenhum ADR existente).
+
+### Mudanças
+
+#### Criados (11 documentos em `docs/deployment/`)
+- `docs/deployment/README.md` — Índice e visão geral com decisões rápidas
+- `docs/deployment/1-prerequisites.md` — Pré-requisitos (ferramentas, Firebase, GHCR, OCI VM)
+- `docs/deployment/2-local-development.md` — Desenvolvimento local sem Docker (backend .NET + frontend React)
+- `docs/deployment/3-docker-local.md` — Stack completa via Docker Compose local
+- `docs/deployment/4-production-setup.md` — Configuração inicial do servidor OCI (one-time setup)
+- `docs/deployment/5-production-deploy.md` — Deploy via GitHub Actions e SSH manual
+- `docs/deployment/6-environment-variables.md` — Referência completa de todas as variáveis de ambiente
+- `docs/deployment/7-caddy-configuration.md` — Configuração do Caddy (reverse proxy + TLS)
+- `docs/deployment/8-monitoring-health.md` — Health checks, logs e monitoramento
+- `docs/deployment/9-troubleshooting.md` — Guia de resolução de 8 problemas comuns
+- `docs/deployment/10-rollback-recovery.md` — Rollback, recuperação e disaster recovery
+
+### Fontes de Verdade Consultadas
+- `docs/devops-strategy.md`
+- `backend/RUNNING.md`
+- `frontend/README.md`
+- `docker-compose.yml` e `docker-compose.prod.yml`
+- `backend/Dockerfile` e `frontend/Dockerfile`
+- `.env.example`
+
+### Ferramenta
+GitHub Copilot (Claude)
+
+### Próximos Passos
+- Revisar documentos com equipe
+- Testar procedimentos na prática
+- Ajustar com feedback real
+
+---
+
+## [2026-02-16] - Correção DevOps: Remoção de Nginx, Integração com Caddy
+
+### Contexto
+
+Correção crítica da implementação DevOps anterior que introduziu nginx como reverse proxy e servidor de arquivos estáticos do frontend. A VM OCI já possui Caddy rodando como reverse proxy — nginx conflitava com essa infraestrutura existente.
+
+### Problemas Corrigidos
+
+- nginx no container frontend conflitava com Caddy na VM (dois proxies competindo)
+- nginx master process requeria root para porta 80, quebrando isolamento non-root
+- Serviço `proxy` (nginx) no compose de produção expunha containers diretamente
+- Config files nginx duplicavam funcionalidades já providas pelo Caddy (TLS, headers, proxy)
+
+### Removidos
+
+- `docker/nginx/default.conf` — config do reverse proxy nginx (deletado)
+- `frontend/docker/nginx-frontend.conf` — config nginx do SPA (deletado)
+- Serviço `proxy` (nginx) do `docker-compose.yml` e `docker-compose.prod.yml`
+- Todas as referências a nginx nos Dockerfiles
+
+### Modificados
+
+- `frontend/Dockerfile` — Reescrito: nginx substituído por `serve` (Node.js static server), non-root user `appuser`, porta 3000
+- `frontend/docker/env.sh` — Paths atualizados de `/usr/share/nginx/html` para `/app/dist`, removida referência a nginx
+- `docker-compose.yml` — Removido serviço proxy, frontend agora expõe porta 3000
+- `docker-compose.prod.yml` — Removido serviço proxy, containers usam `caddy-network` (externa), apenas `expose:` (sem `ports:`)
+- `.github/workflows/deploy.yml` — Removido restart de proxy, adicionado health check do frontend, removido sparse-checkout de nginx
+- `.env.example` — Corrigido `VITE_API_BASE_URL` para http://localhost:8080/api
+- `docs/devops-strategy.md` — Reescrito com justificativas de remoção do nginx, seção de integração com Caddy
+
+### Adicionados
+
+- `frontend/docker/serve.json` — Configuração de headers e cache para `serve`
+
+### Decisão Técnica: `serve` vs nginx vs Caddy file_server
+
+- **`serve` (escolhido)**: ~2MB, SPA fallback nativo (`-s`), roda como non-root em qualquer porta, zero config
+- **nginx (rejeitado)**: requer root para porta <1024, duplica responsabilidade do Caddy, superfície de ataque desnecessária
+- **Caddy file_server (rejeitado)**: acoplaria deploy do frontend à config do Caddy na VM, quebraria isolamento de containers
+
+### Ferramenta
+
+GitHub Copilot (Claude)
+
+---
+
+## [2026-02-16] - Reestruturação DevOps: Containerização, CI/CD e Deploy
+
+### Contexto
+
+Revisão e reestruturação completa da estratégia de build, containerização e pipeline CI/CD do projeto.
+
+### Modificados
+
+- `backend/Dockerfile` — Hardening: non-root user, build args para versionamento, OCI labels, desabilitação de diagnósticos
+- `frontend/Dockerfile` — 3-stage build (deps/build/serve), separação de dependências, nginx config dedicado
+- `docker-compose.yml` — Refatorado para ambiente local com Postgres + Redis inclusos, defaults seguros, dependências declarativas
+- `docker/nginx/default.conf` — Security headers, server_tokens off, timeouts, request size limits
+- `.github/workflows/frontend-ci.yml` — Adicionados: Docker build/push GHCR, Trivy scan, CodeQL, npm audit, format check
+- `backend/.dockerignore` — Adicionadas exclusões extras (logs, .user, .DotSettings)
+
+### Adicionados
+
+- `docker-compose.prod.yml` — Compose de produção: pull de imagens GHCR, read_only filesystem, resource limits, no-new-privileges, shared-db-network externo
+- `.github/workflows/backend-ci.yml` — Pipeline completo: restore, build, test, format check, vulnerability scan, Docker build/push, Trivy, CodeQL
+- `.github/workflows/deploy.yml` — Deploy manual para VM OCI via SSH com health check e rollback detection
+- `frontend/docker/nginx-frontend.conf` — Config nginx dedicada para SPA routing com security headers e cache control
+- `.env.example` — Template para variáveis de ambiente locais
+- `docs/devops-strategy.md` — Documentação de decisões técnicas, checklist de segurança, setup da VM, melhorias futuras
+
+### Decisões Técnicas
+
+- GHCR como registry (integração nativa GitHub, gratuito para repos públicos)
+- Trivy + CodeQL como ferramentas de segurança (ambas gratuitas)
+- Deploy manual via workflow_dispatch (requer aprovação humana)
+- Versionamento: latest + semver + sha curto
+- Containers read-only em produção com tmpfs onde necessário
+
+### Ferramenta
+
+GitHub Copilot (Claude)
+
+---
+
+## [2026-02-01] -  Fase 1: Autenticação (Frontend) COMPLETA
+
+### Implementação
+-  Services: authService.ts
+-  Hooks: useLogin, useRegister, useLogout, useResendVerification
+-  Componentes: LoginForm, RegisterForm, VerifyEmailCard, PendingApprovalCard
+-  Páginas: Login, Register, VerifyEmail, PendingApproval, Suspended, Rejected (6 páginas)
+-  Tratamento de erros: 67 códigos ADR-021-A
+-  Testes unitários: 16/16 passando (100%)
+-  Testes E2E: 14 cenários Playwright
+
+### Resultado
+**Fase 1 COMPLETA** - Próxima fase: Dashboard
+
+---
+
 ## [2026-02-01] - � Validação de Documentos de Fases do Frontend
 
 ### 🎯 Contexto
@@ -3472,3 +3704,4 @@ app.UseSerilogConfiguration();
 
 
 <!-- END CHANGELOG -->
+<!-- EOF -->
