@@ -33,8 +33,8 @@ public class GlobalExceptionHandler : IExceptionHandler
             AuthenticationException authEx => (HttpStatusCode.Unauthorized, authEx.Code, authEx.Message),
             BusinessRuleException businessEx => (HttpStatusCode.BadRequest, businessEx.Code, businessEx.Message),
             FluentValidation.ValidationException validationEx => (
-                HttpStatusCode.BadRequest, 
-                ErrorCodes.VAL_VALIDATION_FAILED, 
+                HttpStatusCode.BadRequest,
+                ErrorCodes.VAL_VALIDATION_FAILED,
                 string.Join("; ", validationEx.Errors.Select(e => e.ErrorMessage))),
             _ => (HttpStatusCode.InternalServerError, ErrorCodes.SYS_INTERNAL_ERROR, "Erro interno do servidor")
         };

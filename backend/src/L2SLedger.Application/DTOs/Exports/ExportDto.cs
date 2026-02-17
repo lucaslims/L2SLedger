@@ -39,7 +39,7 @@ public class ExportDto
     /// Parâmetros usados para gerar a exportação, em formato JSON.
     /// </summary>
     public string ParametersJson { get; set; } = "{}";
-    
+
     /// <summary>
     /// ID do usuário que solicitou a exportação.
     /// </summary>

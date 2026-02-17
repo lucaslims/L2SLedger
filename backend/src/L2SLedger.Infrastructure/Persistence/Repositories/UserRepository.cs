@@ -43,19 +43,19 @@ public class UserRepository : IUserRepository
     public async Task<User> AddAsync(User user, CancellationToken cancellationToken = default)
     {
         _logger.LogInformation("Adicionando usuário {Email}", user.Email);
-        
+
         _context.Users.Add(user);
         await _context.SaveChangesAsync(cancellationToken);
-        
+
         _logger.LogInformation("Usuário criado com ID {UserId}", user.Id);
-        
+
         return user;
     }
 
     public async Task UpdateAsync(User user, CancellationToken cancellationToken = default)
     {
         _logger.LogInformation("Atualizando usuário {UserId}", user.Id);
-        
+
         user.UpdateTimestamp();
         _context.Users.Update(user);
         await _context.SaveChangesAsync(cancellationToken);
@@ -64,7 +64,7 @@ public class UserRepository : IUserRepository
     public async Task DeleteAsync(User user, CancellationToken cancellationToken = default)
     {
         _logger.LogInformation("Deletando usuário {UserId}", user.Id);
-        
+
         user.MarkAsDeleted();
         await _context.SaveChangesAsync(cancellationToken);
     }

@@ -96,9 +96,9 @@ public class ExportsController : ControllerBase
     public async Task<IActionResult> DownloadExport(Guid id)
     {
         var (fileBytes, fileName, contentType) = await _downloadExportUseCase.ExecuteAsync(id);
-        
+
         _logger.LogInformation("Download da exportação {ExportId} - {FileName}", id, fileName);
-        
+
         return File(fileBytes, contentType, fileName);
     }
 
@@ -130,7 +130,7 @@ public class ExportsController : ControllerBase
     {
         await _deleteExportUseCase.ExecuteAsync(id);
         _logger.LogInformation("Exportação {ExportId} marcada para exclusão", id);
-        
+
         return NoContent();
     }
 }

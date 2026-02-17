@@ -161,9 +161,10 @@ public class UsersController : ControllerBase
         {
             return NotFound(ErrorResponse.Create(ex.Code, ex.Message));
         }
-        catch (BusinessRuleException ex) when (ex.Code is ErrorCodes.USER_CANNOT_REMOVE_OWN_ADMIN or ErrorCodes.USER_LAST_ADMIN or ErrorCodes.USER_ROLES_REQUIRED or ErrorCodes.USER_ROLE_EMPTY or ErrorCodes.USER_INVALID_ROLE){
-            return BadRequest(ErrorResponse.Create(ex.Code, ex.Message));   
-        }        
+        catch (BusinessRuleException ex) when (ex.Code is ErrorCodes.USER_CANNOT_REMOVE_OWN_ADMIN or ErrorCodes.USER_LAST_ADMIN or ErrorCodes.USER_ROLES_REQUIRED or ErrorCodes.USER_ROLE_EMPTY or ErrorCodes.USER_INVALID_ROLE)
+        {
+            return BadRequest(ErrorResponse.Create(ex.Code, ex.Message));
+        }
     }
 
     /// <summary>

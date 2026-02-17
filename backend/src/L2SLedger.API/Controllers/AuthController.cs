@@ -77,7 +77,7 @@ public class AuthController : ControllerBase
         catch (AuthenticationException ex)
         {
             _logger.LogWarning("Falha na autenticação: {Message}", ex.Message);
-            
+
             return ex.Code switch
             {
                 ErrorCodes.AUTH_EMAIL_NOT_VERIFIED => BadRequest(ErrorResponse.Create(ex.Code, ex.Message)),
@@ -98,7 +98,7 @@ public class AuthController : ControllerBase
         try
         {
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            
+
             if (string.IsNullOrWhiteSpace(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
             {
                 return Unauthorized(ErrorResponse.Create(
@@ -125,12 +125,12 @@ public class AuthController : ControllerBase
     public async Task<IActionResult> Logout()
     {
         var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        
+
         _logger.LogInformation("Logout realizado para usuário {UserId}", userIdClaim);
 
         // SignOut do esquema de autenticação
         await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-        
+
         // Remover cookie explicitamente (fallback)
         Response.Cookies.Delete(AuthCookieName);
 

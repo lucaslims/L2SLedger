@@ -27,11 +27,11 @@ public class FileStorageService : IFileStorageService
     public async Task<string> SaveExportFileAsync(byte[] content, string fileName)
     {
         var filePath = Path.Combine(_baseDirectory, fileName);
-        
+
         await File.WriteAllBytesAsync(filePath, content);
-        
+
         _logger.LogInformation("Export file saved: {FilePath}, Size: {Size} bytes", filePath, content.Length);
-        
+
         return filePath;
     }
 

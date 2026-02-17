@@ -131,7 +131,7 @@ public class PeriodsController : ControllerBase
         catch (ValidationException ex)
         {
             _logger.LogWarning("Erro de validação ao criar período: {Errors}", ex.Errors);
-            
+
             var details = string.Join("; ", ex.Errors.Select(e => $"{e.PropertyName}: {e.ErrorMessage}"));
             return BadRequest(ErrorResponse.Create(
                 ErrorCodes.VAL_INVALID_VALUE,

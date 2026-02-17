@@ -36,7 +36,7 @@ public class GetFinancialPeriodByIdUseCase
     {
         // 1. Retrieve period
         var period = await _periodRepository.GetByIdAsync(periodId, cancellationToken);
-        
+
         // 2. Validate existence
         if (period == null || period.IsDeleted)
             throw new BusinessRuleException(ErrorCodes.FIN_PERIOD_NOT_FOUND, "Período não encontrado");

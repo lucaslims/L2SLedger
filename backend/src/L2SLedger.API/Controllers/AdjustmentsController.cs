@@ -60,7 +60,7 @@ public class AdjustmentsController : ControllerBase
         catch (ValidationException ex)
         {
             _logger.LogWarning("Erro de validação ao listar ajustes: {Errors}", ex.Errors);
-            
+
             return BadRequest(ErrorResponse.Create(
                 ErrorCodes.VAL_VALIDATION_FAILED,
                 "Erro de validação",
@@ -188,7 +188,7 @@ public class AdjustmentsController : ControllerBase
 
             return NoContent();
         }
-        catch (BusinessRuleException ex) when (ex.Code ==  ErrorCodes.FIN_ADJUSTMENT_NOT_FOUND)
+        catch (BusinessRuleException ex) when (ex.Code == ErrorCodes.FIN_ADJUSTMENT_NOT_FOUND)
         {
             _logger.LogWarning("Ajuste não encontrado: {AdjustmentId}", id);
             return NotFound(ErrorResponse.Create(ex.Code, ex.Message, traceId: HttpContext.TraceIdentifier));

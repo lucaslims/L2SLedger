@@ -15,7 +15,7 @@ public class Adjustment : Entity
     public string Reason { get; private set; }
     public DateTime AdjustmentDate { get; private set; }
     public Guid CreatedByUserId { get; private set; }
-    
+
     // Navigation properties
     public virtual Transaction OriginalTransaction { get; private set; } = null!;
     public virtual User CreatedByUser { get; private set; } = null!;

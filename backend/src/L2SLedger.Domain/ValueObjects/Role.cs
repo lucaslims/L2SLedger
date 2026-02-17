@@ -46,7 +46,7 @@ public sealed record Role
     /// </summary>
     /// <param name="role">Nome do role a verificar.</param>
     /// <returns>True se válido, False caso contrário.</returns>
-    public static bool IsValid(string role) => 
+    public static bool IsValid(string role) =>
         !string.IsNullOrWhiteSpace(role) && ValidRoles.Contains(role);
 
     /// <summary>

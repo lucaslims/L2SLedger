@@ -195,12 +195,12 @@ public class TransactionsController : ControllerBase
         catch (BusinessRuleException ex)
         {
             _logger.LogWarning(ex, "Erro de regra de negócio ao atualizar transação {TransactionId}", id);
-            
+
             if (ex.Code == ErrorCodes.FIN_TRANSACTION_NOT_FOUND)
             {
                 return NotFound(ErrorResponse.Create(ex.Code, ex.Message, traceId: HttpContext.TraceIdentifier));
             }
-            
+
             return BadRequest(ErrorResponse.Create(ex.Code, ex.Message, traceId: HttpContext.TraceIdentifier));
         }
         catch (Exception ex)

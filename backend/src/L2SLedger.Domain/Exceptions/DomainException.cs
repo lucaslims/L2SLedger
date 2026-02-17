@@ -13,7 +13,7 @@ public abstract class DomainException : Exception
         Code = code;
     }
 
-    protected DomainException(string code, string message, Exception innerException) 
+    protected DomainException(string code, string message, Exception innerException)
         : base(message, innerException)
     {
         Code = code;

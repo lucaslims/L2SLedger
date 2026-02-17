@@ -71,7 +71,7 @@ public static class DatabaseExtensions
         {
             using var scope = app.Services.CreateScope();
             var dbContext = scope.ServiceProvider.GetRequiredService<L2SLedgerDbContext>();
-            
+
             await CategorySeeder.SeedAsync(dbContext);
             Log.Information("Seed de categorias padrão executado com sucesso");
         }

@@ -12,7 +12,7 @@ public interface IFirebaseAuthenticationService
     /// Realiza login no Firebase com email e senha.
     /// </summary>
     Task<FirebaseLoginResponse> SignInWithEmailPasswordAsync(
-        string email, 
-        string password, 
+        string email,
+        string password,
         CancellationToken cancellationToken = default);
 }
