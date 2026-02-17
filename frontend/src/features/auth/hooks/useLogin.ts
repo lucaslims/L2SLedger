@@ -10,6 +10,10 @@ interface LoginCredentials {
   password: string;
 }
 
+interface EmailNotVerifiedError extends ApiError {
+  email: string;
+}
+
 /**
  * Hook para login de usuário
  * Fluxo:
@@ -26,10 +30,12 @@ export function useLogin() {
 
       // 2. Verificar se email está verificado
       if (!isEmailVerified(firebaseUser)) {
-        throw new ApiError(
+        const emailNotVerifiedError = new ApiError(
           'AUTH_EMAIL_NOT_VERIFIED',
           'Por favor, verifique seu email antes de fazer login.'
-        );
+        ) as EmailNotVerifiedError;
+        emailNotVerifiedError.email = firebaseUser.email || email;
+        throw emailNotVerifiedError;
       }
 
       // 3. Obter ID token

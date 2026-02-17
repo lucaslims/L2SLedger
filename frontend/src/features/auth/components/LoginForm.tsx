@@ -15,6 +15,9 @@ import { useLogin } from '../hooks/useLogin';
 import { ApiError } from '@/shared/types/errors.types';
 import { AlertCircle } from 'lucide-react';
 import { Alert, AlertDescription } from '@/shared/components/ui/alert';
+import { useNavigate } from 'react-router-dom';
+import { ROUTES } from '@/shared/lib/utils/constants';
+import { useEffect } from 'react';
 
 const loginSchema = z.object({
   email: z.string().email('Email inválido'),
@@ -29,6 +32,7 @@ type LoginFormData = z.infer<typeof loginSchema>;
  */
 export function LoginForm() {
   const { mutate: login, isPending, error } = useLogin();
+  const navigate = useNavigate();
 
   const form = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
@@ -37,6 +41,14 @@ export function LoginForm() {
       password: '',
     },
   });
+
+  // Redirecionar para página de verificação se email não verificado
+  useEffect(() => {
+    if (error instanceof ApiError && error.code === 'AUTH_EMAIL_NOT_VERIFIED') {
+      const email = (error as any).email || form.getValues('email');
+      navigate(ROUTES.VERIFY_EMAIL, { state: { email } });
+    }
+  }, [error, navigate, form]);
 
   const onSubmit = (data: LoginFormData) => {
     login(data);
