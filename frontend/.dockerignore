@@ -1,0 +1,16 @@
+node_modules
+dist
+.env
+.env.*
+*.log
+logs/
+.vscode
+.idea
+.git
+.gitignore
+*.md
+tests/
+playwright-report/
+coverage/
+.storybook/
+storybook-static/
