@@ -73,7 +73,7 @@ public class AuthControllerFirebaseLoginTests
     {
         // Arrange & Act
         var method = typeof(AuthController).GetMethod("FirebaseLogin");
-        var attributes = method?.GetCustomAttributes(false);
+        var attributes = method?.GetCustomAttributes(false) ?? [];
 
         // Assert
         Assert.NotNull(method);
