@@ -9,6 +9,92 @@ O formato segue o padrão [Keep a Changelog](https://keepachangelog.com/en/1.0.0
 
 ---
 
+## [2026-02-17] - Implementação da Fase 2: Dashboard Frontend
+
+### Contexto
+
+Implementação completa da Fase 2 do frontend conforme planejamento em `docs/planning/frontend-planning/fase-2-dashboard.md`. Inclui layout autenticado (Header, Sidebar, MobileNav), componentes de dashboard (BalanceCard, BalanceChart, QuickActions, RecentTransactions), hooks de dados e testes.
+
+### Tipo
+Frontend
+
+### Impacto
+Funcional — Dashboard principal do sistema agora exibe dados reais da API com layout responsivo mobile-first.
+
+### ADRs Relacionados
+- **ADR-040** — Testes de Frontend (testes de comportamento, mocks baseados em contratos)
+- **ADR-042-A** — Contexto Comercial (dashboard preparado para consumir limites futuramente)
+
+### Agentes Envolvidos
+- **Frontend Agent** — Implementação de componentes, hooks e serviços
+- **QA Agent** — Criação de testes unitários e E2E
+- **Master Agent** — Orquestração e validação cruzada
+
+### Mudanças
+
+#### Criados — Shared Infrastructure
+- `src/shared/hooks/useMediaQuery.ts` — Hook responsivo para media queries
+- `src/shared/hooks/index.ts` — Re-exports de hooks compartilhados
+- `src/shared/hooks/__tests__/useMediaQuery.test.ts` — 4 testes unitários
+
+#### Criados — Layout Components
+- `src/shared/components/layout/AppLayout.tsx` — Layout principal autenticado (Sidebar desktop + MobileNav)
+- `src/shared/components/layout/Header.tsx` — Header com logo mobile e menu de usuário (dropdown)
+- `src/shared/components/layout/Sidebar.tsx` — Navegação lateral desktop com links + seção admin condicional
+- `src/shared/components/layout/MobileNav.tsx` — Navegação inferior para dispositivos móveis
+- `src/shared/components/layout/index.ts` — Re-exports
+
+#### Criados — Dashboard Feature
+- `src/features/dashboard/services/dashboardService.ts` — Service para chamadas API (balances, daily balances, recent transactions)
+- `src/features/dashboard/hooks/useBalances.ts` — Hook React Query para saldos consolidados
+- `src/features/dashboard/hooks/useDailyBalances.ts` — Hook React Query para saldos diários (gráficos)
+- `src/features/dashboard/hooks/useRecentTransactions.ts` — Hook React Query para transações recentes
+- `src/features/dashboard/components/BalanceCard.tsx` — Card de exibição de valores (receita/despesa/saldo)
+- `src/features/dashboard/components/BalanceChart.tsx` — Gráfico de evolução financeira (Tremor AreaChart)
+- `src/features/dashboard/components/QuickActions.tsx` — Card de ações rápidas (nova transação, exportar)
+- `src/features/dashboard/components/RecentTransactions.tsx` — Preview de últimas transações
+- `src/features/dashboard/index.ts` — Re-exports
+
+#### Criados — Testes
+- `src/features/dashboard/__tests__/useBalances.test.ts` — 3 testes (sucesso, erro, valores)
+- `src/features/dashboard/__tests__/useDailyBalances.test.ts` — 4 testes (sucesso, parâmetros, erro, vazio)
+- `src/features/dashboard/__tests__/useRecentTransactions.test.ts` — 3 testes (sucesso, erro, vazio)
+- `src/features/dashboard/__tests__/BalanceCard.test.tsx` — 8 testes (renderização, formatação, cores)
+- `src/features/dashboard/__tests__/QuickActions.test.tsx` — 3 testes (renderização, navegação, disabled)
+- `tests/e2e/dashboard.spec.ts` — Testes E2E do dashboard (auth redirect, code splitting, layout)
+
+#### Modificados
+- `src/features/dashboard/pages/DashboardPage.tsx` — Substituído placeholder por implementação completa
+
+#### Instalados (shadcn/ui)
+- `src/shared/components/ui/dropdown-menu.tsx`
+- `src/shared/components/ui/skeleton.tsx`
+- `src/shared/components/ui/sheet.tsx`
+- `src/shared/components/ui/separator.tsx`
+- `src/shared/components/ui/avatar.tsx`
+- `src/shared/components/ui/tooltip.tsx`
+
+### Resultados de Testes
+- **25 testes unitários novos** — todos passando
+- **41 testes totais** no frontend — 40 passando (1 pré-existente falhando em LoginForm)
+- **TypeScript build** — zero erros (tsconfig.build.json)
+- **Vite build** — sucesso com code splitting correto
+
+### Validação de Segurança
+- ✅ Dashboard chunk (DashboardPage) é lazy loaded — não carrega sem autenticação
+- ✅ Nenhum token armazenado no frontend
+- ✅ Nenhuma lógica financeira no frontend — apenas consumo de API
+- ✅ Cookies HttpOnly via credentials: 'include'
+- ✅ Contratos da API não alterados
+
+### Justificativa Técnica
+- Tremor AreaChart escolhido para gráficos por integração nativa com Tailwind CSS (conforme SPEC.md)
+- React Query para server state (cache 5min, retry 1)
+- useMediaQuery hook criado para responsividade sem dependência externa
+- Componentes seguem padrão de behavior-driven com data-testid para testes
+
+---
+
 ## [2026-02-17] - Implementação de Deploy Automático para DEMO e Aprovação Obrigatória para PROD
 
 ### Contexto
