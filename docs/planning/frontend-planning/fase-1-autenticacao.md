@@ -2,7 +2,7 @@
 
 > **Estimativa:** 16 horas  
 > **Dependência:** Backend com status de usuário implementado ✅  
-> **Status:** Pendente
+> **Status:** Implementado
 
 ---
 
