@@ -1,4 +1,5 @@
 using L2SLedger.Domain.Entities;
+using L2SLedger.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
 
 namespace L2SLedger.Infrastructure.Persistence.Seeds;
@@ -6,6 +7,7 @@ namespace L2SLedger.Infrastructure.Persistence.Seeds;
 /// <summary>
 /// Seeder de categorias padrão para ambientes DEV/DEMO.
 /// Conforme ADR-029 (Estratégia de Seed de Dados Financeiros).
+/// Atualizado conforme ADR-044 (CategoryType).
 /// </summary>
 public static class CategorySeeder
 {
@@ -23,16 +25,16 @@ public static class CategorySeeder
         var categories = new List<Category>
         {
             // Receitas (categorias raiz)
-            new Category("Salário", "Rendimentos de trabalho formal"),
-            new Category("Freelance", "Trabalhos autônomos e projetos externos"),
-            new Category("Investimentos", "Rendimentos de aplicações financeiras"),
+            new Category("Salário", CategoryType.Income, "Rendimentos de trabalho formal"),
+            new Category("Freelance", CategoryType.Income, "Trabalhos autônomos e projetos externos"),
+            new Category("Investimentos", CategoryType.Income, "Rendimentos de aplicações financeiras"),
             
             // Despesas (categorias raiz)
-            new Category("Alimentação", "Gastos com alimentação (mercado, restaurantes, lanches)"),
-            new Category("Transporte", "Gastos com deslocamento (combustível, transporte público, aplicativos)"),
-            new Category("Moradia", "Aluguel, condomínio, IPTU, manutenção"),
-            new Category("Saúde", "Planos de saúde, medicamentos, consultas médicas"),
-            new Category("Lazer", "Entretenimento, diversão, viagens, hobbies")
+            new Category("Alimentação", CategoryType.Expense, "Gastos com alimentação (mercado, restaurantes, lanches)"),
+            new Category("Transporte", CategoryType.Expense, "Gastos com deslocamento (combustível, transporte público, aplicativos)"),
+            new Category("Moradia", CategoryType.Expense, "Aluguel, condomínio, IPTU, manutenção"),
+            new Category("Saúde", CategoryType.Expense, "Planos de saúde, medicamentos, consultas médicas"),
+            new Category("Lazer", CategoryType.Expense, "Entretenimento, diversão, viagens, hobbies")
         };
 
         context.Categories.AddRange(categories);

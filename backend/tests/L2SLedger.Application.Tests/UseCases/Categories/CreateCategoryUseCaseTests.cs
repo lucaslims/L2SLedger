@@ -7,6 +7,7 @@ using L2SLedger.Application.Interfaces;
 using L2SLedger.Application.Mappers;
 using L2SLedger.Application.UseCases.Categories;
 using L2SLedger.Domain.Entities;
+using L2SLedger.Domain.Enums;
 using L2SLedger.Domain.Exceptions;
 using Moq;
 using FluentValidationException = FluentValidation.ValidationException;
@@ -44,6 +45,7 @@ public class CreateCategoryUseCaseTests
         var request = new CreateCategoryRequest
         {
             Name = "Alimentação",
+            Type = "Expense",
             Description = "Gastos com alimentação"
         };
 
@@ -55,7 +57,7 @@ public class CreateCategoryUseCaseTests
             .Setup(x => x.ExistsAsync(request.Name, null, It.IsAny<CancellationToken>()))
             .ReturnsAsync(false);
 
-        var category = new Category(request.Name, request.Description);
+        var category = new Category(request.Name, CategoryType.Expense, request.Description);
         _categoryRepositoryMock
             .Setup(x => x.AddAsync(It.IsAny<Category>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(category);
@@ -78,7 +80,7 @@ public class CreateCategoryUseCaseTests
     public async Task ExecuteAsync_WithInvalidRequest_ShouldThrowFluentValidationException()
     {
         // Arrange
-        var request = new CreateCategoryRequest { Name = "" };
+        var request = new CreateCategoryRequest { Name = "", Type = "Expense" };
         var validationFailures = new List<ValidationFailure>
         {
             new ValidationFailure("Name", "Nome é obrigatório")
@@ -103,6 +105,7 @@ public class CreateCategoryUseCaseTests
         var request = new CreateCategoryRequest
         {
             Name = "Alimentação",
+            Type = "Expense",
             Description = "Gastos com alimentação"
         };
 
@@ -133,6 +136,7 @@ public class CreateCategoryUseCaseTests
         var request = new CreateCategoryRequest
         {
             Name = "Restaurantes",
+            Type = "Expense",
             ParentCategoryId = parentId
         };
 
@@ -163,11 +167,12 @@ public class CreateCategoryUseCaseTests
         // Arrange
         var grandParentId = Guid.NewGuid();
         var parentId = Guid.NewGuid();
-        var parentCategory = new Category("Despesas", "Categoria pai", grandParentId); // Já é subcategoria
+        var parentCategory = new Category("Despesas", CategoryType.Expense, "Categoria pai", grandParentId); // Já é subcategoria
 
         var request = new CreateCategoryRequest
         {
             Name = "Restaurantes",
+            Type = "Expense",
             ParentCategoryId = parentId
         };
 
@@ -197,11 +202,12 @@ public class CreateCategoryUseCaseTests
     {
         // Arrange
         var parentId = Guid.NewGuid();
-        var parentCategory = new Category("Despesas", "Categoria raiz"); // Categoria raiz
+        var parentCategory = new Category("Despesas", CategoryType.Expense, "Categoria raiz"); // Categoria raiz
 
         var request = new CreateCategoryRequest
         {
             Name = "Restaurantes",
+            Type = "Expense",
             Description = "Gastos em restaurantes",
             ParentCategoryId = parentId
         };
@@ -218,7 +224,7 @@ public class CreateCategoryUseCaseTests
             .Setup(x => x.GetByIdAsync(parentId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(parentCategory);
 
-        var subCategory = new Category(request.Name, request.Description, parentId);
+        var subCategory = new Category(request.Name, CategoryType.Expense, request.Description, parentId);
         _categoryRepositoryMock
             .Setup(x => x.AddAsync(It.IsAny<Category>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(subCategory);
@@ -236,7 +242,7 @@ public class CreateCategoryUseCaseTests
     public async Task ExecuteAsync_ShouldCallRepositoryAddAsync()
     {
         // Arrange
-        var request = new CreateCategoryRequest { Name = "Categoria" };
+        var request = new CreateCategoryRequest { Name = "Categoria", Type = "Expense" };
 
         _validatorMock
             .Setup(x => x.ValidateAsync(request, It.IsAny<CancellationToken>()))
@@ -246,7 +252,7 @@ public class CreateCategoryUseCaseTests
             .Setup(x => x.ExistsAsync(request.Name, null, It.IsAny<CancellationToken>()))
             .ReturnsAsync(false);
 
-        var category = new Category(request.Name);
+        var category = new Category(request.Name, CategoryType.Expense);
         _categoryRepositoryMock
             .Setup(x => x.AddAsync(It.IsAny<Category>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(category);
@@ -267,6 +273,7 @@ public class CreateCategoryUseCaseTests
         var request = new CreateCategoryRequest
         {
             Name = "Alimentação",
+            Type = "Expense",
             Description = "Descrição"
         };
 
@@ -278,7 +285,7 @@ public class CreateCategoryUseCaseTests
             .Setup(x => x.ExistsAsync(request.Name, null, It.IsAny<CancellationToken>()))
             .ReturnsAsync(false);
 
-        var category = new Category(request.Name, request.Description);
+        var category = new Category(request.Name, CategoryType.Expense, request.Description);
         _categoryRepositoryMock
             .Setup(x => x.AddAsync(It.IsAny<Category>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(category);

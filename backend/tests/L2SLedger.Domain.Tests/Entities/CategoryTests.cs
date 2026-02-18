@@ -1,6 +1,7 @@
 using FluentAssertions;
 using L2SLedger.Domain.Constants;
 using L2SLedger.Domain.Entities;
+using L2SLedger.Domain.Enums;
 using L2SLedger.Domain.Exceptions;
 
 namespace L2SLedger.Domain.Tests.Entities;
@@ -8,6 +9,7 @@ namespace L2SLedger.Domain.Tests.Entities;
 /// <summary>
 /// Testes da entidade Category.
 /// Valida regras de negócio, validações e comportamento da hierarquia.
+/// Atualizado conforme ADR-044 (CategoryType).
 /// </summary>
 public class CategoryTests
 {
@@ -15,11 +17,12 @@ public class CategoryTests
     public void Constructor_ShouldCreateCategoryWithDefaultValues()
     {
         // Arrange & Act
-        var category = new Category("Alimentação", "Gastos com alimentação");
+        var category = new Category("Alimentação", CategoryType.Expense, "Gastos com alimentação");
 
         // Assert
         category.Name.Should().Be("Alimentação");
         category.Description.Should().Be("Gastos com alimentação");
+        category.Type.Should().Be(CategoryType.Expense);
         category.IsActive.Should().BeTrue();
         category.ParentCategoryId.Should().BeNull();
         category.Id.Should().NotBeEmpty();
@@ -27,10 +30,44 @@ public class CategoryTests
     }
 
     [Fact]
+    public void Constructor_WithIncomeType_ShouldSetTypeCorrectly()
+    {
+        // Arrange & Act
+        var category = new Category("Salário", CategoryType.Income, "Rendimentos de trabalho");
+
+        // Assert
+        category.Type.Should().Be(CategoryType.Income);
+        category.Name.Should().Be("Salário");
+    }
+
+    [Fact]
+    public void Constructor_WithExpenseType_ShouldSetTypeCorrectly()
+    {
+        // Arrange & Act
+        var category = new Category("Transporte", CategoryType.Expense, "Gastos com transporte");
+
+        // Assert
+        category.Type.Should().Be(CategoryType.Expense);
+        category.Name.Should().Be("Transporte");
+    }
+
+    [Fact]
+    public void Constructor_WithInvalidType_ShouldThrowBusinessRuleException()
+    {
+        // Arrange & Act
+        var act = () => new Category("Categoria", (CategoryType)99, "Descrição");
+
+        // Assert
+        act.Should().Throw<BusinessRuleException>()
+            .WithMessage("*Tipo de categoria inválido*")
+            .Where(ex => ex.Code == ErrorCodes.FIN_CATEGORY_INVALID_TYPE);
+    }
+
+    [Fact]
     public void Constructor_WithEmptyName_ShouldThrowBusinessRuleException()
     {
         // Arrange & Act
-        var act = () => new Category("", "Descrição");
+        var act = () => new Category("", CategoryType.Expense, "Descrição");
 
         // Assert
         act.Should().Throw<BusinessRuleException>()
@@ -42,7 +79,7 @@ public class CategoryTests
     public void Constructor_WithWhiteSpaceName_ShouldThrowBusinessRuleException()
     {
         // Arrange & Act
-        var act = () => new Category("   ", "Descrição");
+        var act = () => new Category("   ", CategoryType.Expense, "Descrição");
 
         // Assert
         act.Should().Throw<BusinessRuleException>()
@@ -57,7 +94,7 @@ public class CategoryTests
         var longName = new string('A', 101);
 
         // Act
-        var act = () => new Category(longName, "Descrição");
+        var act = () => new Category(longName, CategoryType.Expense, "Descrição");
 
         // Assert
         act.Should().Throw<BusinessRuleException>()
@@ -72,10 +109,11 @@ public class CategoryTests
         var parentId = Guid.NewGuid();
 
         // Act
-        var category = new Category("Restaurantes", "Gastos em restaurantes", parentId);
+        var category = new Category("Restaurantes", CategoryType.Expense, "Gastos em restaurantes", parentId);
 
         // Assert
         category.ParentCategoryId.Should().Be(parentId);
+        category.Type.Should().Be(CategoryType.Expense);
         category.IsSubCategory().Should().BeTrue();
         category.IsRootCategory().Should().BeFalse();
     }
@@ -84,7 +122,7 @@ public class CategoryTests
     public void UpdateName_WithValidName_ShouldUpdateNameAndTimestamp()
     {
         // Arrange
-        var category = new Category("Nome Antigo", "Descrição");
+        var category = new Category("Nome Antigo", CategoryType.Expense, "Descrição");
         var originalUpdatedAt = category.UpdatedAt;
         Thread.Sleep(10); // Garantir diferença no timestamp
 
@@ -101,7 +139,7 @@ public class CategoryTests
     public void UpdateName_WithEmptyName_ShouldThrowBusinessRuleException()
     {
         // Arrange
-        var category = new Category("Nome Original", "Descrição");
+        var category = new Category("Nome Original", CategoryType.Expense, "Descrição");
 
         // Act
         var act = () => category.UpdateName("");
@@ -116,7 +154,7 @@ public class CategoryTests
     public void UpdateName_WithNameTooLong_ShouldThrowBusinessRuleException()
     {
         // Arrange
-        var category = new Category("Nome Original", "Descrição");
+        var category = new Category("Nome Original", CategoryType.Expense, "Descrição");
         var longName = new string('B', 101);
 
         // Act
@@ -132,7 +170,7 @@ public class CategoryTests
     public void UpdateDescription_WithValidDescription_ShouldUpdateDescriptionAndTimestamp()
     {
         // Arrange
-        var category = new Category("Categoria", "Descrição antiga");
+        var category = new Category("Categoria", CategoryType.Income, "Descrição antiga");
         var originalUpdatedAt = category.UpdatedAt;
         Thread.Sleep(10);
 
@@ -148,7 +186,7 @@ public class CategoryTests
     public void UpdateDescription_WithNull_ShouldSetDescriptionToNull()
     {
         // Arrange
-        var category = new Category("Categoria", "Descrição existente");
+        var category = new Category("Categoria", CategoryType.Income, "Descrição existente");
 
         // Act
         category.UpdateDescription(null);
@@ -161,7 +199,7 @@ public class CategoryTests
     public void Deactivate_ShouldSetIsActiveToFalse()
     {
         // Arrange
-        var category = new Category("Categoria", "Descrição");
+        var category = new Category("Categoria", CategoryType.Expense, "Descrição");
         category.IsActive.Should().BeTrue();
 
         // Act
@@ -175,7 +213,7 @@ public class CategoryTests
     public void Activate_ShouldSetIsActiveToTrue()
     {
         // Arrange
-        var category = new Category("Categoria", "Descrição");
+        var category = new Category("Categoria", CategoryType.Income, "Descrição");
         category.Deactivate();
         category.IsActive.Should().BeFalse();
 
@@ -190,7 +228,7 @@ public class CategoryTests
     public void CanHaveSubCategories_ShouldReturnTrueForRootCategory()
     {
         // Arrange
-        var rootCategory = new Category("Categoria Raiz", "Descrição");
+        var rootCategory = new Category("Categoria Raiz", CategoryType.Expense, "Descrição");
 
         // Act & Assert
         rootCategory.CanHaveSubCategories().Should().BeTrue();
@@ -202,10 +240,20 @@ public class CategoryTests
     {
         // Arrange
         var parentId = Guid.NewGuid();
-        var subCategory = new Category("Subcategoria", "Descrição", parentId);
+        var subCategory = new Category("Subcategoria", CategoryType.Expense, "Descrição", parentId);
 
         // Act & Assert
         subCategory.CanHaveSubCategories().Should().BeFalse();
         subCategory.IsSubCategory().Should().BeTrue();
+    }
+
+    [Fact]
+    public void Type_ShouldBeImmutableAfterCreation()
+    {
+        // Arrange
+        var category = new Category("Salário", CategoryType.Income, "Rendimentos");
+
+        // Assert — Type não tem setter público
+        typeof(Category).GetProperty("Type")!.SetMethod!.IsPrivate.Should().BeTrue();
     }
 }

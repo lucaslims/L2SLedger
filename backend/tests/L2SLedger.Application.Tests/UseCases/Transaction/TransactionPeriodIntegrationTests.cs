@@ -45,7 +45,7 @@ public class TransactionPeriodIntegrationTests
         // Setup defaults
         _mockCurrentUserService.Setup(s => s.GetUserId()).Returns(_testUserId);
 
-        var testCategory = new Category("Test Category", "Test Description", null);
+        var testCategory = new Category("Test Category", L2SLedger.Domain.Enums.CategoryType.Expense, "Test Description", null);
         _mockCategoryRepository
             .Setup(r => r.GetByIdAsync(_testCategoryId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(testCategory);

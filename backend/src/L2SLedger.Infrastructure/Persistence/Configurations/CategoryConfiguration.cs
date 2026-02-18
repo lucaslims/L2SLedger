@@ -1,4 +1,5 @@
 using L2SLedger.Domain.Entities;
+using L2SLedger.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -31,6 +32,14 @@ public class CategoryConfiguration : IEntityTypeConfiguration<Category>
 
         builder.Property(c => c.IsActive)
             .HasColumnName("is_active")
+            .IsRequired();
+
+        builder.Property(c => c.Type)
+            .HasColumnName("type")
+            .HasMaxLength(20)
+            .HasConversion(
+                v => v.ToString(),
+                v => (CategoryType)Enum.Parse(typeof(CategoryType), v))
             .IsRequired();
 
         builder.Property(c => c.ParentCategoryId)
@@ -66,6 +75,9 @@ public class CategoryConfiguration : IEntityTypeConfiguration<Category>
 
         builder.HasIndex(c => c.IsDeleted)
             .HasDatabaseName("idx_categories_is_deleted");
+
+        builder.HasIndex(c => c.Type)
+            .HasDatabaseName("idx_categories_type");
 
         // Unique constraint: Name dentro do mesmo ParentCategoryId (considerando soft delete)
         builder.HasIndex(c => new { c.Name, c.ParentCategoryId, c.IsDeleted })

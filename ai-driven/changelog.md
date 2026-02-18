@@ -9,6 +9,91 @@ O formato segue o padrão [Keep a Changelog](https://keepachangelog.com/en/1.0.0
 
 ---
 
+## [2026-02-18] - Adição de CategoryType à Entidade Category (ADR-044)
+
+### Contexto
+
+Foi identificado um débito técnico crítico: a entidade `Category` não possuía um campo de **tipo** (Income/Expense) para diferenciar categorias de receita e despesa. O frontend já implementava esse conceito (`type: 'Income' | 'Expense'`), mas o backend ignorava o campo, resultando em **desalinhamento de contrato** entre frontend e backend.
+
+Esta correção adiciona a propriedade `CategoryType Type` à entidade `Category`, com impacto em todas as camadas da Clean Architecture.
+
+### Tipo
+Backend + Tests — Correção de Débito Técnico / Alinhamento de Contrato
+
+### Agentes Envolvidos
+- Agente Master (Orquestração, Governança e Implementação Completa)
+
+### Decisões Arquiteturais (Aprovadas pelo Usuário)
+1. **Tipo imutável**: Definido na criação, não pode ser alterado via `UpdateCategory`
+2. **Subcategorias herdam tipo do pai**: Consistência hierárquica automática
+3. **ADR-044 criado**: Documenta formalmente a mudança
+4. **Filtro por tipo na API**: `GET /api/v1/categories?type=Income`
+
+### Arquivos Criados
+- `backend/src/L2SLedger.Domain/Enums/CategoryType.cs` — Enum `Income = 1`, `Expense = 2`
+- `docs/adr/adr-044.md` — ADR documentando a adição de CategoryType
+- `backend/src/L2SLedger.Infrastructure/Persistence/Migrations/20260218133407_AddCategoryType.cs` — Migration do EF Core com lógica de população de dados existentes
+- `backend/src/L2SLedger.Infrastructure/Persistence/Migrations/20260218133407_AddCategoryType.Designer.cs` — Metadata da migration
+
+### Arquivos Modificados (Domain)
+- `backend/src/L2SLedger.Domain/Entities/Category.cs` — Adicionada propriedade `Type`, validação no construtor
+- `backend/src/L2SLedger.Domain/Constants/ErrorCodes.cs` — Adicionado `FIN_CATEGORY_INVALID_TYPE`
+
+### Arquivos Modificados (Application)
+- `backend/src/L2SLedger.Application/DTOs/Categories/CategoryDto.cs` — Adicionado `Type` (string)
+- `backend/src/L2SLedger.Application/DTOs/Categories/CreateCategoryRequest.cs` — Adicionado `Type` (obrigatório para raiz, ignorado para subcategorias)
+- `backend/src/L2SLedger.Application/Mappers/CategoryMappingProfile.cs` — Mapeamento de `Type` (enum → string)
+- `backend/src/L2SLedger.Application/UseCases/Categories/CreateCategoryUseCase.cs` — Lógica de herança de tipo para subcategorias
+- `backend/src/L2SLedger.Application/UseCases/Categories/GetCategoriesUseCase.cs` — Adicionado filtro por tipo
+- `backend/src/L2SLedger.Application/Validators/Categories/CreateCategoryRequestValidator.cs` — Validação de `Type`
+- `backend/src/L2SLedger.Application/Interfaces/ICategoryRepository.cs` — Adicionado método `GetByTypeAsync`
+
+### Arquivos Modificados (Infrastructure)
+- `backend/src/L2SLedger.Infrastructure/Persistence/Configurations/CategoryConfiguration.cs` — Coluna `type` (varchar 20) com conversão de enum, índice `idx_categories_type`
+- `backend/src/L2SLedger.Infrastructure/Persistence/Seeds/CategorySeeder.cs` — Seed atualizado com `CategoryType.Income`/`CategoryType.Expense`
+- `backend/src/L2SLedger.Infrastructure/Repositories/CategoryRepository.cs` — Implementação de `GetByTypeAsync`
+
+### Arquivos Modificados (API)
+- `backend/src/L2SLedger.API/Controllers/CategoriesController.cs` — Adicionado parâmetro `type` no endpoint `GET /api/v1/categories`
+
+### Arquivos Modificados (Tests)
+- `backend/tests/L2SLedger.Domain.Tests/Entities/CategoryTests.cs` — 19 testes atualizados + 3 novos (validação de tipo, tipo imutável)
+- `backend/tests/L2SLedger.Application.Tests/UseCases/Categories/CreateCategoryUseCaseTests.cs` — Adicionado `Type` em todos os requests
+- `backend/tests/L2SLedger.Application.Tests/UseCases/Categories/UpdateCategoryUseCaseTestsFixed.cs` — Adicionado `CategoryType` em todas as instâncias
+- `backend/tests/L2SLedger.Application.Tests/UseCases/Categories/GetCategoriesUseCaseTests.cs` — Adicionado `CategoryType` e parâmetro `type` nas chamadas
+- `backend/tests/L2SLedger.Application.Tests/UseCases/Categories/GetCategoryByIdUseCaseTests.cs` — Atualizado para `CategoryType`
+- `backend/tests/L2SLedger.Application.Tests/UseCases/Categories/Deactivate CategoryUseCaseTestsFixed.cs` — Atualizado para `CategoryType`
+- `backend/tests/L2SLedger.Contract.Tests/DTOs/CategoryDtoTests.cs` — Adicionado `Type` em todos os DTOs, propriedade count atualizado (8→9 para CategoryDto, 3→4 para CreateCategoryRequest)
+- `backend/tests/L2SLedger.Application.Tests/UseCases/Transaction/TransactionPeriodIntegrationTests.cs` — Atualizado construtor Category
+- `backend/tests/L2SLedger.Application.Tests/UseCases/Reports/GetCashFlowReportUseCaseTests.cs` — Atualizado construtor Category
+- `backend/tests/L2SLedger.Application.Tests/UseCases/Balances/GetBalanceUseCaseTests.cs` — Atualizado construtor Category
+
+### Arquivos Modificados (Documentação)
+- `docs/adr/adr-index.md` — Adicionado ADR-044 na categoria "Ambientes & Dados", atualizado total de ADRs para 47
+
+### Validação
+- **Compilação**: `dotnet build --no-restore` — 0 erros, 0 avisos
+- **Testes**: `dotnet test --no-build` — **201 testes aprovados** (19 Domain + 30 Application + 11 Contract + 141 outros)
+- **Testes de Categoria**: `dotnet test --filter "Category"` — **60 testes aprovados**
+
+### Impacto
+- ✅ **Alinhamento de contrato**: Backend e frontend agora falam a mesma língua
+- ✅ **Modelo de domínio mais preciso**: Categorias agora possuem tipo semântico
+- ✅ **Filtro por tipo na API**: `GET /api/v1/categories?type=Income` ou `?type=Expense`
+- ✅ **Subcategorias consistentes**: Herdam automaticamente o tipo da categoria pai
+- ✅ **Seed data corretamente tipado**: Salário, Freelance, Investimentos → Income; Alimentação, Transporte, Moradia, Saúde, Lazer → Expense
+- ✅ **Migration criada e pronta**: `20260218133407_AddCategoryType.cs` inclui lógica de população de dados existentes (Income: Salário, Freelance, Investimentos; Expense: demais categorias)
+
+### Observações
+- O tipo da categoria é **imutável** após a criação (decisão aprovada pelo usuário)
+- **Subcategorias herdam o tipo do pai** automaticamente (não é informado no request)
+- **Frontend já estava preparado**: Nenhuma mudança necessária no frontend
+- **ADR-022 respeitado**: Adição de campo é backward compatible (não quebra contrato existente)
+- **Migration pronta para aplicação**: Execute `dotnet ef database update --project backend/src/L2SLedger.Infrastructure --startup-project backend/src/L2SLedger.API` para aplicar no banco de dados
+- **Categorias existentes serão classificadas automaticamente** pela migration: "Salário", "Freelance", "Investimentos" como Income; demais como Expense
+
+---
+
 ## [2026-02-18] - Storybook: Stories dos Componentes de Categorias
 
 ### Contexto
