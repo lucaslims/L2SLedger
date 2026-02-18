@@ -9,6 +9,32 @@ O formato segue o padrão [Keep a Changelog](https://keepachangelog.com/en/1.0.0
 
 ---
 
+## [2026-02-18] - Storybook: Stories dos Componentes de Categorias
+
+### Contexto
+
+Criação de stories Storybook para os 4 componentes de categorias da Fase 3, seguindo os padrões existentes (Dashboard stories).
+
+### Tipo
+Frontend — Documentação Visual
+
+### Agentes Envolvidos
+- Agente Master (Orquestração e Governança)
+- Agente Frontend (Implementação)
+
+### Arquivos Criados
+- `src/features/categories/components/CategoryForm.stories.tsx` — 6 stories (Create, Edit, EditIncome, EditWithParent, Pending, EditPending)
+- `src/features/categories/components/CategoryList.stories.tsx` — 5 stories (WithData, Empty, Loading, OnlyIncome, OnlyExpenses)
+- `src/features/categories/components/CategoryCard.stories.tsx` — 5 stories (Expense, Income, WithParent, LongName, Inactive)
+- `src/features/categories/components/CategoryDeleteDialog.stories.tsx` — 3 stories (Open, Closed, LongCategoryName)
+
+### Validação
+- TypeScript: `tsc --noEmit` — zero erros
+- Storybook build: `storybook build` — SUCCESS (4 chunks gerados)
+- Autodocs habilitado em todos os stories (`tags: ['autodocs']`)
+
+---
+
 ## [2026-02-18] - Correção de Build e Bug de Carregamento de Categorias
 
 ### Contexto
