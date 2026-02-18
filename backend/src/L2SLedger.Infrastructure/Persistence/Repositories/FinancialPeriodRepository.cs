@@ -19,12 +19,13 @@ public class FinancialPeriodRepository : IFinancialPeriodRepository
     }
 
     /// <summary>
-    /// Converte DateTime para UTC com Kind especificado.
-    /// Requerido pelo Npgsql 6+ para colunas timestamp with time zone.
+    /// Converte DateTime para Unspecified Kind (sem fuso horário).
+    /// Requerido pelo Npgsql 6+ para colunas "timestamp without time zone".
+    /// Colunas start_date e end_date usam "timestamp without time zone" (ADR-006).
     /// </summary>
-    private static DateTime ToUtcDate(DateTime dateTime)
+    private static DateTime ToUnspecifiedDate(DateTime dateTime)
     {
-        return DateTime.SpecifyKind(dateTime.Date, DateTimeKind.Utc);
+        return DateTime.SpecifyKind(dateTime.Date, DateTimeKind.Unspecified);
     }
 
     /// <summary>
@@ -123,11 +124,11 @@ public class FinancialPeriodRepository : IFinancialPeriodRepository
     /// </summary>
     public async Task<FinancialPeriod?> GetPeriodForDateAsync(DateTime date, CancellationToken cancellationToken = default)
     {
-        var dateUtc = ToUtcDate(date);
+        var dateUnspecified = ToUnspecifiedDate(date);
 
         return await _context.FinancialPeriods
             .FirstOrDefaultAsync(
-                p => dateUtc >= p.StartDate && dateUtc <= p.EndDate,
+                p => dateUnspecified >= p.StartDate && dateUnspecified <= p.EndDate,
                 cancellationToken);
     }
 }
