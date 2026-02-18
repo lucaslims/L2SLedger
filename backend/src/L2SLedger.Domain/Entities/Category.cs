@@ -1,4 +1,5 @@
 using L2SLedger.Domain.Constants;
+using L2SLedger.Domain.Enums;
 using L2SLedger.Domain.Exceptions;
 
 namespace L2SLedger.Domain.Entities;
@@ -12,6 +13,7 @@ public class Category : Entity
 {
     public string Name { get; private set; }
     public string? Description { get; private set; }
+    public CategoryType Type { get; private set; }
     public bool IsActive { get; private set; }
 
     /// <summary>
@@ -31,7 +33,7 @@ public class Category : Entity
         Name = string.Empty;
     }
 
-    public Category(string name, string? description = null, Guid? parentCategoryId = null) : base()
+    public Category(string name, CategoryType type, string? description = null, Guid? parentCategoryId = null) : base()
     {
         if (string.IsNullOrWhiteSpace(name))
             throw new BusinessRuleException(ErrorCodes.FIN_CATEGORY_INVALID_NAME, "Nome da categoria é obrigatório");
@@ -39,8 +41,12 @@ public class Category : Entity
         if (name.Length > 100)
             throw new BusinessRuleException(ErrorCodes.FIN_CATEGORY_NAME_TOO_LONG, "Nome da categoria não pode exceder 100 caracteres");
 
+        if (!Enum.IsDefined(typeof(CategoryType), type))
+            throw new BusinessRuleException(ErrorCodes.FIN_CATEGORY_INVALID_TYPE, "Tipo de categoria inválido. Valores permitidos: Income, Expense");
+
         Name = name.Trim();
         Description = description?.Trim();
+        Type = type;
         ParentCategoryId = parentCategoryId;
         IsActive = true;
     }
