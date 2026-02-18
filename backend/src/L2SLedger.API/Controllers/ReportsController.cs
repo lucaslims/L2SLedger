@@ -48,7 +48,7 @@ public class ReportsController : ControllerBase
                 startDate,
                 endDate,
                 cancellationToken);
-            
+
             return Ok(result);
         }
         catch (BusinessRuleException ex)

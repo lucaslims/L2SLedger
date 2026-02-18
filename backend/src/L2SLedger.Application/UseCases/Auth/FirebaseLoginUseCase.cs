@@ -61,7 +61,7 @@ public class FirebaseLoginUseCase
                 ex,
                 "Firebase direct login failed for email: {Email}",
                 request.Email);
-            
+
             throw new AuthenticationException(
                 "AUTH_INVALID_CREDENTIALS",
                 "Email ou senha inválidos");

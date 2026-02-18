@@ -76,7 +76,7 @@ public class UsersControllerTests
         // Arrange
         var userId = Guid.NewGuid();
         var user = new User("firebase-uid", "test@example.com", "Test User", true);
-        
+
         var expectedDto = new UserDetailDto
         {
             Id = userId,

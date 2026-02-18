@@ -211,7 +211,7 @@ public static class DependencyInjectionExtensions
             .HandleTransientHttpError()
             .WaitAndRetryAsync(
                 retryCount: 3,
-                sleepDurationProvider: retryAttempt => 
+                sleepDurationProvider: retryAttempt =>
                     TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)));
     }
 

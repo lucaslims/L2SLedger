@@ -2,6 +2,7 @@ using AutoMapper;
 using L2SLedger.Application.DTOs.Categories;
 using L2SLedger.Application.Interfaces;
 using L2SLedger.Domain.Entities;
+using L2SLedger.Domain.Enums;
 
 namespace L2SLedger.Application.UseCases.Categories;
 
@@ -24,6 +25,7 @@ public class GetCategoriesUseCase
     public async Task<GetCategoriesResponse> ExecuteAsync(
         Guid? parentCategoryId = null,
         bool includeInactive = false,
+        string? type = null,
         CancellationToken cancellationToken = default)
     {
         IReadOnlyList<Category> categories;
@@ -32,6 +34,11 @@ public class GetCategoriesUseCase
         {
             // Listar subcategorias de uma categoria específica
             categories = await _categoryRepository.GetByParentIdAsync(parentCategoryId.Value, includeInactive, cancellationToken);
+        }
+        else if (type != null && Enum.TryParse<CategoryType>(type, ignoreCase: true, out var categoryType))
+        {
+            // Filtrar por tipo
+            categories = await _categoryRepository.GetByTypeAsync(categoryType, includeInactive, cancellationToken);
         }
         else
         {

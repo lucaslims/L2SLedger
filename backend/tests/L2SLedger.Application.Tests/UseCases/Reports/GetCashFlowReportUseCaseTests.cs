@@ -261,7 +261,7 @@ public class GetCashFlowReportUseCaseTests
 
     private DomainTransaction CreateTransaction(string description, decimal amount, TransactionType type, DateTime date, string categoryName)
     {
-        var category = new Category(categoryName, null);
+        var category = new Category(categoryName, L2SLedger.Domain.Enums.CategoryType.Expense, null);
         typeof(Category).GetProperty("Id")!.SetValue(category, _categoryId);
 
         var transaction = new DomainTransaction(

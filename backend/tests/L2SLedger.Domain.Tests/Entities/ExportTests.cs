@@ -163,7 +163,7 @@ public class ExportTests
         export.MarkAsProcessing();
         // Simula um caso onde Completed foi setado mas FilePath está vazio (caso improvável mas possível)
         // Não é possível via API pública, mas IsDownloadable() deve proteger contra isso
-        
+
         // Neste caso, como não podemos criar um export Completed sem FilePath via métodos públicos,
         // vamos testar apenas que Pending retorna false
         Assert.False(export.IsDownloadable());

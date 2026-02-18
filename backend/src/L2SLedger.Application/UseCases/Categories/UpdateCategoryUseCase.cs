@@ -44,7 +44,7 @@ public class UpdateCategoryUseCase
 
         // Verificar unicidade do nome (excluindo a própria categoria)
         var nameExists = await _categoryRepository.ExistsAsync(request.Name, category.ParentCategoryId, cancellationToken);
-        var existingCategory = nameExists 
+        var existingCategory = nameExists
             ? (await _categoryRepository.GetAllAsync(includeInactive: true, cancellationToken: cancellationToken))
                 .FirstOrDefault(c => c.Name == request.Name && c.ParentCategoryId == category.ParentCategoryId)
             : null;

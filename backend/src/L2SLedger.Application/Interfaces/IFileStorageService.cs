@@ -26,7 +26,7 @@ public interface IFileStorageService
     /// <param name="filePath">Caminho do arquivo a ser deletado.</param>
     /// <returns></returns>
     Task DeleteExportFileAsync(string filePath);
-    
+
     /// <summary>
     /// Remove arquivos de exportação mais antigos que a data fornecida.
     /// </summary>

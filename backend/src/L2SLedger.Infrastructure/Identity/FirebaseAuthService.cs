@@ -70,7 +70,7 @@ public class FirebaseAuthService : IFirebaseAuthService
         catch (FirebaseAuthException ex)
         {
             _logger.LogWarning(ex, "Token Firebase inválido: {Reason}", ex.Message);
-            
+
             throw new AuthenticationException(
                 ErrorCodes.AUTH_INVALID_TOKEN,
                 "Token de autenticação inválido ou expirado",
@@ -79,7 +79,7 @@ public class FirebaseAuthService : IFirebaseAuthService
         catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
         {
             _logger.LogError("Timeout ao validar token Firebase");
-            
+
             throw new AuthenticationException(
                 ErrorCodes.AUTH_INVALID_TOKEN,
                 "Timeout ao validar token de autenticação");

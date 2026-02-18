@@ -40,10 +40,11 @@ public class CategoriesController : ControllerBase
     }
 
     /// <summary>
-    /// Lista todas as categorias ou filtra por categoria pai.
+    /// Lista todas as categorias ou filtra por categoria pai e/ou tipo.
     /// </summary>
     /// <param name="parentCategoryId">ID da categoria pai (opcional, para listar subcategorias)</param>
     /// <param name="includeInactive">Incluir categorias inativas</param>
+    /// <param name="type">Tipo da categoria: Income ou Expense (opcional)</param>
     /// <param name="cancellationToken">Token de cancelamento</param>
     /// <returns>Lista de categorias</returns>
     [HttpGet]
@@ -51,11 +52,12 @@ public class CategoriesController : ControllerBase
     public async Task<ActionResult<GetCategoriesResponse>> GetCategories(
         [FromQuery] Guid? parentCategoryId = null,
         [FromQuery] bool includeInactive = false,
+        [FromQuery] string? type = null,
         CancellationToken cancellationToken = default)
     {
         try
         {
-            var response = await _getCategoriesUseCase.ExecuteAsync(parentCategoryId, includeInactive, cancellationToken);
+            var response = await _getCategoriesUseCase.ExecuteAsync(parentCategoryId, includeInactive, type, cancellationToken);
             return Ok(response);
         }
         catch (Exception ex)

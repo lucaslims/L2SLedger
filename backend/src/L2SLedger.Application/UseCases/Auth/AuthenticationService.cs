@@ -37,7 +37,7 @@ public class AuthenticationService : IAuthenticationService
 
         // Validar Firebase ID Token
         var firebaseUser = await _firebaseAuthService.ValidateTokenAsync(
-            request.FirebaseIdToken, 
+            request.FirebaseIdToken,
             cancellationToken);
 
         _logger.LogInformation("Token Firebase validado para usuário {FirebaseUid}", firebaseUser.Uid);
@@ -57,7 +57,7 @@ public class AuthenticationService : IAuthenticationService
         if (user == null)
         {
             _logger.LogInformation("Criando novo usuário interno para {FirebaseUid}", firebaseUser.Uid);
-            
+
             user = new User(
                 firebaseUser.Uid,
                 firebaseUser.Email,
@@ -65,13 +65,13 @@ public class AuthenticationService : IAuthenticationService
                 firebaseUser.EmailVerified);
 
             user = await _userRepository.AddAsync(user, cancellationToken);
-            
+
             _logger.LogInformation("Usuário criado com ID {UserId}", user.Id);
         }
         else
         {
             _logger.LogInformation("Usuário existente encontrado: {UserId}", user.Id);
-            
+
             // Atualizar verificação de email se necessário
             if (firebaseUser.EmailVerified && !user.EmailVerified)
             {

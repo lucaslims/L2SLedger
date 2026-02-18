@@ -23,7 +23,7 @@ public class AuthenticationMiddleware
     private const string DataProtectionPurpose = "L2SLedger.AuthCookie.v1";
 
     public AuthenticationMiddleware(
-        RequestDelegate next, 
+        RequestDelegate next,
         ILogger<AuthenticationMiddleware> logger,
         IDataProtectionProvider dataProtectionProvider)
     {
@@ -64,7 +64,7 @@ public class AuthenticationMiddleware
 
                         var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
                         var principal = new ClaimsPrincipal(identity);
-                        
+
                         // Autenticar usando o esquema Cookie
                         await context.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);
                     }
@@ -88,7 +88,7 @@ public class AuthenticationMiddleware
 
         await _next(context);
     }
-    
+
     /// <summary>
     /// Tenta desproteger o valor do cookie e extrair o userId.
     /// Retorna false se o cookie foi adulterado ou é inválido.
@@ -96,7 +96,7 @@ public class AuthenticationMiddleware
     private bool TryUnprotectUserId(string protectedValue, out Guid userId)
     {
         userId = Guid.Empty;
-        
+
         try
         {
             var unprotectedValue = _protector.Unprotect(protectedValue);

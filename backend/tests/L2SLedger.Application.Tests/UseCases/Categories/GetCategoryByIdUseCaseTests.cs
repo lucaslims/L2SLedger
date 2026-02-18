@@ -5,6 +5,7 @@ using L2SLedger.Application.Interfaces;
 using L2SLedger.Application.Mappers;
 using L2SLedger.Application.UseCases.Categories;
 using L2SLedger.Domain.Entities;
+using L2SLedger.Domain.Enums;
 using L2SLedger.Domain.Exceptions;
 using Moq;
 
@@ -34,7 +35,7 @@ public class GetCategoryByIdUseCaseTests
     {
         // Arrange
         var categoryId = Guid.NewGuid();
-        var category = new Category("Alimentação", "Gastos com alimentação");
+        var category = new Category("Alimentação", CategoryType.Expense, "Gastos com alimentação");
 
         _categoryRepositoryMock
             .Setup(x => x.GetByIdAsync(categoryId, It.IsAny<CancellationToken>()))
@@ -77,7 +78,7 @@ public class GetCategoryByIdUseCaseTests
     {
         // Arrange
         var categoryId = Guid.NewGuid();
-        var category = new Category("Categoria");
+        var category = new Category("Categoria", CategoryType.Expense);
 
         _categoryRepositoryMock
             .Setup(x => x.GetByIdAsync(categoryId, It.IsAny<CancellationToken>()))
@@ -96,8 +97,8 @@ public class GetCategoryByIdUseCaseTests
         // Arrange
         var categoryId = Guid.NewGuid();
         var parentId = Guid.NewGuid();
-        var parentCategory = new Category("Despesas", "Categoria pai");
-        var category = new Category("Restaurantes", "Gastos em restaurantes", parentId);
+        var parentCategory = new Category("Despesas", CategoryType.Expense, "Categoria pai");
+        var category = new Category("Restaurantes", CategoryType.Expense, "Gastos em restaurantes", parentId);
 
         _categoryRepositoryMock
             .Setup(x => x.GetByIdAsync(categoryId, It.IsAny<CancellationToken>()))

@@ -191,7 +191,7 @@ public class GetFinancialPeriodsUseCaseTests
     {
         // Arrange
         var request = new GetPeriodsRequest();
-        
+
         // Repository returns periods in correct order (Year DESC, Month DESC)
         var periods = new List<FinancialPeriod>
         {

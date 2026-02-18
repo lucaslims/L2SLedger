@@ -17,7 +17,7 @@ public interface IPeriodBalanceService
     /// <param name="cancellationToken">Token de cancelamento</param>
     /// <returns>Um snapshot completo de saldo com saldos por categoria e totais</returns>
     Task<BalanceSnapshot> CalculateBalanceSnapshotAsync(
-        int year, 
-        int month, 
+        int year,
+        int month,
         CancellationToken cancellationToken = default);
 }

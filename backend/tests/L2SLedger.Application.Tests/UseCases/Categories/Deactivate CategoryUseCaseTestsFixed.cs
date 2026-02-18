@@ -2,6 +2,7 @@ using FluentAssertions;
 using L2SLedger.Application.Interfaces;
 using L2SLedger.Application.UseCases.Categories;
 using L2SLedger.Domain.Entities;
+using L2SLedger.Domain.Enums;
 using L2SLedger.Domain.Exceptions;
 using Moq;
 
@@ -23,7 +24,7 @@ public class DeactivateCategoryUseCaseTestsFixed
     {
         // Arrange
         var categoryId = Guid.NewGuid();
-        var category = new Category("Alimentação", "Gastos com alimentação");
+        var category = new Category("Alimentação", CategoryType.Expense, "Gastos com alimentação");
 
         _categoryRepositoryMock
             .Setup(x => x.GetByIdAsync(categoryId, It.IsAny<CancellationToken>()))
@@ -65,7 +66,7 @@ public class DeactivateCategoryUseCaseTestsFixed
     {
         // Arrange
         var categoryId = Guid.NewGuid();
-        var category = new Category("Categoria");
+        var category = new Category("Categoria", CategoryType.Expense);
         category.Deactivate(); // Já está inativa
 
         _categoryRepositoryMock
@@ -90,7 +91,7 @@ public class DeactivateCategoryUseCaseTestsFixed
     {
         // Arrange
         var parentId = Guid.NewGuid();
-        var parentCategory = new Category("Despesas", "Categoria pai");
+        var parentCategory = new Category("Despesas", CategoryType.Expense, "Categoria pai");
 
         _categoryRepositoryMock
             .Setup(x => x.GetByIdAsync(parentId, It.IsAny<CancellationToken>()))
@@ -114,7 +115,7 @@ public class DeactivateCategoryUseCaseTestsFixed
     {
         // Arrange
         var categoryId = Guid.NewGuid();
-        var category = new Category("Categoria");
+        var category = new Category("Categoria", CategoryType.Expense);
 
         _categoryRepositoryMock
             .Setup(x => x.GetByIdAsync(categoryId, It.IsAny<CancellationToken>()))
@@ -138,7 +139,7 @@ public class DeactivateCategoryUseCaseTestsFixed
     {
         // Arrange
         var categoryId = Guid.NewGuid();
-        var category = new Category("Categoria");
+        var category = new Category("Categoria", CategoryType.Expense);
 
         _categoryRepositoryMock
             .Setup(x => x.GetByIdAsync(categoryId, It.IsAny<CancellationToken>()))

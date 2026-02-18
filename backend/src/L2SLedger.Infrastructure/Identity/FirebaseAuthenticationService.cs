@@ -26,7 +26,7 @@ public class FirebaseAuthenticationService : IFirebaseAuthenticationService
         ILogger<FirebaseAuthenticationService> logger)
     {
         _httpClient = httpClient;
-        
+
         // Extrair Web API Key da configuração
         var credentialPath = configuration["Firebase:CredentialPath"];
         if (!string.IsNullOrEmpty(credentialPath) && File.Exists(credentialPath))
@@ -34,20 +34,20 @@ public class FirebaseAuthenticationService : IFirebaseAuthenticationService
             // Ler o arquivo JSON de credenciais para logging/validação
             var credentialJson = File.ReadAllText(credentialPath);
             var credential = JsonSerializer.Deserialize<FirebaseCredential>(credentialJson);
-            
+
             if (credential != null)
             {
                 logger.LogInformation(
-                    "FirebaseAuthenticationService initialized for project: {ProjectId}", 
+                    "FirebaseAuthenticationService initialized for project: {ProjectId}",
                     credential.ProjectId);
             }
         }
-        
+
         // Web API Key deve estar em configuração separada (não é secreto)
-        _webApiKey = configuration["Firebase:WebApiKey"] 
+        _webApiKey = configuration["Firebase:WebApiKey"]
             ?? throw new InvalidOperationException(
                 "Firebase:WebApiKey not configured. Get it from Firebase Console > Project Settings > Web API Key");
-        
+
         _logger = logger;
     }
 
@@ -80,7 +80,7 @@ public class FirebaseAuthenticationService : IFirebaseAuthenticationService
         }
 
         var result = await response.Content.ReadFromJsonAsync<FirebaseSignInResponse>(cancellationToken);
-        
+
         if (result == null)
             throw new AuthenticationException(ErrorCodes.AUTH_FIREBASE_ERROR, "Resposta inválida do Firebase");
 

@@ -1,6 +1,7 @@
 using FluentValidation;
 using L2SLedger.Application.DTOs.Categories;
 using L2SLedger.Application.Interfaces;
+using L2SLedger.Domain.Enums;
 
 namespace L2SLedger.Application.Validators.Categories;
 
@@ -26,6 +27,15 @@ public class CreateCategoryRequestValidator : AbstractValidator<CreateCategoryRe
             .WithMessage("Já existe uma categoria com este nome")
             .WithErrorCode("VAL_DUPLICATE_NAME");
 
+        RuleFor(x => x.Type)
+            .NotEmpty()
+            .WithMessage("Tipo da categoria é obrigatório")
+            .WithErrorCode("VAL_REQUIRED_FIELD")
+            .Must(BeValidCategoryType)
+            .WithMessage("Tipo de categoria inválido. Valores permitidos: Income, Expense")
+            .WithErrorCode("FIN_CATEGORY_INVALID_TYPE")
+            .When(x => !x.ParentCategoryId.HasValue);
+
         RuleFor(x => x.Description)
             .MaximumLength(500)
             .WithMessage("Descrição não pode exceder 500 caracteres")
@@ -40,6 +50,11 @@ public class CreateCategoryRequestValidator : AbstractValidator<CreateCategoryRe
             .WithMessage("Apenas categorias raiz podem ter subcategorias. Hierarquia máxima: 2 níveis")
             .WithErrorCode("VAL_BUSINESS_RULE_VIOLATION")
             .When(x => x.ParentCategoryId.HasValue);
+    }
+
+    private static bool BeValidCategoryType(string type)
+    {
+        return Enum.TryParse<CategoryType>(type, ignoreCase: true, out _);
     }
 
     private async Task<bool> BeUniqueName(string name, CancellationToken cancellationToken)

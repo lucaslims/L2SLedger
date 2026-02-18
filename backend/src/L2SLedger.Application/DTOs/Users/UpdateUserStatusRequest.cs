@@ -11,7 +11,7 @@ public record UpdateUserStatusRequest
     /// Valores válidos: "Active", "Suspended", "Rejected".
     /// </summary>
     public required string Status { get; init; }
-    
+
     /// <summary>
     /// Motivo obrigatório para a mudança de status.
     /// </summary>

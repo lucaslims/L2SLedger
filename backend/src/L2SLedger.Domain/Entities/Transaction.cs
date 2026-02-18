@@ -17,13 +17,13 @@ public class Transaction : Entity
     public string? Notes { get; private set; }
     public bool IsRecurring { get; private set; }
     public int? RecurringDay { get; private set; }
-    
+
     // Navigation properties
     public virtual Category Category { get; private set; } = null!;
     public virtual User User { get; private set; } = null!;
 
     // Constructor para EF Core
-    private Transaction() 
+    private Transaction()
     {
         Description = string.Empty;
     }
@@ -41,7 +41,7 @@ public class Transaction : Entity
     {
         if (string.IsNullOrWhiteSpace(description))
             throw new ArgumentException("Descrição é obrigatória", nameof(description));
-        
+
         if (description.Length > 200)
             throw new ArgumentException("Descrição não pode exceder 200 caracteres", nameof(description));
 
@@ -89,7 +89,7 @@ public class Transaction : Entity
 
         if (string.IsNullOrWhiteSpace(description))
             throw new ArgumentException("Descrição é obrigatória", nameof(description));
-        
+
         if (description.Length > 200)
             throw new ArgumentException("Descrição não pode exceder 200 caracteres", nameof(description));
 
@@ -108,7 +108,7 @@ public class Transaction : Entity
         TransactionDate = transactionDate.Date;
         CategoryId = categoryId;
         Notes = notes;
-        
+
         UpdateTimestamp();
     }
 
@@ -127,7 +127,7 @@ public class Transaction : Entity
 
         IsRecurring = isRecurring;
         RecurringDay = recurringDay;
-        
+
         UpdateTimestamp();
     }
 
