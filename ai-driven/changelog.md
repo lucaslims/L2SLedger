@@ -9,6 +9,137 @@ O formato segue o padrão [Keep a Changelog](https://keepachangelog.com/en/1.0.0
 
 ---
 
+## [2026-02-18] - Storybook: Stories dos Componentes de Categorias
+
+### Contexto
+
+Criação de stories Storybook para os 4 componentes de categorias da Fase 3, seguindo os padrões existentes (Dashboard stories).
+
+### Tipo
+Frontend — Documentação Visual
+
+### Agentes Envolvidos
+- Agente Master (Orquestração e Governança)
+- Agente Frontend (Implementação)
+
+### Arquivos Criados
+- `src/features/categories/components/CategoryForm.stories.tsx` — 6 stories (Create, Edit, EditIncome, EditWithParent, Pending, EditPending)
+- `src/features/categories/components/CategoryList.stories.tsx` — 5 stories (WithData, Empty, Loading, OnlyIncome, OnlyExpenses)
+- `src/features/categories/components/CategoryCard.stories.tsx` — 5 stories (Expense, Income, WithParent, LongName, Inactive)
+- `src/features/categories/components/CategoryDeleteDialog.stories.tsx` — 3 stories (Open, Closed, LongCategoryName)
+
+### Validação
+- TypeScript: `tsc --noEmit` — zero erros
+- Storybook build: `storybook build` — SUCCESS (4 chunks gerados)
+- Autodocs habilitado em todos os stories (`tags: ['autodocs']`)
+
+---
+
+## [2026-02-18] - Correção de Build e Bug de Carregamento de Categorias
+
+### Contexto
+
+Após edições manuais no código da Fase 3 (adição dos campos `description` e `parentId`), o build apresentou erros TypeScript e as categorias não carregavam apesar do backend retornar dados corretamente.
+
+### Tipo
+Frontend — Bug Fix
+
+### Agentes Envolvidos
+- Agente Master (Orquestração e Governança)
+- Agente Frontend (Investigação e Correção)
+
+### Problemas Identificados
+1. **Bug de carregamento**: `categoryService.getAll()` esperava array direto, mas o backend retorna envelope `{ categories: [...], totalCount: N }`
+2. **Erro TS2322 (nullable)**: Campo `parentId` com `.nullable()` no Zod gerava tipo `string | null | undefined` incompatível com `<Input>`
+3. **Erro TS2322 (handleSubmit)**: Tipo do handler não correspondia ao shape real do formulário
+4. **Campo inexistente**: Código usava `parentId` mas o DTO do backend usa `parentCategoryId` / `parentCategoryName`
+
+### Correções Aplicadas
+- `categoryService.ts` — Unwrap do envelope: `apiClient.get<GetCategoriesResponse>(...)` → `return response.categories`
+- `category.types.ts` — Adicionados campos `isActive`, `parentCategoryId`, `parentCategoryName`, `description` e interface `GetCategoriesResponse`
+- `CategoryForm.tsx` — Schema Zod corrigido (`parentCategoryId: z.string().optional()`), `value={field.value ?? ''}` no Input
+- `CategoryFormPage.tsx` — Handler com tipo inline, mapeamento correto de `initialValues` (`parentCategoryId`, `description`)
+- `CategoryList.tsx` — Exibe `parentCategoryName` em vez de flag booleana, coluna renomeada para "Categoria Pai"
+- 3 arquivos de testes — Mocks atualizados com `isActive: true`
+
+### Validação
+- Build: `tsc + vite build` — SUCCESS
+- Testes: 65/65 passando (14 arquivos, zero regressão)
+
+### ADRs Respeitados
+- ADR-021-A: Contratos de erro mantidos
+- ADR-040: Testes atualizados e validados
+
+---
+
+## [2026-02-17] - Fase 3: Implementação do CRUD de Categorias (Frontend)
+
+### Contexto
+
+Implementação completa da Fase 3 do frontend conforme planejado em `docs/planning/frontend-planning/fase-3-categorias.md`. Feature de categorias financeiras com CRUD completo, validação de formulários, tratamento de erros semânticos (ADR-021-A) e testes unitários.
+
+### Tipo
+Frontend — Nova Feature
+
+### Agentes Envolvidos
+- Agente Master (Orquestração e Governança)
+- Agente Frontend (Implementação)
+- Context7 MCP (Documentação de bibliotecas)
+
+### Impacto
+- CRUD completo de categorias (listar, criar, editar, excluir)
+- Navegação funcional via Sidebar/MobileNav (já pré-configurada)
+- Toast notifications (Sonner) para feedback de ações
+- Lazy loading de bundles (CategoriesPage e CategoryFormPage separados)
+- 24 novos testes unitários (hooks + componentes)
+- 65/65 testes totais passando (zero regressão)
+
+### Arquivos Criados
+- `src/features/categories/types/category.types.ts` — DTOs (CategoryDto, CreateCategoryRequest, UpdateCategoryRequest)
+- `src/features/categories/services/categoryService.ts` — API calls (getAll, getById, create, update, delete)
+- `src/features/categories/hooks/useCategories.ts` — Hook de listagem com filtro por tipo
+- `src/features/categories/hooks/useCategory.ts` — Hook de detalhe individual
+- `src/features/categories/hooks/useCreateCategory.ts` — Mutation de criação
+- `src/features/categories/hooks/useUpdateCategory.ts` — Mutation de atualização
+- `src/features/categories/hooks/useDeleteCategory.ts` — Mutation de exclusão
+- `src/features/categories/components/CategoryForm.tsx` — Formulário com Zod + React Hook Form
+- `src/features/categories/components/CategoryList.tsx` — Tabela com badges, skeleton loading, empty state
+- `src/features/categories/components/CategoryCard.tsx` — Card individual para mobile/grid
+- `src/features/categories/components/CategoryDeleteDialog.tsx` — Confirmação de exclusão (AlertDialog)
+- `src/features/categories/pages/CategoriesPage.tsx` — Página de listagem
+- `src/features/categories/pages/CategoryFormPage.tsx` — Página de criação/edição
+- `src/features/categories/index.ts` — Barrel export
+- `src/features/categories/__tests__/useCategories.test.ts` — 5 testes (listagem, filtros, erro, vazio)
+- `src/features/categories/__tests__/useCategoryMutations.test.ts` — 7 testes (create, update, delete + erros)
+- `src/features/categories/__tests__/CategoryForm.test.tsx` — 6 testes (render, validação, submit, pending)
+- `src/features/categories/__tests__/CategoryList.test.tsx` — 6 testes (loading, lista, badges, vazio, ações, exclusão)
+
+### Arquivos Modificados
+- `src/app/App.tsx` — Adicionado `<Toaster />` do Sonner
+- `src/app/routes/index.tsx` — Registradas rotas `/categories`, `/categories/new`, `/categories/:id/edit`
+
+### Dependências Instaladas
+- `sonner` — Toast notifications (bottom-right, richColors)
+- `@radix-ui/react-alert-dialog` — Componente AlertDialog (shadcn)
+- `@radix-ui/react-select` — Componente Select (shadcn)
+
+### Componentes shadcn/ui Adicionados
+- `table.tsx` — Tabela de categorias
+- `select.tsx` — Seletor de tipo (Income/Expense)
+- `badge.tsx` — Badges de tipo
+- `alert-dialog.tsx` — Diálogo de confirmação de exclusão
+
+### ADRs Respeitados
+- ADR-021-A: Erros `FIN_CATEGORY_NOT_FOUND`, `FIN_CATEGORY_HAS_TRANSACTIONS`, `FIN_CATEGORY_ALREADY_DELETED` tratados via `getErrorMessage()`
+- ADR-040: Testes de comportamento implementados (24 testes, behavior-driven)
+- Segurança: Lazy loading confirmado (bundles separados no build)
+- Clean Architecture: Nenhuma lógica financeira no frontend
+
+### Justificativa Técnica
+Implementação segue exatamente o planejamento aprovado (fase-3-categorias.md) e os padrões estabelecidos nas Fases 0-2 (service → hook → component → page → barrel export → tests).
+
+---
+
 ## [2026-02-17] - Correção de QueryKey em BalanceChart.stories.tsx
 
 ### Contexto
