@@ -19,6 +19,7 @@ public class CategoryDtoTests
             Id = Guid.NewGuid(),
             Name = "Alimentação",
             Description = "Gastos com alimentação",
+            Type = "Expense",
             IsActive = true,
             ParentCategoryId = null,
             ParentCategoryName = null,
@@ -36,10 +37,11 @@ public class CategoryDtoTests
 
         // Validar estrutura do contrato
         var properties = typeof(CategoryDto).GetProperties();
-        properties.Should().HaveCount(8);
+        properties.Should().HaveCount(9);
         properties.Should().Contain(p => p.Name == "Id" && p.PropertyType == typeof(Guid));
         properties.Should().Contain(p => p.Name == "Name" && p.PropertyType == typeof(string));
         properties.Should().Contain(p => p.Name == "Description" && p.PropertyType == typeof(string));
+        properties.Should().Contain(p => p.Name == "Type" && p.PropertyType == typeof(string));
         properties.Should().Contain(p => p.Name == "IsActive" && p.PropertyType == typeof(bool));
         properties.Should().Contain(p => p.Name == "ParentCategoryId" && p.PropertyType == typeof(Guid?));
         properties.Should().Contain(p => p.Name == "ParentCategoryName" && p.PropertyType == typeof(string));
@@ -56,6 +58,7 @@ public class CategoryDtoTests
             Id = Guid.Parse("12345678-1234-1234-1234-123456789012"),
             Name = "Alimentação",
             Description = "Gastos com alimentação",
+            Type = "Expense",
             IsActive = true,
             ParentCategoryId = null,
             ParentCategoryName = null,
@@ -70,6 +73,7 @@ public class CategoryDtoTests
         json.Should().Contain("\"id\":\"12345678-1234-1234-1234-123456789012\"");
         json.Should().Contain("\\u00E7\\u00E3o"); // Aceitar Unicode escaping: Alimentação vira Alimenta\u00E7\u00E3o
         json.Should().Contain("\"isActive\":true");
+        json.Should().Contain("\"type\":\"Expense\"");
         json.Should().Contain("\"parentCategoryId\":null");
     }
 
@@ -81,6 +85,7 @@ public class CategoryDtoTests
             ""id"": ""12345678-1234-1234-1234-123456789012"",
             ""name"": ""Alimentação"",
             ""description"": ""Gastos com alimentação"",
+            ""type"": ""Expense"",
             ""isActive"": true,
             ""parentCategoryId"": null,
             ""parentCategoryName"": null,
@@ -107,19 +112,22 @@ public class CategoryDtoTests
         var dto = new CreateCategoryRequest
         {
             Name = "Alimentação",
+            Type = "Expense",
             Description = "Gastos com alimentação",
             ParentCategoryId = null
         };
 
         // Assert
         dto.Name.Should().Be("Alimentação");
+        dto.Type.Should().Be("Expense");
         dto.Description.Should().Be("Gastos com alimentação");
         dto.ParentCategoryId.Should().BeNull();
 
         // Validar estrutura do contrato
         var properties = typeof(CreateCategoryRequest).GetProperties();
-        properties.Should().HaveCount(3);
+        properties.Should().HaveCount(4);
         properties.Should().Contain(p => p.Name == "Name" && p.PropertyType == typeof(string));
+        properties.Should().Contain(p => p.Name == "Type" && p.PropertyType == typeof(string));
         properties.Should().Contain(p => p.Name == "Description" && p.PropertyType == typeof(string));
         properties.Should().Contain(p => p.Name == "ParentCategoryId" && p.PropertyType == typeof(Guid?));
     }
@@ -131,6 +139,7 @@ public class CategoryDtoTests
         var dto = new CreateCategoryRequest
         {
             Name = "Restaurantes",
+            Type = "Expense",
             Description = "Gastos em restaurantes",
             ParentCategoryId = Guid.Parse("12345678-1234-1234-1234-123456789012")
         };
@@ -140,6 +149,7 @@ public class CategoryDtoTests
 
         // Assert
         json.Should().Contain("\"name\":\"Restaurantes\"");
+        json.Should().Contain("\"type\":\"Expense\"");
         json.Should().Contain("\"description\":\"Gastos em restaurantes\"");
         json.Should().Contain("\"parentCategoryId\":\"12345678-1234-1234-1234-123456789012\"");
     }
@@ -194,6 +204,7 @@ public class CategoryDtoTests
                 Id = Guid.NewGuid(),
                 Name = "Alimentação",
                 Description = "Gastos",
+                Type = "Expense",
                 IsActive = true,
                 ParentCategoryId = null,
                 ParentCategoryName = null,

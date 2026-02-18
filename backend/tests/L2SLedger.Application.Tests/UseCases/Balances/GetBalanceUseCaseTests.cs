@@ -293,7 +293,7 @@ public class GetBalanceUseCaseTests
 
     private Category CreateCategory(Guid id, string name)
     {
-        var category = new Category(name, null);
+        var category = new Category(name, L2SLedger.Domain.Enums.CategoryType.Expense, null);
         typeof(Category).GetProperty("Id")!.SetValue(category, id);
         return category;
     }
