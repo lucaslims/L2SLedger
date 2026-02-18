@@ -1,5 +1,6 @@
 using L2SLedger.Application.Interfaces;
 using L2SLedger.Domain.Entities;
+using L2SLedger.Domain.Enums;
 using L2SLedger.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 
@@ -62,6 +63,23 @@ public class CategoryRepository : ICategoryRepository
     public async Task<IReadOnlyList<Category>> GetRootCategoriesAsync(bool includeInactive = false, CancellationToken cancellationToken = default)
     {
         return await GetByParentIdAsync(null, includeInactive, cancellationToken);
+    }
+
+    public async Task<IReadOnlyList<Category>> GetByTypeAsync(CategoryType type, bool includeInactive = false, CancellationToken cancellationToken = default)
+    {
+        var query = _context.Categories
+            .Include(c => c.ParentCategory)
+            .AsNoTracking()
+            .Where(c => !c.IsDeleted && c.Type == type);
+
+        if (!includeInactive)
+        {
+            query = query.Where(c => c.IsActive);
+        }
+
+        return await query
+            .OrderBy(c => c.Name)
+            .ToListAsync(cancellationToken);
     }
 
     public async Task<bool> ExistsAsync(Guid id, CancellationToken cancellationToken = default)
