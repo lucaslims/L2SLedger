@@ -16,6 +16,8 @@ const RejectedPage = lazy(() => import('@/features/auth/pages/RejectedPage'));
 
 // Protected pages (lazy loaded after auth confirmation)
 const DashboardPage = lazy(() => import('@/features/dashboard/pages/DashboardPage'));
+const CategoriesPage = lazy(() => import('@/features/categories/pages/CategoriesPage'));
+const CategoryFormPage = lazy(() => import('@/features/categories/pages/CategoryFormPage'));
 
 // Admin pages (lazy loaded for admin users)
 // const UsersPage = lazy(() => import('@/features/admin/users/pages/UsersPage'));
@@ -76,6 +78,32 @@ export function AppRoutes() {
           element={
             <ProtectedRoute>
               <DashboardPage />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Categories routes */}
+        <Route
+          path={ROUTES.CATEGORIES}
+          element={
+            <ProtectedRoute>
+              <CategoriesPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/categories/new"
+          element={
+            <ProtectedRoute>
+              <CategoryFormPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/categories/:id/edit"
+          element={
+            <ProtectedRoute>
+              <CategoryFormPage />
             </ProtectedRoute>
           }
         />
