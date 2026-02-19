@@ -15,9 +15,14 @@ export const ROUTES = {
   REJECTED: '/rejected',
   DASHBOARD: '/dashboard',
   TRANSACTIONS: '/transactions',
+  TRANSACTIONS_NEW: '/transactions/new',
+  TRANSACTIONS_EDIT: '/transactions/:id/edit',
   CATEGORIES: '/categories',
+  CATEGORIES_NEW: '/categories/new',
+  CATEGORIES_EDIT: '/categories/:id/edit',
   ADMIN: '/admin',
   ADMIN_USERS: '/admin/users',
+  ADMIN_USER_DETAIL: '/admin/users/:id',
 } as const;
 
 export const USER_STATUS = {
@@ -47,7 +52,7 @@ export const TRANSACTION_TYPE_LABELS = {
 export const ROLES = {
   ADMIN: 'Admin',
   LEITURA: 'Leitura',
-  ESCRITA: 'Escrita',
+  FINANCEIRO: 'Financeiro',
 } as const;
 
 export const PAGINATION = {

@@ -9,6 +9,120 @@ O formato segue o padrão [Keep a Changelog](https://keepachangelog.com/en/1.0.0
 
 ---
 
+## [2026-02-19] - Bugfix Crítico: Tela Admin Usuários em Branco
+
+### Contexto
+
+A tela de administração de usuários (`/admin/users`) carregava em branco sem exibir nenhum componente. A causa raiz era uma **incompatibilidade entre o formato de resposta do backend e o esperado pelo frontend**.
+
+### Causa Raiz
+
+O backend `GET /users` retorna uma **resposta paginada** (`{ users: [...], totalCount, page, pageSize, ... }`), mas o frontend esperava um **array puro** (`UserDto[]`). Quando o React tentava iterar (`.map()`) sobre o objeto wrapper, uma exceção era lançada, causando crash silencioso da árvore de componentes.
+
+### Tipo
+Frontend — Bugfix Crítico
+
+### Correções Aplicadas
+
+1. **Tipos atualizados** — Separação em `UserSummaryDto` (listagem) e `UserDetailDto` (detalhe), adição de `GetUsersResponse` paginado, adição de campo `lastLoginAt`
+2. **Service corrigido** — `getAll()` agora desempacota `response.users` do wrapper paginado; `getPendingCount()` usa `response.totalCount`; `updateRoles()` usa endpoint correto `/users/{id}/roles`
+3. **Endpoint adicionado** — `USER_ROLES: (id) => /users/${id}/roles` (backend usa rota separada para roles)
+4. **Componentes/Hooks tipados** — `UserList` e `useUsers` usam `UserSummaryDto`; `UserDetailPage` usa `UserDetailDto`
+5. **Testes atualizados** — Mock data alinhada com novos tipos
+
+### Arquivos Modificados
+- `src/features/admin/users/types/user.types.ts` — UserSummaryDto, UserDetailDto, GetUsersResponse
+- `src/features/admin/users/services/userService.ts` — Unwrap paginação, endpoint roles
+- `src/shared/lib/api/endpoints.ts` — USER_ROLES endpoint
+- `src/features/admin/users/hooks/useUsers.ts` — Tipo UserSummaryDto
+- `src/features/admin/users/components/UserList.tsx` — Tipo UserSummaryDto
+- `src/features/admin/users/pages/UserDetailPage.tsx` — Tipo UserDetailDto
+- `src/features/admin/users/__tests__/useUsers.test.ts` — Mock data atualizada
+- `src/features/admin/users/__tests__/useUserMutations.test.ts` — Mock data + tipo
+- `src/features/admin/users/__tests__/UserList.test.tsx` — Mock data + tipo
+- `src/features/admin/users/__tests__/UserApprovalDialog.test.tsx` — lastLoginAt
+- `src/features/admin/users/__tests__/UserRolesForm.test.tsx` — lastLoginAt
+
+### Validação
+- TypeScript: `tsc --noEmit` — zero erros admin (1 pré-existente em auth)
+- Testes: 131/131 passed (39 admin + 92 existentes), zero regressões
+
+---
+
+## [2026-02-19] - Fase 5: Admin — Gestão de Usuários (Frontend)
+
+### Contexto
+
+Implementação completa da Fase 5 (Admin — Gestão de Usuários) do frontend SPA. Inclui tipos, serviço API, 7 hooks React Query, 6 componentes UI, 2 páginas, ativação de rotas protegidas por `AdminRoute`, testes unitários (39 testes) e arquivo de testes E2E (Playwright). Códigos de erro ausentes foram adicionados aos tipos e mensagens compartilhados.
+
+### Tipo
+Frontend — Feature Completa (Admin User Management)
+
+### Agentes Envolvidos
+- Agente Master (Orquestração e Governança)
+- Sub-agentes especializados (pesquisa de padrões, validação de ADRs, Context7 para TanStack Query e React Router)
+
+### ADRs Respeitados
+- ADR-016 (RBAC — Roles Admin/Leitura/Escrita, AdminRoute guard)
+- ADR-021 / ADR-021-A (Códigos de erro semânticos — USER_* codes)
+- ADR-022 / ADR-022-A (Contratos imutáveis)
+- ADR-024 / ADR-025 (Guards e Fail-fast)
+- ADR-040 (Testes obrigatórios — Vitest + RTL)
+
+### Arquivos Criados
+
+#### Tipos e Serviço API
+- `src/features/admin/users/types/user.types.ts` — UserDto, UpdateUserStatusRequest, UpdateUserRolesRequest
+- `src/features/admin/users/services/userService.ts` — getAll, getById, getPendingCount, updateStatus, updateRoles
+- `src/features/admin/users/index.ts` — Barrel export
+
+#### Hooks React Query (7)
+- `src/features/admin/users/hooks/useUsers.ts` — Lista com filtro por status
+- `src/features/admin/users/hooks/usePendingUsers.ts` — Contagem pendentes (refetch 60s)
+- `src/features/admin/users/hooks/useApproveUser.ts` — Aprovação com razão
+- `src/features/admin/users/hooks/useRejectUser.ts` — Rejeição com razão
+- `src/features/admin/users/hooks/useSuspendUser.ts` — Suspensão com razão
+- `src/features/admin/users/hooks/useReactivateUser.ts` — Reativação com razão
+- `src/features/admin/users/hooks/useUpdateUserRoles.ts` — Atualização de roles
+
+#### Componentes (6)
+- `src/features/admin/users/components/UserStatusBadge.tsx` — Badge com variantes por status
+- `src/features/admin/users/components/PendingUsersAlert.tsx` — Alerta com contagem de pendentes
+- `src/features/admin/users/components/UserApprovalDialog.tsx` — Diálogo aprovar/rejeitar (2 etapas)
+- `src/features/admin/users/components/UserSuspendDialog.tsx` — Diálogo de suspensão
+- `src/features/admin/users/components/UserRolesForm.tsx` — Formulário de roles com checkboxes
+- `src/features/admin/users/components/UserList.tsx` — Tabela de usuários com filtro e ações
+
+#### Páginas (2)
+- `src/features/admin/users/pages/UsersPage.tsx` — Listagem com filtro e alerta de pendentes
+- `src/features/admin/users/pages/UserDetailPage.tsx` — Detalhe com ações contextuais por status
+
+#### Componentes UI Compartilhados
+- `src/shared/components/ui/dialog.tsx` — Shadcn/ui Dialog (Radix)
+- `src/shared/components/ui/checkbox.tsx` — Shadcn/ui Checkbox (Radix)
+
+#### Testes Unitários (39 testes, 5 arquivos)
+- `src/features/admin/users/__tests__/useUsers.test.ts` — 5 testes
+- `src/features/admin/users/__tests__/useUserMutations.test.ts` — 9 testes
+- `src/features/admin/users/__tests__/UserList.test.tsx` — 11 testes
+- `src/features/admin/users/__tests__/UserApprovalDialog.test.tsx` — 8 testes
+- `src/features/admin/users/__tests__/UserRolesForm.test.tsx` — 6 testes
+
+#### Testes E2E
+- `tests/e2e/admin.spec.ts` — 10 cenários E2E (1 ativo + 9 skip: requerem backend)
+
+### Arquivos Modificados
+- `src/app/routes/index.tsx` — AdminRoute descomentado, 2 novas rotas (/admin/users, /admin/users/:id)
+- `src/shared/types/errors.types.ts` — 5 novos ErrorCodes (USER_CANNOT_REMOVE_OWN_ADMIN, USER_LAST_ADMIN, USER_ROLES_REQUIRED, USER_ROLE_EMPTY, USER_INVALID_ROLE)
+- `src/shared/lib/api/errors.ts` — 7 novas mensagens de erro em PT-BR
+
+### Validação
+- TypeScript: `tsc --noEmit` — zero erros
+- Testes: 131/131 passed (39 novos + 92 existentes), 23/23 test files, zero regressões
+- Fluxo governança: Planejar → Aprovar → Executar cumprido integralmente
+
+---
+
 ## [2026-02-18] - Fase 4: Implementação Completa de Transações (Frontend)
 
 ### Contexto

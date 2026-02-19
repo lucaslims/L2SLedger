@@ -91,13 +91,22 @@ export const ERROR_MESSAGES: Record<string, string> = {
   // Permissions
   PERM_ACCESS_DENIED: 'Acesso negado.',
   PERM_ADMIN_REQUIRED: 'Esta ação requer permissões de administrador.',
+  PERM_INSUFFICIENT_PRIVILEGES: 'Você não tem privilégios suficientes para realizar esta ação.',
   PERM_WRITE_REQUIRED: 'Você não tem permissão para editar dados.',
 
   // Users
   USER_NOT_FOUND: 'Usuário não encontrado.',
   USER_INVALID_STATUS_TRANSITION: 'Transição de status inválida.',
+  USER_STATUS_REQUIRED: 'O status é obrigatório.',
+  USER_STATUS_REASON_REQUIRED: 'O motivo da alteração de status é obrigatório.',
+  USER_STATUS_REASON_TOO_LONG: 'O motivo excede o tamanho máximo permitido.',
+  USER_INVALID_STATUS: 'Valor de status inválido.',
+  USER_CANNOT_MODIFY_OWN_STATUS: 'Você não pode alterar seu próprio status.',
   USER_CANNOT_REMOVE_OWN_ADMIN: 'Você não pode remover sua própria permissão de admin.',
   USER_LAST_ADMIN: 'Não é possível remover o último administrador do sistema.',
+  USER_ROLES_REQUIRED: 'O usuário deve ter pelo menos uma role.',
+  USER_ROLE_EMPTY: 'A role não pode estar vazia.',
+  USER_INVALID_ROLE: 'Role inválida especificada.',
 
   // System
   SYS_INTERNAL_ERROR: 'Erro interno do servidor. Tente novamente mais tarde.',
