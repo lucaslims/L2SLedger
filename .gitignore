@@ -224,3 +224,6 @@ tmp/
 # MCP Playwright test results
 playwright-report/*
 .playwright-mcp/*
+
+# PR models
+docs/PRs/*
