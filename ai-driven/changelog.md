@@ -9,6 +9,92 @@ O formato segue o padrão [Keep a Changelog](https://keepachangelog.com/en/1.0.0
 
 ---
 
+## [2026-02-18] - Fase 4: Implementação Completa de Transações (Frontend)
+
+### Contexto
+
+Implementação completa da Fase 4 (Transações CRUD) do frontend SPA. Inclui tipos, serviço API, hooks React Query, componentes UI, páginas, rotas, testes unitários e stories Storybook. Discrepâncias entre o documento de planejamento e a API real do backend foram identificadas e corrigidas antes da implementação.
+
+### Tipo
+Frontend — Feature Completa (CRUD Transações)
+
+### Agentes Envolvidos
+- Agente Master (Orquestração e Governança)
+- Agente Frontend (Implementação)
+- Sub-agentes especializados (pesquisa de contratos backend, criação de testes e stories)
+
+### ADRs Respeitados
+- ADR-015 (Imutabilidade de Períodos — erro FIN_PERIOD_CLOSED tratado)
+- ADR-021-A (Códigos de erro semânticos)
+- ADR-040 (Testes obrigatórios)
+
+### Discrepâncias Backend vs Planejamento (Resolvidas)
+- `TransactionType` é `int` (1=Income, 2=Expense), não string
+- Campo `transactionDate` (não `date`)
+- Campos extras: `notes`, `isRecurring`, `recurringDay`, `userId`
+- Response envelope: `GetTransactionsResponse` com `transactions[]`, `totalIncome`, `totalExpense`, `balance`
+- Create retorna `{ id: Guid }` (201), não DTO completo
+- Update/Delete retornam 204 No Content
+
+### Arquivos Criados
+
+#### B1 — Tipos e Serviço API
+- `src/features/transactions/types/transaction.types.ts` — DTOs, enums, mapas de tipo, request/response interfaces
+- `src/features/transactions/services/transactionService.ts` — CRUD API (getAll, getById, create, update, delete)
+- `src/features/transactions/index.ts` — Barrel export
+
+#### B2 — Componentes Compartilhados
+- `src/shared/components/data-display/AmountDisplay.tsx` — Exibição de valores com cor por tipo
+- `src/shared/components/data-display/DateDisplay.tsx` — Formatação de datas (BR, datetime, relativo)
+- `src/shared/components/data-display/Pagination.tsx` — Paginação reutilizável
+- `src/shared/components/data-display/index.ts` — Barrel export
+
+#### B3 — Hooks React Query
+- `src/features/transactions/hooks/useTransactions.ts` — Lista paginada com filtros
+- `src/features/transactions/hooks/useTransaction.ts` — Busca por ID
+- `src/features/transactions/hooks/useCreateTransaction.ts` — Criação com invalidação de cache
+- `src/features/transactions/hooks/useUpdateTransaction.ts` — Atualização com invalidação
+- `src/features/transactions/hooks/useDeleteTransaction.ts` — Exclusão com invalidação
+
+#### B4 — Componentes de Transações
+- `src/features/transactions/components/TransactionForm.tsx` — Formulário com react-hook-form + zod, date picker, recorrência
+- `src/features/transactions/components/TransactionList.tsx` — Tabela desktop + cards mobile, skeletons, empty state
+- `src/features/transactions/components/TransactionFilters.tsx` — Filtros por tipo e categoria
+- `src/features/transactions/components/TransactionDeleteDialog.tsx` — Diálogo de confirmação de exclusão
+- `src/features/transactions/components/TransactionSummaryCards.tsx` — Cards de receita/despesa/saldo
+
+#### B5 — Páginas e Rotas
+- `src/features/transactions/pages/TransactionsPage.tsx` — Página de listagem
+- `src/features/transactions/pages/TransactionFormPage.tsx` — Página de criação/edição
+
+#### B6 — Testes Unitários (25 testes)
+- `src/features/transactions/__tests__/useTransactions.test.ts` — 5 testes
+- `src/features/transactions/__tests__/useTransactionMutations.test.ts` — 7 testes
+- `src/features/transactions/__tests__/TransactionList.test.tsx` — 7 testes
+- `src/features/transactions/__tests__/TransactionForm.test.tsx` — 6 testes
+
+#### B7 — Storybook Stories
+- `src/features/transactions/components/TransactionForm.stories.tsx`
+- `src/features/transactions/components/TransactionList.stories.tsx`
+- `src/features/transactions/components/TransactionFilters.stories.tsx`
+- `src/features/transactions/components/TransactionDeleteDialog.stories.tsx`
+- `src/features/transactions/components/TransactionSummaryCards.stories.tsx`
+
+### Arquivos Modificados
+- `src/app/routes/index.tsx` — 3 novas rotas protegidas (/transactions, /transactions/new, /transactions/:id/edit)
+- `tests/setup.ts` — Polyfill ResizeObserver para jsdom (Radix UI Switch)
+
+### Dependências shadcn/ui adicionadas
+- `calendar.tsx`, `popover.tsx`, `textarea.tsx`, `switch.tsx`
+
+### Validação
+- TypeScript: `tsc -p tsconfig.build.json` — zero erros
+- Build: `vite build` — SUCCESS (code splitting confirmado: TransactionsPage 9.83 KB, TransactionFormPage 92.90 KB)
+- Testes: 90/90 passed (25 novos + 65 existentes), 18/18 test files, zero regressões
+- Navegação: Sidebar já contém link "Transações" (ROUTES.TRANSACTIONS + CreditCard icon)
+
+---
+
 ## [2026-02-18] - Adição de CategoryType à Entidade Category (ADR-044)
 
 ### Contexto

@@ -18,6 +18,8 @@ const RejectedPage = lazy(() => import('@/features/auth/pages/RejectedPage'));
 const DashboardPage = lazy(() => import('@/features/dashboard/pages/DashboardPage'));
 const CategoriesPage = lazy(() => import('@/features/categories/pages/CategoriesPage'));
 const CategoryFormPage = lazy(() => import('@/features/categories/pages/CategoryFormPage'));
+const TransactionsPage = lazy(() => import('@/features/transactions/pages/TransactionsPage'));
+const TransactionFormPage = lazy(() => import('@/features/transactions/pages/TransactionFormPage'));
 
 // Admin pages (lazy loaded for admin users)
 // const UsersPage = lazy(() => import('@/features/admin/users/pages/UsersPage'));
@@ -104,6 +106,32 @@ export function AppRoutes() {
           element={
             <ProtectedRoute>
               <CategoryFormPage />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Transactions routes */}
+        <Route
+          path={ROUTES.TRANSACTIONS}
+          element={
+            <ProtectedRoute>
+              <TransactionsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/transactions/new"
+          element={
+            <ProtectedRoute>
+              <TransactionFormPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/transactions/:id/edit"
+          element={
+            <ProtectedRoute>
+              <TransactionFormPage />
             </ProtectedRoute>
           }
         />
