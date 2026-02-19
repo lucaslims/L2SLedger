@@ -4,7 +4,7 @@ import { ROUTES } from '@/shared/lib/utils/constants';
 import { ProtectedRoute } from './ProtectedRoute';
 import { PublicRoute } from './PublicRoute';
 import { LoadingScreen } from '@/shared/components/feedback/LoadingScreen';
-// import { AdminRoute } from './AdminRoute';
+import { AdminRoute } from './AdminRoute';
 
 // Public pages (loaded in public bundle)
 const LoginPage = lazy(() => import('@/features/auth/pages/LoginPage'));
@@ -22,7 +22,8 @@ const TransactionsPage = lazy(() => import('@/features/transactions/pages/Transa
 const TransactionFormPage = lazy(() => import('@/features/transactions/pages/TransactionFormPage'));
 
 // Admin pages (lazy loaded for admin users)
-// const UsersPage = lazy(() => import('@/features/admin/users/pages/UsersPage'));
+const UsersPage = lazy(() => import('@/features/admin/users/pages/UsersPage'));
+const UserDetailPage = lazy(() => import('@/features/admin/users/pages/UserDetailPage'));
 
 /**
  * Configuração de rotas da aplicação
@@ -94,7 +95,7 @@ export function AppRoutes() {
           }
         />
         <Route
-          path="/categories/new"
+          path={ROUTES.CATEGORIES_NEW}
           element={
             <ProtectedRoute>
               <CategoryFormPage />
@@ -102,7 +103,7 @@ export function AppRoutes() {
           }
         />
         <Route
-          path="/categories/:id/edit"
+          path={ROUTES.CATEGORIES_EDIT}
           element={
             <ProtectedRoute>
               <CategoryFormPage />
@@ -120,7 +121,7 @@ export function AppRoutes() {
           }
         />
         <Route
-          path="/transactions/new"
+          path={ROUTES.TRANSACTIONS_NEW}
           element={
             <ProtectedRoute>
               <TransactionFormPage />
@@ -128,7 +129,7 @@ export function AppRoutes() {
           }
         />
         <Route
-          path="/transactions/:id/edit"
+          path={ROUTES.TRANSACTIONS_EDIT}
           element={
             <ProtectedRoute>
               <TransactionFormPage />
@@ -137,14 +138,22 @@ export function AppRoutes() {
         />
 
         {/* Admin routes */}
-        {/* <Route
+        <Route
           path={ROUTES.ADMIN_USERS}
           element={
             <AdminRoute>
               <UsersPage />
             </AdminRoute>
           }
-        /> */}
+        />
+        <Route
+          path={ROUTES.ADMIN_USER_DETAIL}
+          element={
+            <AdminRoute>
+              <UserDetailPage />
+            </AdminRoute>
+          }
+        />
 
         {/* 404 */}
         <Route path="*" element={<Navigate to={ROUTES.HOME} replace />} />
