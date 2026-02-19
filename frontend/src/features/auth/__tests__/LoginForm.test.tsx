@@ -108,10 +108,10 @@ describe('LoginForm', () => {
     await user.click(submitButton);
 
     await waitFor(() => {
-      expect(mockMutate).toHaveBeenCalledWith(
-        { email: 'test@test.com', password: 'password123' },
-        expect.any(Object)
-      );
+      expect(mockMutate).toHaveBeenCalledWith({
+        email: 'test@test.com',
+        password: 'password123',
+      });
     });
   });
 

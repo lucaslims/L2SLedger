@@ -4,7 +4,7 @@ import { ROUTES } from '@/shared/lib/utils/constants';
 import { ProtectedRoute } from './ProtectedRoute';
 import { PublicRoute } from './PublicRoute';
 import { LoadingScreen } from '@/shared/components/feedback/LoadingScreen';
-// import { AdminRoute } from './AdminRoute';
+import { AdminRoute } from './AdminRoute';
 
 // Public pages (loaded in public bundle)
 const LoginPage = lazy(() => import('@/features/auth/pages/LoginPage'));
@@ -16,9 +16,14 @@ const RejectedPage = lazy(() => import('@/features/auth/pages/RejectedPage'));
 
 // Protected pages (lazy loaded after auth confirmation)
 const DashboardPage = lazy(() => import('@/features/dashboard/pages/DashboardPage'));
+const CategoriesPage = lazy(() => import('@/features/categories/pages/CategoriesPage'));
+const CategoryFormPage = lazy(() => import('@/features/categories/pages/CategoryFormPage'));
+const TransactionsPage = lazy(() => import('@/features/transactions/pages/TransactionsPage'));
+const TransactionFormPage = lazy(() => import('@/features/transactions/pages/TransactionFormPage'));
 
 // Admin pages (lazy loaded for admin users)
-// const UsersPage = lazy(() => import('@/features/admin/users/pages/UsersPage'));
+const UsersPage = lazy(() => import('@/features/admin/users/pages/UsersPage'));
+const UserDetailPage = lazy(() => import('@/features/admin/users/pages/UserDetailPage'));
 
 /**
  * Configuração de rotas da aplicação
@@ -80,15 +85,75 @@ export function AppRoutes() {
           }
         />
 
+        {/* Categories routes */}
+        <Route
+          path={ROUTES.CATEGORIES}
+          element={
+            <ProtectedRoute>
+              <CategoriesPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path={ROUTES.CATEGORIES_NEW}
+          element={
+            <ProtectedRoute>
+              <CategoryFormPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path={ROUTES.CATEGORIES_EDIT}
+          element={
+            <ProtectedRoute>
+              <CategoryFormPage />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Transactions routes */}
+        <Route
+          path={ROUTES.TRANSACTIONS}
+          element={
+            <ProtectedRoute>
+              <TransactionsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path={ROUTES.TRANSACTIONS_NEW}
+          element={
+            <ProtectedRoute>
+              <TransactionFormPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path={ROUTES.TRANSACTIONS_EDIT}
+          element={
+            <ProtectedRoute>
+              <TransactionFormPage />
+            </ProtectedRoute>
+          }
+        />
+
         {/* Admin routes */}
-        {/* <Route
+        <Route
           path={ROUTES.ADMIN_USERS}
           element={
             <AdminRoute>
               <UsersPage />
             </AdminRoute>
           }
-        /> */}
+        />
+        <Route
+          path={ROUTES.ADMIN_USER_DETAIL}
+          element={
+            <AdminRoute>
+              <UserDetailPage />
+            </AdminRoute>
+          }
+        />
 
         {/* 404 */}
         <Route path="*" element={<Navigate to={ROUTES.HOME} replace />} />

@@ -7,6 +7,7 @@ using L2SLedger.Application.Interfaces;
 using L2SLedger.Application.Mappers;
 using L2SLedger.Application.UseCases.Categories;
 using L2SLedger.Domain.Entities;
+using L2SLedger.Domain.Enums;
 using L2SLedger.Domain.Exceptions;
 using Moq;
 using FluentValidationException = FluentValidation.ValidationException;
@@ -42,7 +43,7 @@ public class UpdateCategoryUseCaseTestsFixed
     {
         // Arrange
         var categoryId = Guid.NewGuid();
-        var existingCategory = new Category("Nome Antigo", "Descrição antiga");
+        var existingCategory = new Category("Nome Antigo", CategoryType.Expense, "Descrição antiga");
         var request = new UpdateCategoryRequest
         {
             Name = "Nome Novo",
@@ -124,8 +125,8 @@ public class UpdateCategoryUseCaseTestsFixed
     {
         // Arrange
         var categoryId = Guid.NewGuid();
-        var existingCategory = new Category("Nome Original");
-        var otherCategory = new Category("Nome Duplicado");
+        var existingCategory = new Category("Nome Original", CategoryType.Expense);
+        var otherCategory = new Category("Nome Duplicado", CategoryType.Expense);
 
         var request = new UpdateCategoryRequest
         {
@@ -162,7 +163,7 @@ public class UpdateCategoryUseCaseTestsFixed
     {
         // Arrange
         var categoryId = Guid.NewGuid();
-        var existingCategory = new Category("Original", "Descrição original");
+        var existingCategory = new Category("Original", CategoryType.Expense, "Descrição original");
         var request = new UpdateCategoryRequest
         {
             Name = "Atualizado",
@@ -194,7 +195,7 @@ public class UpdateCategoryUseCaseTestsFixed
     {
         // Arrange
         var categoryId = Guid.NewGuid();
-        var existingCategory = new Category("Original");
+        var existingCategory = new Category("Original", CategoryType.Expense);
         var request = new UpdateCategoryRequest { Name = "Atualizado" };
 
         _validatorMock
@@ -223,7 +224,7 @@ public class UpdateCategoryUseCaseTestsFixed
     {
         // Arrange
         var categoryId = Guid.NewGuid();
-        var existingCategory = new Category("Original", "Descrição");
+        var existingCategory = new Category("Original", CategoryType.Expense, "Descrição");
         var request = new UpdateCategoryRequest
         {
             Name = "Atualizado",

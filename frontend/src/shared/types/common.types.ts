@@ -21,4 +21,4 @@ export interface ApiResponse<T> {
 
 export type UserStatus = 'Pending' | 'Active' | 'Suspended' | 'Rejected';
 export type TransactionType = 'Income' | 'Expense';
-export type UserRole = 'Admin' | 'Leitura' | 'Escrita';
+export type UserRole = 'Admin' | 'Leitura' | 'Financeiro';

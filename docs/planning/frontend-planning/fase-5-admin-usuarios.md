@@ -2,7 +2,7 @@
 
 > **Estimativa:** 14 horas  
 > **Dependência:** Fase 1 (Autenticação) completa  
-> **Status:** Pendente
+> **Status:** Implementado
 
 ---
 

@@ -5,6 +5,7 @@ using L2SLedger.Application.Interfaces;
 using L2SLedger.Application.Mappers;
 using L2SLedger.Application.UseCases.Categories;
 using L2SLedger.Domain.Entities;
+using L2SLedger.Domain.Enums;
 using Moq;
 
 namespace L2SLedger.Application.Tests.UseCases.Categories;
@@ -34,9 +35,9 @@ public class GetCategoriesUseCaseTests
         // Arrange
         var categories = new List<Category>
         {
-            new Category("Alimentação", "Gastos com alimentação"),
-            new Category("Transporte", "Gastos com transporte"),
-            new Category("Saúde", "Gastos com saúde")
+            new Category("Alimentação", CategoryType.Expense, "Gastos com alimentação"),
+            new Category("Transporte", CategoryType.Expense, "Gastos com transporte"),
+            new Category("Saúde", CategoryType.Expense, "Gastos com saúde")
         };
 
         _categoryRepositoryMock
@@ -44,7 +45,7 @@ public class GetCategoriesUseCaseTests
             .ReturnsAsync(categories);
 
         // Act
-        var result = await _sut.ExecuteAsync(null, false);
+        var result = await _sut.ExecuteAsync(null, false, null);
 
         // Assert
         result.Should().NotBeNull();
@@ -59,8 +60,8 @@ public class GetCategoriesUseCaseTests
     public async Task ExecuteAsync_WithIncludeInactive_ShouldReturnAllCategories()
     {
         // Arrange
-        var activeCategory = new Category("Ativa", "Categoria ativa");
-        var inactiveCategory = new Category("Inativa", "Categoria inativa");
+        var activeCategory = new Category("Ativa", CategoryType.Expense, "Categoria ativa");
+        var inactiveCategory = new Category("Inativa", CategoryType.Expense, "Categoria inativa");
         inactiveCategory.Deactivate();
 
         var categories = new List<Category> { activeCategory, inactiveCategory };
@@ -70,7 +71,7 @@ public class GetCategoriesUseCaseTests
             .ReturnsAsync(categories);
 
         // Act
-        var result = await _sut.ExecuteAsync(null, true);
+        var result = await _sut.ExecuteAsync(null, true, null);
 
         // Assert
         result.Categories.Should().HaveCount(2);
@@ -87,8 +88,8 @@ public class GetCategoriesUseCaseTests
         var parentId = Guid.NewGuid();
         var subCategories = new List<Category>
         {
-            new Category("Restaurantes", "Gastos em restaurantes", parentId),
-            new Category("Mercado", "Gastos no mercado", parentId)
+            new Category("Restaurantes", CategoryType.Expense, "Gastos em restaurantes", parentId),
+            new Category("Mercado", CategoryType.Expense, "Gastos no mercado", parentId)
         };
 
         _categoryRepositoryMock
@@ -96,7 +97,7 @@ public class GetCategoriesUseCaseTests
             .ReturnsAsync(subCategories);
 
         // Act
-        var result = await _sut.ExecuteAsync(parentId, false);
+        var result = await _sut.ExecuteAsync(parentId, false, null);
 
         // Assert
         result.Categories.Should().HaveCount(2);
@@ -114,7 +115,7 @@ public class GetCategoriesUseCaseTests
             .ReturnsAsync(new List<Category>());
 
         // Act
-        var result = await _sut.ExecuteAsync(null, false);
+        var result = await _sut.ExecuteAsync(null, false, null);
 
         // Assert
         result.Categories.Should().BeEmpty();
@@ -133,7 +134,7 @@ public class GetCategoriesUseCaseTests
             .ReturnsAsync(new List<Category>());
 
         // Act
-        await _sut.ExecuteAsync(parentId, includeInactive);
+        await _sut.ExecuteAsync(parentId, includeInactive, null);
 
         // Assert
         _categoryRepositoryMock.Verify(
@@ -145,8 +146,8 @@ public class GetCategoriesUseCaseTests
     public async Task ExecuteAsync_ShouldReturnMappedCategoryDtos()
     {
         // Arrange
-        var parentCategory = new Category("Alimentação", "Categoria pai");
-        var category = new Category("Restaurantes", "Gastos em restaurantes", parentCategory.Id);
+        var parentCategory = new Category("Alimentação", CategoryType.Expense, "Categoria pai");
+        var category = new Category("Restaurantes", CategoryType.Expense, "Gastos em restaurantes", parentCategory.Id);
 
         var categories = new List<Category> { category };
 
@@ -155,7 +156,7 @@ public class GetCategoriesUseCaseTests
             .ReturnsAsync(categories);
 
         // Act
-        var result = await _sut.ExecuteAsync(null, false);
+        var result = await _sut.ExecuteAsync(null, false, null);
 
         // Assert
         result.Categories.Should().AllBeOfType<CategoryDto>();

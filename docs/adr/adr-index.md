@@ -8,8 +8,8 @@
 
 ## Estatísticas
 
-* **Total de ADRs**: 46
-* **Última atualização**: 2026-02-17
+* **Total de ADRs**: 47
+* **Última atualização**: 2026-02-18
 
 ---
 
@@ -24,7 +24,7 @@
 | **Compliance & Proteção de Dados**| 013                      |
 | **Auditoria & Controle de Acesso**| 014–017, 019             |
 | **Arquitetura & Padrões**         | 020–027, 022-a           |
-| **Ambientes & Dados**             | 028–030                  |
+| **Ambientes & Dados**             | 028–030, 044             |
 | **CI/CD & Infraestrutura**        | 031–033, 043             |
 | **Banco de Dados & Persistência** | 034–036                  |
 | **Qualidade & Testes**            | 037–040                  |
@@ -84,6 +84,7 @@
 | ADR-042     | Modelo de Comercialização SaaS e Planos de Assinatura no L2SLedger      | [Ver ADR-042](./adr-042.md) |
 | ADR-042-a   | Contratos Comerciais Consumidos pelo Frontend no L2SLedger              | [Ver ADR-042-a](./adr-042-a.md) |
 | ADR-043     | Estratégia de Deploy Automático (DEMO) e com Aprovação (PROD)           | [Ver ADR-043](./adr-043.md) |
+| ADR-044     | Adição de Tipo (CategoryType) à Entidade de Categoria no L2SLedger      | [Ver ADR-044](./adr-044.md) |
 
 ---
 

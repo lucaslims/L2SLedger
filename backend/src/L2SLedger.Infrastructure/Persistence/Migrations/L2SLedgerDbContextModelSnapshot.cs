@@ -210,6 +210,12 @@ namespace L2SLedger.Infrastructure.Persistence.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("parent_category_id");
 
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("type");
+
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("updated_at");
@@ -227,6 +233,9 @@ namespace L2SLedger.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("ParentCategoryId")
                         .HasDatabaseName("idx_categories_parent_id");
+
+                    b.HasIndex("Type")
+                        .HasDatabaseName("idx_categories_type");
 
                     b.HasIndex("Name", "ParentCategoryId", "IsDeleted")
                         .IsUnique()

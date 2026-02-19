@@ -2,7 +2,7 @@
 
 > **Estimativa:** 10 horas  
 > **Dependência:** Fase 2 (Dashboard) completa  
-> **Status:** Pendente
+> **Status:** Implementado
 
 ---
 

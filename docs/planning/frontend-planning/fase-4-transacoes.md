@@ -2,7 +2,7 @@
 
 > **Estimativa:** 16 horas  
 > **Dependência:** Fase 3 (Categorias) completa  
-> **Status:** Pendente
+> **Status:** Implementado
 
 ---
 
