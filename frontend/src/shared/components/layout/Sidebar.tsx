@@ -22,7 +22,7 @@ const navItems: NavItem[] = [
 
 /**
  * Sidebar
- * 
+ *
  * Navegação lateral (desktop).
  * Exibe links de navegação e seção admin condicional.
  */

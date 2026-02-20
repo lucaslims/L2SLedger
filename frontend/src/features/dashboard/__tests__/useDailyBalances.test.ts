@@ -21,7 +21,6 @@ const createWrapper = () => {
       mutations: { retry: false },
     },
   });
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return ({ children }: any) => {
     return QueryClientProvider({ client: queryClient, children });
   };
@@ -39,9 +38,7 @@ describe('useDailyBalances', () => {
   });
 
   it('deve buscar saldos diários com sucesso', async () => {
-    vi.mocked(dashboardService.getDailyBalances).mockResolvedValue(
-      mockDailyBalances
-    );
+    vi.mocked(dashboardService.getDailyBalances).mockResolvedValue(mockDailyBalances);
 
     const { result } = renderHook(() => useDailyBalances(), {
       wrapper: createWrapper(),
@@ -54,27 +51,19 @@ describe('useDailyBalances', () => {
   });
 
   it('deve passar parâmetros de data para o service', async () => {
-    vi.mocked(dashboardService.getDailyBalances).mockResolvedValue(
-      mockDailyBalances
-    );
+    vi.mocked(dashboardService.getDailyBalances).mockResolvedValue(mockDailyBalances);
 
-    const { result } = renderHook(
-      () => useDailyBalances('2026-02-01', '2026-02-28'),
-      { wrapper: createWrapper() }
-    );
+    const { result } = renderHook(() => useDailyBalances('2026-02-01', '2026-02-28'), {
+      wrapper: createWrapper(),
+    });
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
-    expect(dashboardService.getDailyBalances).toHaveBeenCalledWith(
-      '2026-02-01',
-      '2026-02-28'
-    );
+    expect(dashboardService.getDailyBalances).toHaveBeenCalledWith('2026-02-01', '2026-02-28');
   });
 
   it('deve tratar erro na busca', async () => {
-    vi.mocked(dashboardService.getDailyBalances).mockRejectedValue(
-      new Error('Server error')
-    );
+    vi.mocked(dashboardService.getDailyBalances).mockRejectedValue(new Error('Server error'));
 
     const { result } = renderHook(() => useDailyBalances(), {
       wrapper: createWrapper(),

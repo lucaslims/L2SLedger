@@ -22,10 +22,7 @@ class ApiClient {
   /**
    * Método base para fazer requisições
    */
-  private async request<T>(
-    endpoint: string,
-    options: FetchOptions = {}
-  ): Promise<T> {
+  private async request<T>(endpoint: string, options: FetchOptions = {}): Promise<T> {
     const { params, ...fetchOptions } = options;
 
     // Construir URL com query params

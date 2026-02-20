@@ -9,7 +9,7 @@ const mockTransactions: TransactionDto[] = [
   {
     id: '1',
     description: 'Supermercado',
-    amount: 150.50,
+    amount: 150.5,
     type: 2,
     transactionDate: '2026-01-15T00:00:00Z',
     categoryId: 'cat-1',
@@ -24,7 +24,7 @@ const mockTransactions: TransactionDto[] = [
   {
     id: '2',
     description: 'Salário Janeiro',
-    amount: 5000.00,
+    amount: 5000.0,
     type: 1,
     transactionDate: '2026-01-05T00:00:00Z',
     categoryId: 'cat-2',

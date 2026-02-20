@@ -18,16 +18,12 @@ describe('useMediaQuery', () => {
         onchange: null,
         addListener: vi.fn(),
         removeListener: vi.fn(),
-        addEventListener: vi.fn(
-          (_: string, listener: (event: MediaQueryListEvent) => void) => {
-            listeners.push(listener);
-          }
-        ),
-        removeEventListener: vi.fn(
-          (_: string, listener: (event: MediaQueryListEvent) => void) => {
-            listeners = listeners.filter((l) => l !== listener);
-          }
-        ),
+        addEventListener: vi.fn((_: string, listener: (event: MediaQueryListEvent) => void) => {
+          listeners.push(listener);
+        }),
+        removeEventListener: vi.fn((_: string, listener: (event: MediaQueryListEvent) => void) => {
+          listeners = listeners.filter((l) => l !== listener);
+        }),
         dispatchEvent: vi.fn(),
       })),
     });
@@ -36,9 +32,7 @@ describe('useMediaQuery', () => {
   it('deve retornar false quando a query não corresponde', () => {
     matchesValue = false;
 
-    const { result } = renderHook(() =>
-      useMediaQuery('(max-width: 768px)')
-    );
+    const { result } = renderHook(() => useMediaQuery('(max-width: 768px)'));
 
     expect(result.current).toBe(false);
   });
@@ -46,9 +40,7 @@ describe('useMediaQuery', () => {
   it('deve retornar true quando a query corresponde', () => {
     matchesValue = true;
 
-    const { result } = renderHook(() =>
-      useMediaQuery('(max-width: 768px)')
-    );
+    const { result } = renderHook(() => useMediaQuery('(max-width: 768px)'));
 
     expect(result.current).toBe(true);
   });
@@ -56,26 +48,20 @@ describe('useMediaQuery', () => {
   it('deve atualizar quando o media query muda', () => {
     matchesValue = false;
 
-    const { result } = renderHook(() =>
-      useMediaQuery('(max-width: 768px)')
-    );
+    const { result } = renderHook(() => useMediaQuery('(max-width: 768px)'));
 
     expect(result.current).toBe(false);
 
     // Simular mudança no media query
     act(() => {
-      listeners.forEach((listener) =>
-        listener({ matches: true } as MediaQueryListEvent)
-      );
+      listeners.forEach((listener) => listener({ matches: true } as MediaQueryListEvent));
     });
 
     expect(result.current).toBe(true);
   });
 
   it('deve limpar listener ao desmontar', () => {
-    const { unmount } = renderHook(() =>
-      useMediaQuery('(max-width: 768px)')
-    );
+    const { unmount } = renderHook(() => useMediaQuery('(max-width: 768px)'));
 
     expect(listeners.length).toBeGreaterThan(0);
 

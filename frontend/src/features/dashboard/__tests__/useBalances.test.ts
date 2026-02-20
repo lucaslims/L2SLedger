@@ -21,7 +21,6 @@ const createWrapper = () => {
       mutations: { retry: false },
     },
   });
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return ({ children }: any) => {
     return QueryClientProvider({ client: queryClient, children });
   };
@@ -60,9 +59,7 @@ describe('useBalances', () => {
   });
 
   it('deve tratar erro na busca de saldos', async () => {
-    vi.mocked(dashboardService.getBalances).mockRejectedValue(
-      new Error('Network error')
-    );
+    vi.mocked(dashboardService.getBalances).mockRejectedValue(new Error('Network error'));
 
     const { result } = renderHook(() => useBalances(), {
       wrapper: createWrapper(),

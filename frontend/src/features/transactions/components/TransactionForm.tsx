@@ -26,39 +26,35 @@ import {
   SelectValue,
 } from '@/shared/components/ui/select';
 import { Calendar } from '@/shared/components/ui/calendar';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/shared/components/ui/popover';
+import { Popover, PopoverContent, PopoverTrigger } from '@/shared/components/ui/popover';
 import { useCategories } from '@/features/categories/hooks/useCategories';
 import { cn } from '@/shared/lib/utils/cn';
 import type { TransactionDto, CreateTransactionRequest } from '../types/transaction.types';
 import { TransactionTypeMap } from '../types/transaction.types';
 
-const transactionSchema = z.object({
-  description: z
-    .string()
-    .min(1, 'Descrição é obrigatória')
-    .max(200, 'Máximo 200 caracteres'),
-  amount: z
-    .number({ invalid_type_error: 'Informe um valor válido' })
-    .positive('Valor deve ser maior que zero'),
-  type: z.enum(['Income', 'Expense'], {
-    required_error: 'Selecione o tipo',
-  }),
-  categoryId: z.string().min(1, 'Selecione uma categoria'),
-  date: z.date({ required_error: 'Selecione uma data' }),
-  notes: z.string().max(1000, 'Máximo 1000 caracteres').optional(),
-  isRecurring: z.boolean(),
-  recurringDay: z.number().int().min(1).max(31).optional().nullable(),
-}).refine(
-  (data) => !data.isRecurring || (data.recurringDay && data.recurringDay >= 1 && data.recurringDay <= 31),
-  {
-    message: 'Dia de recorrência é obrigatório (1-31)',
-    path: ['recurringDay'],
-  }
-);
+const transactionSchema = z
+  .object({
+    description: z.string().min(1, 'Descrição é obrigatória').max(200, 'Máximo 200 caracteres'),
+    amount: z
+      .number({ invalid_type_error: 'Informe um valor válido' })
+      .positive('Valor deve ser maior que zero'),
+    type: z.enum(['Income', 'Expense'], {
+      required_error: 'Selecione o tipo',
+    }),
+    categoryId: z.string().min(1, 'Selecione uma categoria'),
+    date: z.date({ required_error: 'Selecione uma data' }),
+    notes: z.string().max(1000, 'Máximo 1000 caracteres').optional(),
+    isRecurring: z.boolean(),
+    recurringDay: z.number().int().min(1).max(31).optional().nullable(),
+  })
+  .refine(
+    (data) =>
+      !data.isRecurring || (data.recurringDay && data.recurringDay >= 1 && data.recurringDay <= 31),
+    {
+      message: 'Dia de recorrência é obrigatório (1-31)',
+      path: ['recurringDay'],
+    }
+  );
 
 type TransactionFormData = z.infer<typeof transactionSchema>;
 
@@ -287,15 +283,10 @@ export function TransactionForm({ initialValues, onSubmit, isPending }: Transact
               <FormItem className="flex flex-row items-center justify-between">
                 <div className="space-y-0.5">
                   <FormLabel>Transação Recorrente</FormLabel>
-                  <FormDescription>
-                    Marque se esta transação se repete mensalmente
-                  </FormDescription>
+                  <FormDescription>Marque se esta transação se repete mensalmente</FormDescription>
                 </div>
                 <FormControl>
-                  <Switch
-                    checked={field.value}
-                    onCheckedChange={field.onChange}
-                  />
+                  <Switch checked={field.value} onCheckedChange={field.onChange} />
                 </FormControl>
               </FormItem>
             )}

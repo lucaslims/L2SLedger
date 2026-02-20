@@ -13,7 +13,7 @@ import { User, LogOut } from 'lucide-react';
 
 /**
  * Header
- * 
+ *
  * Barra superior da aplicação autenticada.
  * Contém:
  * - Logo (mobile)
@@ -44,12 +44,8 @@ export function Header() {
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>
               <div className="flex flex-col space-y-1">
-                <p className="text-sm font-medium">
-                  {currentUser?.displayName}
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  {currentUser?.email}
-                </p>
+                <p className="text-sm font-medium">{currentUser?.displayName}</p>
+                <p className="text-xs text-muted-foreground">{currentUser?.email}</p>
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />

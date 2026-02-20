@@ -1,6 +1,6 @@
 /**
  * LoadingScreen
- * 
+ *
  * Exibido durante verificação inicial de sessão
  * Parte do bundle inicial (main.js)
  */
@@ -11,7 +11,7 @@ export function LoadingScreen() {
         <div className="mb-4">
           <h1 className="text-4xl font-bold text-primary">L2SLedger</h1>
         </div>
-        
+
         <div className="flex items-center justify-center space-x-2">
           <div className="h-2 w-2 animate-pulse rounded-full bg-primary"></div>
           <div
@@ -23,7 +23,7 @@ export function LoadingScreen() {
             style={{ animationDelay: '0.4s' }}
           ></div>
         </div>
-        
+
         <p className="mt-4 text-sm text-muted-foreground">Verificando sessão...</p>
       </div>
     </div>

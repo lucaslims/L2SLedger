@@ -27,7 +27,7 @@ const UserDetailPage = lazy(() => import('@/features/admin/users/pages/UserDetai
 
 /**
  * Configuração de rotas da aplicação
- * 
+ *
  * SEGURANÇA:
  * - Rotas públicas: public bundle
  * - Rotas protegidas: lazy load após autenticação
@@ -38,125 +38,122 @@ export function AppRoutes() {
     <BrowserRouter>
       <Suspense fallback={<LoadingScreen />}>
         <Routes>
-        {/* Home - redirect to dashboard or login */}
-        <Route
-          path={ROUTES.HOME}
-          element={<Navigate to={ROUTES.DASHBOARD} replace />}
-        />
+          {/* Home - redirect to dashboard or login */}
+          <Route path={ROUTES.HOME} element={<Navigate to={ROUTES.DASHBOARD} replace />} />
 
-        {/* Public routes */}
-        <Route
-          path={ROUTES.LOGIN}
-          element={
-            <PublicRoute>
-              <LoginPage />
-            </PublicRoute>
-          }
-        />
-        <Route
-          path={ROUTES.REGISTER}
-          element={
-            <PublicRoute>
-              <RegisterPage />
-            </PublicRoute>
-          }
-        />
-        <Route
-          path={ROUTES.VERIFY_EMAIL}
-          element={
-            <PublicRoute>
-              <VerifyEmailPage />
-            </PublicRoute>
-          }
-        />
+          {/* Public routes */}
+          <Route
+            path={ROUTES.LOGIN}
+            element={
+              <PublicRoute>
+                <LoginPage />
+              </PublicRoute>
+            }
+          />
+          <Route
+            path={ROUTES.REGISTER}
+            element={
+              <PublicRoute>
+                <RegisterPage />
+              </PublicRoute>
+            }
+          />
+          <Route
+            path={ROUTES.VERIFY_EMAIL}
+            element={
+              <PublicRoute>
+                <VerifyEmailPage />
+              </PublicRoute>
+            }
+          />
 
-        {/* Status pages (accessible by authenticated users with specific status) */}
-        <Route path={ROUTES.PENDING_APPROVAL} element={<PendingApprovalPage />} />
-        <Route path={ROUTES.SUSPENDED} element={<SuspendedPage />} />
-        <Route path={ROUTES.REJECTED} element={<RejectedPage />} />
+          {/* Status pages (accessible by authenticated users with specific status) */}
+          <Route path={ROUTES.PENDING_APPROVAL} element={<PendingApprovalPage />} />
+          <Route path={ROUTES.SUSPENDED} element={<SuspendedPage />} />
+          <Route path={ROUTES.REJECTED} element={<RejectedPage />} />
 
-        {/* Protected routes */}
-        <Route
-          path={ROUTES.DASHBOARD}
-          element={
-            <ProtectedRoute>
-              <DashboardPage />
-            </ProtectedRoute>
-          }
-        />
+          {/* Protected routes */}
+          <Route
+            path={ROUTES.DASHBOARD}
+            element={
+              <ProtectedRoute>
+                <DashboardPage />
+              </ProtectedRoute>
+            }
+          />
 
-        {/* Categories routes */}
-        <Route
-          path={ROUTES.CATEGORIES}
-          element={
-            <ProtectedRoute>
-              <CategoriesPage />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path={ROUTES.CATEGORIES_NEW}
-          element={
-            <ProtectedRoute>
-              <CategoryFormPage />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path={ROUTES.CATEGORIES_EDIT}
-          element={
-            <ProtectedRoute>
-              <CategoryFormPage />
-            </ProtectedRoute>
-          }
-        />
+          {/* Categories routes */}
+          <Route
+            path={ROUTES.CATEGORIES}
+            element={
+              <ProtectedRoute>
+                <CategoriesPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path={ROUTES.CATEGORIES_NEW}
+            element={
+              <ProtectedRoute>
+                <CategoryFormPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path={ROUTES.CATEGORIES_EDIT}
+            element={
+              <ProtectedRoute>
+                <CategoryFormPage />
+              </ProtectedRoute>
+            }
+          />
 
-        {/* Transactions routes */}
-        <Route
-          path={ROUTES.TRANSACTIONS}
-          element={
-            <ProtectedRoute>
-              <TransactionsPage />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path={ROUTES.TRANSACTIONS_NEW}
-          element={
-            <ProtectedRoute>
-              <TransactionFormPage />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path={ROUTES.TRANSACTIONS_EDIT}
-          element={
-            <ProtectedRoute>
-              <TransactionFormPage />
-            </ProtectedRoute>
-          }
-        />
+          {/* Transactions routes */}
+          <Route
+            path={ROUTES.TRANSACTIONS}
+            element={
+              <ProtectedRoute>
+                <TransactionsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path={ROUTES.TRANSACTIONS_NEW}
+            element={
+              <ProtectedRoute>
+                <TransactionFormPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path={ROUTES.TRANSACTIONS_EDIT}
+            element={
+              <ProtectedRoute>
+                <TransactionFormPage />
+              </ProtectedRoute>
+            }
+          />
 
-        {/* Admin routes */}
-        <Route
-          path={ROUTES.ADMIN_USERS}
-          element={
-            <AdminRoute>
-              <UsersPage />
-            </AdminRoute>
-          }
-        />
-        <Route
-          path={ROUTES.ADMIN_USER_DETAIL}
-          element={
-            <AdminRoute>
-              <UserDetailPage />
-            </AdminRoute>
-          }
-        />
+          {/* Admin routes */}
+          <Route
+            path={ROUTES.ADMIN_USERS}
+            element={
+              <AdminRoute>
+                <UsersPage />
+              </AdminRoute>
+            }
+          />
+          <Route
+            path={ROUTES.ADMIN_USER_DETAIL}
+            element={
+              <AdminRoute>
+                <UserDetailPage />
+              </AdminRoute>
+            }
+          />
 
-        {/* 404 */}
-        <Route path="*" element={<Navigate to={ROUTES.HOME} replace />} />
+          {/* 404 */}
+          <Route path="*" element={<Navigate to={ROUTES.HOME} replace />} />
         </Routes>
       </Suspense>
     </BrowserRouter>

@@ -161,10 +161,7 @@ describe('UserApprovalDialog', () => {
     );
 
     await user.click(screen.getByRole('button', { name: /^aprovar$/i }));
-    await user.type(
-      screen.getByPlaceholderText(/verificação de documentos/i),
-      'Documentação ok'
-    );
+    await user.type(screen.getByPlaceholderText(/verificação de documentos/i), 'Documentação ok');
     await user.click(screen.getByRole('button', { name: /confirmar aprovação/i }));
 
     expect(userService.updateStatus).toHaveBeenCalledWith('1', {

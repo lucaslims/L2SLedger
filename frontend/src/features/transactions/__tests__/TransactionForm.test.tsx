@@ -8,7 +8,7 @@ import { categoryService } from '@/features/categories/services/categoryService'
 import type { TransactionDto } from '../types/transaction.types';
 import { CategoryDto } from '@/features/categories/types/category.types';
 
-// Mock category service for the useCategories hook  
+// Mock category service for the useCategories hook
 vi.mock('@/features/categories/services/categoryService', () => ({
   categoryService: {
     getAll: vi.fn(),
@@ -19,10 +19,23 @@ vi.mock('@/features/categories/services/categoryService', () => ({
   },
 }));
 
-const mockCategories: CategoryDto[] = 
-[
-  { id: 'cat-1', name: 'Alimentação', type: 'Expense', isActive: true, createdAt: '2026-01-01T00:00:00Z', updatedAt: null },
-  { id: 'cat-2', name: 'Salário', type: 'Income', isActive: true, createdAt: '2026-01-01T00:00:00Z', updatedAt: null },
+const mockCategories: CategoryDto[] = [
+  {
+    id: 'cat-1',
+    name: 'Alimentação',
+    type: 'Expense',
+    isActive: true,
+    createdAt: '2026-01-01T00:00:00Z',
+    updatedAt: null,
+  },
+  {
+    id: 'cat-2',
+    name: 'Salário',
+    type: 'Income',
+    isActive: true,
+    createdAt: '2026-01-01T00:00:00Z',
+    updatedAt: null,
+  },
 ];
 
 function createWrapper() {
@@ -33,11 +46,8 @@ function createWrapper() {
     },
   });
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return ({ children }: any) => (
-    <QueryClientProvider client={queryClient}>
-      {children}
-    </QueryClientProvider>
+    <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
   );
 }
 
@@ -80,8 +90,20 @@ describe('TransactionForm', () => {
   it('deve exibir todas as categorias como fallback quando nenhuma tem o tipo', async () => {
     // Simula categorias sem campo type (backend antigo)
     const categoriesWithoutType = [
-      { id: 'cat-1', name: 'Geral', isActive: true, createdAt: '2026-01-01T00:00:00Z', updatedAt: null },
-      { id: 'cat-2', name: 'Outros', isActive: true, createdAt: '2026-01-01T00:00:00Z', updatedAt: null },
+      {
+        id: 'cat-1',
+        name: 'Geral',
+        isActive: true,
+        createdAt: '2026-01-01T00:00:00Z',
+        updatedAt: null,
+      },
+      {
+        id: 'cat-2',
+        name: 'Outros',
+        isActive: true,
+        createdAt: '2026-01-01T00:00:00Z',
+        updatedAt: null,
+      },
     ];
     vi.mocked(categoryService.getAll).mockResolvedValue(categoriesWithoutType as any);
     const user = userEvent.setup();
@@ -102,7 +124,7 @@ describe('TransactionForm', () => {
     const initial: TransactionDto = {
       id: '1',
       description: 'Supermercado',
-      amount: 150.50,
+      amount: 150.5,
       type: 2,
       transactionDate: '2026-01-15T00:00:00Z',
       categoryId: 'cat-1',
@@ -115,10 +137,9 @@ describe('TransactionForm', () => {
       updatedAt: '2026-01-15T10:00:00Z',
     };
 
-    render(
-      <TransactionForm initialValues={initial} onSubmit={mockOnSubmit} />,
-      { wrapper: createWrapper() }
-    );
+    render(<TransactionForm initialValues={initial} onSubmit={mockOnSubmit} />, {
+      wrapper: createWrapper(),
+    });
 
     expect(screen.getByRole('button', { name: 'Atualizar' })).toBeInTheDocument();
   });
@@ -136,10 +157,7 @@ describe('TransactionForm', () => {
   });
 
   it('deve desabilitar botão quando isPending', () => {
-    render(
-      <TransactionForm onSubmit={mockOnSubmit} isPending />,
-      { wrapper: createWrapper() }
-    );
+    render(<TransactionForm onSubmit={mockOnSubmit} isPending />, { wrapper: createWrapper() });
 
     const button = screen.getByRole('button', { name: 'Salvando...' });
     expect(button).toBeDisabled();

@@ -4,7 +4,7 @@ import { QUERY_KEYS } from '@/shared/lib/utils/constants';
 
 /**
  * Hook para buscar saldos consolidados
- * 
+ *
  * Usa React Query para:
  * - Cache automático (5min stale)
  * - Refetch em reconexão

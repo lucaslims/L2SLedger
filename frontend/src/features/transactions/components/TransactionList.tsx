@@ -22,7 +22,12 @@ interface TransactionListProps {
   onDelete: (transaction: TransactionDto) => void;
 }
 
-export function TransactionList({ transactions, isLoading, onEdit, onDelete }: TransactionListProps) {
+export function TransactionList({
+  transactions,
+  isLoading,
+  onEdit,
+  onDelete,
+}: TransactionListProps) {
   if (isLoading) {
     return (
       <div className="space-y-3">
@@ -36,9 +41,7 @@ export function TransactionList({ transactions, isLoading, onEdit, onDelete }: T
   if (!transactions.length) {
     return (
       <div className="flex flex-col items-center justify-center py-12 text-center">
-        <p className="text-lg font-medium text-muted-foreground">
-          Nenhuma transação encontrada
-        </p>
+        <p className="text-lg font-medium text-muted-foreground">Nenhuma transação encontrada</p>
         <p className="text-sm text-muted-foreground">
           Crie sua primeira transação para começar a controlar seu fluxo de caixa.
         </p>
@@ -67,7 +70,7 @@ export function TransactionList({ transactions, isLoading, onEdit, onDelete }: T
                 <TableCell>
                   <DateDisplay date={transaction.transactionDate} />
                 </TableCell>
-                <TableCell className="font-medium max-w-[200px] truncate">
+                <TableCell className="max-w-[200px] truncate font-medium">
                   {transaction.description}
                 </TableCell>
                 <TableCell>{transaction.categoryName}</TableCell>
@@ -130,20 +133,20 @@ function TransactionCard({
 }) {
   return (
     <div className="flex items-center justify-between rounded-lg border p-4">
-      <div className="flex-1 min-w-0">
+      <div className="min-w-0 flex-1">
         <div className="flex items-center gap-2">
-          <p className="font-medium truncate">{transaction.description}</p>
+          <p className="truncate font-medium">{transaction.description}</p>
           <Badge variant={transaction.type === 1 ? 'default' : 'destructive'} className="shrink-0">
             {TransactionTypeLabelMap[transaction.type]}
           </Badge>
         </div>
-        <div className="flex items-center gap-2 mt-1 text-sm text-muted-foreground">
+        <div className="mt-1 flex items-center gap-2 text-sm text-muted-foreground">
           <DateDisplay date={transaction.transactionDate} />
           <span>•</span>
           <span>{transaction.categoryName}</span>
         </div>
       </div>
-      <div className="flex items-center gap-2 ml-4">
+      <div className="ml-4 flex items-center gap-2">
         <AmountDisplay amount={transaction.amount} type={transaction.type} showSign={true} />
         <div className="flex gap-1">
           <Button variant="ghost" size="icon" onClick={onEdit} aria-label="Editar">

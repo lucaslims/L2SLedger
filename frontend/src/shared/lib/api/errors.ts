@@ -4,7 +4,7 @@ import { ROUTES } from '@/shared/lib/utils/constants';
 /**
  * Tratamento global de erros de autenticação
  * Baseado em ADR-021-A (Catálogo de Códigos de Erro)
- * 
+ *
  * Redireciona usuário para páginas específicas baseado no código de erro
  */
 export function handleAuthError(error: ApiError): void {

@@ -29,9 +29,7 @@ export default function TransactionsPage() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold">Transações</h1>
-            <p className="text-muted-foreground">
-              Gerencie suas receitas e despesas
-            </p>
+            <p className="text-muted-foreground">Gerencie suas receitas e despesas</p>
           </div>
           <Button onClick={() => navigate('/transactions/new')}>
             <Plus className="mr-2 h-4 w-4" />

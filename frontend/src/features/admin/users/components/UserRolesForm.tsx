@@ -23,19 +23,14 @@ export function UserRolesForm({ userId, currentRoles, onSuccess }: UserRolesForm
 
   const handleToggleRole = (role: UserRole) => {
     setSelectedRoles((prev) =>
-      prev.includes(role)
-        ? prev.filter((r) => r !== role)
-        : [...prev, role]
+      prev.includes(role) ? prev.filter((r) => r !== role) : [...prev, role]
     );
   };
 
   const handleSubmit = () => {
     if (selectedRoles.length === 0) return;
 
-    updateRoles(
-      { userId, roles: selectedRoles },
-      { onSuccess }
-    );
+    updateRoles({ userId, roles: selectedRoles }, { onSuccess });
   };
 
   const hasChanges =
@@ -63,9 +58,7 @@ export function UserRolesForm({ userId, currentRoles, onSuccess }: UserRolesForm
       </div>
 
       {selectedRoles.length === 0 && (
-        <p className="text-sm text-destructive">
-          O usuário deve ter pelo menos uma role.
-        </p>
+        <p className="text-sm text-destructive">O usuário deve ter pelo menos uma role.</p>
       )}
 
       <Button

@@ -23,7 +23,7 @@ export function TransactionSummaryCards({
           </div>
           <div>
             <p className="text-sm text-muted-foreground">Receitas</p>
-            <p className="text-xl font-bold text-green-600 dark:text-green-400 font-mono tabular-nums">
+            <p className="font-mono text-xl font-bold tabular-nums text-green-600 dark:text-green-400">
               {formatCurrency(totalIncome)}
             </p>
           </div>
@@ -37,7 +37,7 @@ export function TransactionSummaryCards({
           </div>
           <div>
             <p className="text-sm text-muted-foreground">Despesas</p>
-            <p className="text-xl font-bold text-red-600 dark:text-red-400 font-mono tabular-nums">
+            <p className="font-mono text-xl font-bold tabular-nums text-red-600 dark:text-red-400">
               {formatCurrency(totalExpense)}
             </p>
           </div>
@@ -46,21 +46,33 @@ export function TransactionSummaryCards({
 
       <Card>
         <CardContent className="flex items-center gap-4 p-4">
-          <div className={cn(
-            'rounded-full p-3',
-            balance >= 0 ? 'bg-blue-100 dark:bg-blue-900/30' : 'bg-orange-100 dark:bg-orange-900/30'
-          )}>
-            <Wallet className={cn(
-              'h-5 w-5',
-              balance >= 0 ? 'text-blue-600 dark:text-blue-400' : 'text-orange-600 dark:text-orange-400'
-            )} />
+          <div
+            className={cn(
+              'rounded-full p-3',
+              balance >= 0
+                ? 'bg-blue-100 dark:bg-blue-900/30'
+                : 'bg-orange-100 dark:bg-orange-900/30'
+            )}
+          >
+            <Wallet
+              className={cn(
+                'h-5 w-5',
+                balance >= 0
+                  ? 'text-blue-600 dark:text-blue-400'
+                  : 'text-orange-600 dark:text-orange-400'
+              )}
+            />
           </div>
           <div>
             <p className="text-sm text-muted-foreground">Saldo</p>
-            <p className={cn(
-              'text-xl font-bold font-mono tabular-nums',
-              balance >= 0 ? 'text-blue-600 dark:text-blue-400' : 'text-orange-600 dark:text-orange-400'
-            )}>
+            <p
+              className={cn(
+                'font-mono text-xl font-bold tabular-nums',
+                balance >= 0
+                  ? 'text-blue-600 dark:text-blue-400'
+                  : 'text-orange-600 dark:text-orange-400'
+              )}
+            >
               {formatCurrency(balance)}
             </p>
           </div>

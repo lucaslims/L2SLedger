@@ -48,7 +48,7 @@ export function useLogin() {
       // Invalidar cache de usuário para forçar re-fetch
       // AuthProvider irá detectar a mudança no Firebase e buscar /auth/me
       queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.AUTH] });
-      
+
       // Aguardar um pouco para garantir que o cookie foi setado
       setTimeout(() => {
         window.location.reload();

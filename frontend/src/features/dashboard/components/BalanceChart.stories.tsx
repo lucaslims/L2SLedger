@@ -24,10 +24,7 @@ const mockDailyBalances: DailyBalance[] = [
 /**
  * Creates a QueryClient with pre-set daily balance data.
  */
-function createMockQueryClient(
-  data?: DailyBalance[] | null,
-  error?: boolean
-) {
+function createMockQueryClient(data?: DailyBalance[] | null, error?: boolean) {
   const queryClient = new QueryClient({
     defaultOptions: {
       queries: {

@@ -35,7 +35,6 @@ const createWrapper = () => {
       mutations: { retry: false },
     },
   });
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return ({ children }: any) => {
     const qcp = QueryClientProvider({ client: queryClient, children });
     return BrowserRouter({ children: qcp });
@@ -63,9 +62,7 @@ describe('useLogout', () => {
   });
 
   it('deve tratar erro do backend ao fazer logout', async () => {
-    vi.mocked(authService.authService.logout).mockRejectedValue(
-      new Error('Backend error')
-    );
+    vi.mocked(authService.authService.logout).mockRejectedValue(new Error('Backend error'));
 
     const { result } = renderHook(() => useLogout(), { wrapper: createWrapper() });
 
@@ -79,9 +76,7 @@ describe('useLogout', () => {
 
   it('deve tratar erro do Firebase ao fazer logout', async () => {
     vi.mocked(authService.authService.logout).mockResolvedValue();
-    vi.mocked(firebaseAuth.signOutUser).mockRejectedValue(
-      new Error('Firebase error')
-    );
+    vi.mocked(firebaseAuth.signOutUser).mockRejectedValue(new Error('Firebase error'));
 
     const { result } = renderHook(() => useLogout(), { wrapper: createWrapper() });
 

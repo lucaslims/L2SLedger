@@ -71,10 +71,7 @@ describe('CategoryForm', () => {
 
   it('deve preencher formulário com initialValues', () => {
     render(
-      <CategoryForm
-        initialValues={{ name: 'Salário', type: 'Income' }}
-        onSubmit={mockOnSubmit}
-      />
+      <CategoryForm initialValues={{ name: 'Salário', type: 'Income' }} onSubmit={mockOnSubmit} />
     );
 
     expect(screen.getByLabelText('Nome da Categoria')).toHaveValue('Salário');

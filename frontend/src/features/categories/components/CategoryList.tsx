@@ -40,9 +40,7 @@ export function CategoryList() {
   if (!categories?.length) {
     return (
       <div className="flex flex-col items-center justify-center py-12 text-center">
-        <p className="text-lg font-medium text-muted-foreground">
-          Nenhuma categoria cadastrada
-        </p>
+        <p className="text-lg font-medium text-muted-foreground">Nenhuma categoria cadastrada</p>
         <p className="text-sm text-muted-foreground">
           Crie sua primeira categoria para começar a organizar seus lançamentos.
         </p>
@@ -68,11 +66,7 @@ export function CategoryList() {
               <TableCell className="font-medium">{category.name}</TableCell>
               <TableCell>{category.description}</TableCell>
               <TableCell>
-                <Badge
-                  variant={
-                    category.type === 'Income' ? 'default' : 'destructive'
-                  }
-                >
+                <Badge variant={category.type === 'Income' ? 'default' : 'destructive'}>
                   {category.type === 'Income' ? 'Receita' : 'Despesa'}
                 </Badge>
               </TableCell>
@@ -81,9 +75,7 @@ export function CategoryList() {
                 <Button
                   variant="ghost"
                   size="icon"
-                  onClick={() =>
-                    navigate(`/categories/${category.id}/edit`)
-                  }
+                  onClick={() => navigate(`/categories/${category.id}/edit`)}
                   aria-label={`Editar ${category.name}`}
                 >
                   <Edit className="h-4 w-4" />

@@ -13,17 +13,11 @@ export function useResendVerification() {
       const currentUser = auth.currentUser;
 
       if (!currentUser) {
-        throw new ApiError(
-          'AUTH_UNAUTHORIZED',
-          'Usuário não está logado no Firebase'
-        );
+        throw new ApiError('AUTH_UNAUTHORIZED', 'Usuário não está logado no Firebase');
       }
 
       if (currentUser.emailVerified) {
-        throw new ApiError(
-          'VAL_INVALID_REQUEST',
-          'Email já está verificado'
-        );
+        throw new ApiError('VAL_INVALID_REQUEST', 'Email já está verificado');
       }
 
       await sendVerificationEmail(currentUser);

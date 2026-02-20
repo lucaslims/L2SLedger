@@ -54,7 +54,6 @@ function createWrapper() {
     },
   });
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return ({ children }: any) => (
     <QueryClientProvider client={queryClient}>
       <MemoryRouter>{children}</MemoryRouter>
@@ -100,9 +99,7 @@ describe('CategoryList', () => {
 
     render(<CategoryList />, { wrapper: createWrapper() });
 
-    expect(
-      await screen.findByText('Nenhuma categoria cadastrada')
-    ).toBeInTheDocument();
+    expect(await screen.findByText('Nenhuma categoria cadastrada')).toBeInTheDocument();
   });
 
   it('deve ter botões de editar e excluir para cada categoria', async () => {
@@ -112,12 +109,8 @@ describe('CategoryList', () => {
 
     await screen.findByText('Alimentação');
 
-    expect(
-      screen.getByLabelText('Editar Alimentação')
-    ).toBeInTheDocument();
-    expect(
-      screen.getByLabelText('Excluir Alimentação')
-    ).toBeInTheDocument();
+    expect(screen.getByLabelText('Editar Alimentação')).toBeInTheDocument();
+    expect(screen.getByLabelText('Excluir Alimentação')).toBeInTheDocument();
     expect(screen.getByLabelText('Editar Salário')).toBeInTheDocument();
     expect(screen.getByLabelText('Excluir Salário')).toBeInTheDocument();
   });
@@ -132,9 +125,7 @@ describe('CategoryList', () => {
 
     await user.click(screen.getByLabelText('Excluir Alimentação'));
 
-    expect(
-      await screen.findByText('Confirmar Exclusão')
-    ).toBeInTheDocument();
+    expect(await screen.findByText('Confirmar Exclusão')).toBeInTheDocument();
     expect(screen.getAllByText(/Alimentação/).length).toBeGreaterThanOrEqual(2);
   });
 });

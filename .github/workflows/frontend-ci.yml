@@ -110,6 +110,7 @@ jobs:
             type=sha,prefix=sha-,format=short
 
       - name: Build and push Docker image
+        id: docker-build
         uses: docker/build-push-action@v6
         with:
           context: ./frontend
@@ -123,9 +124,11 @@ jobs:
           sbom: true
 
       - name: Scan Docker image with Trivy
+        id: trivy
+        if: steps.docker-build.outcome == 'success'
         uses: aquasecurity/trivy-action@0.28.0
         with:
-          image-ref: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:sha-${{ github.sha }}
+          image-ref: ${{ fromJSON(steps.meta.outputs.json).tags[0] }}
           format: 'sarif'
           output: 'trivy-frontend.sarif'
           severity: 'CRITICAL,HIGH'
@@ -133,7 +136,7 @@ jobs:
 
       - name: Upload Trivy scan results
         uses: github/codeql-action/upload-sarif@v3
-        if: always()
+        if: always() && steps.trivy.outcome == 'success'
         with:
           sarif_file: trivy-frontend.sarif
           category: trivy-frontend
@@ -147,6 +150,7 @@ jobs:
     permissions:
       security-events: write
       contents: read
+      actions: read
 
     steps:
       - uses: actions/checkout@v4
@@ -160,3 +164,4 @@ jobs:
         uses: github/codeql-action/analyze@v3
         with:
           category: '/language:javascript-typescript'
+          upload: false  # Desabilitado temporariamente até habilitar Code Scanning no repositório

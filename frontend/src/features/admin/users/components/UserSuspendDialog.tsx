@@ -54,8 +54,8 @@ export function UserSuspendDialog({
         <DialogHeader>
           <DialogTitle>Suspender Usuário</DialogTitle>
           <DialogDescription>
-            Você está prestes a suspender o usuário <strong>{userName}</strong>.
-            O usuário perderá acesso ao sistema até ser reativado.
+            Você está prestes a suspender o usuário <strong>{userName}</strong>. O usuário perderá
+            acesso ao sistema até ser reativado.
           </DialogDescription>
         </DialogHeader>
 
@@ -69,11 +69,7 @@ export function UserSuspendDialog({
         </div>
 
         <DialogFooter>
-          <Button
-            variant="outline"
-            onClick={() => handleClose(false)}
-            disabled={isPending}
-          >
+          <Button variant="outline" onClick={() => handleClose(false)} disabled={isPending}>
             Cancelar
           </Button>
           <Button

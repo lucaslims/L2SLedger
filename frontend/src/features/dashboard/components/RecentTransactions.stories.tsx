@@ -51,10 +51,7 @@ const mockTransactions: RecentTransaction[] = [
 /**
  * Creates a QueryClient with pre-set data for Storybook stories.
  */
-function createMockQueryClient(
-  data?: RecentTransaction[] | null,
-  error?: boolean
-) {
+function createMockQueryClient(data?: RecentTransaction[] | null, error?: boolean) {
   const queryClient = new QueryClient({
     defaultOptions: {
       queries: {

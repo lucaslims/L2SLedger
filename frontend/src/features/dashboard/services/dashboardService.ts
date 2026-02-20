@@ -38,7 +38,7 @@ export interface RecentTransaction {
 
 /**
  * Service do Dashboard
- * 
+ *
  * Centraliza chamadas de API relacionadas ao dashboard.
  * Não contém lógica financeira — apenas transporte de dados.
  */
@@ -53,10 +53,7 @@ export const dashboardService = {
   /**
    * Buscar saldos diários para gráficos
    */
-  async getDailyBalances(
-    startDate?: string,
-    endDate?: string
-  ): Promise<DailyBalance[]> {
+  async getDailyBalances(startDate?: string, endDate?: string): Promise<DailyBalance[]> {
     return apiClient.get<DailyBalance[]>(API_ENDPOINTS.DAILY_BALANCES, {
       params: { startDate, endDate },
     });

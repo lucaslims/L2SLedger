@@ -10,7 +10,7 @@ interface AdminRouteProps {
 
 /**
  * AdminRoute
- * 
+ *
  * Guard para rotas administrativas
  * - Herda verificações de ProtectedRoute
  * - Adiciona verificação de role Admin

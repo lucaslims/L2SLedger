@@ -31,14 +31,15 @@ const createWrapper = () => {
       mutations: { retry: false },
     },
   });
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return ({ children }: any) => {
     return QueryClientProvider({ client: queryClient, children });
   };
 };
 
 describe('useCreateTransaction', () => {
-  beforeEach(() => { vi.clearAllMocks(); });
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
 
   it('deve criar transação com sucesso', async () => {
     vi.mocked(transactionService.create).mockResolvedValue({ id: 'new-1' });
@@ -49,7 +50,7 @@ describe('useCreateTransaction', () => {
 
     result.current.mutate({
       description: 'Compra supermercado',
-      amount: 150.50,
+      amount: 150.5,
       type: 2,
       transactionDate: '2026-01-15T00:00:00Z',
       categoryId: 'cat-1',
@@ -61,7 +62,7 @@ describe('useCreateTransaction', () => {
     expect(transactionService.create).toHaveBeenCalledWith(
       expect.objectContaining({
         description: 'Compra supermercado',
-        amount: 150.50,
+        amount: 150.5,
         type: 2,
       }),
       expect.anything()
@@ -92,7 +93,9 @@ describe('useCreateTransaction', () => {
 });
 
 describe('useUpdateTransaction', () => {
-  beforeEach(() => { vi.clearAllMocks(); });
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
 
   it('deve atualizar transação com sucesso', async () => {
     vi.mocked(transactionService.update).mockResolvedValue(undefined);
@@ -152,7 +155,9 @@ describe('useUpdateTransaction', () => {
 });
 
 describe('useDeleteTransaction', () => {
-  beforeEach(() => { vi.clearAllMocks(); });
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
 
   it('deve excluir transação com sucesso', async () => {
     vi.mocked(transactionService.delete).mockResolvedValue(undefined);

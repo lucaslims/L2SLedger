@@ -1,4 +1,10 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/shared/components/ui/card';
 import { Button } from '@/shared/components/ui/button';
 import { useResendVerification } from '../hooks/useResendVerification';
 import { CheckCircle2, Mail, AlertCircle, Clock } from 'lucide-react';
@@ -16,7 +22,7 @@ interface VerifyEmailCardProps {
  */
 export function VerifyEmailCard({ email }: VerifyEmailCardProps) {
   const { mutate: resendEmail, isPending, isSuccess, error } = useResendVerification();
-  
+
   // Timer configurável via .env (padrão: 60 segundos)
   const cooldownSeconds = Number(import.meta.env.VITE_EMAIL_VERIFICATION_RESEND_COOLDOWN) || 60;
   const [remainingTime, setRemainingTime] = useState(0);
@@ -63,20 +69,14 @@ export function VerifyEmailCard({ email }: VerifyEmailCardProps) {
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="rounded-lg border bg-muted/50 p-4 text-sm text-muted-foreground">
-          <p>
-            Clique no link enviado para verificar seu email e ativar sua conta.
-          </p>
-          <p className="mt-2">
-            Não esqueça de verificar sua caixa de spam!
-          </p>
+          <p>Clique no link enviado para verificar seu email e ativar sua conta.</p>
+          <p className="mt-2">Não esqueça de verificar sua caixa de spam!</p>
         </div>
 
         {isSuccess && (
           <Alert>
             <CheckCircle2 className="h-4 w-4" />
-            <AlertDescription>
-              Email de verificação reenviado com sucesso!
-            </AlertDescription>
+            <AlertDescription>Email de verificação reenviado com sucesso!</AlertDescription>
           </Alert>
         )}
 

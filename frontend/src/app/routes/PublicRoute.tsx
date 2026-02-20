@@ -8,7 +8,7 @@ interface PublicRouteProps {
 
 /**
  * PublicRoute
- * 
+ *
  * Guard para rotas públicas (login, register)
  * - Redireciona para dashboard se já autenticado
  */

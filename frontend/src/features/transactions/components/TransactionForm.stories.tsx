@@ -113,11 +113,11 @@ function createMockQueryClient() {
   // Seed categories for each type filter
   queryClient.setQueryData(
     [QUERY_KEYS.CATEGORIES, 'Expense'],
-    mockCategories.filter((c) => c.type === 'Expense'),
+    mockCategories.filter((c) => c.type === 'Expense')
   );
   queryClient.setQueryData(
     [QUERY_KEYS.CATEGORIES, 'Income'],
-    mockCategories.filter((c) => c.type === 'Income'),
+    mockCategories.filter((c) => c.type === 'Income')
   );
   queryClient.setQueryData([QUERY_KEYS.CATEGORIES, undefined], mockCategories);
 

@@ -108,7 +108,20 @@ jobs:
             type=semver,pattern=v{{major}}.{{minor}},enable=${{ startsWith(github.ref, 'refs/tags/v') }}
             type=sha,prefix=sha-,format=short
 
+      - name: Resolve build version
+        id: version
+        run: |
+          REF="${{ github.ref }}"
+          if [[ "$REF" == refs/tags/v* ]]; then
+            # Extract SemVer from tag (e.g., v1.2.3 → 1.2.3)
+            VERSION="${REF#refs/tags/v}"
+          else
+            VERSION="0.0.0-dev"
+          fi
+          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
+
       - name: Build and push Docker image
+        id: docker-build
         uses: docker/build-push-action@v6
         with:
           context: ./backend
@@ -117,7 +130,7 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           build-args: |
-            BUILD_VERSION=${{ github.ref_name }}
+            BUILD_VERSION=${{ steps.version.outputs.version }}
             BUILD_SHA=${{ github.sha }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
@@ -125,9 +138,11 @@ jobs:
           sbom: true
 
       - name: Scan Docker image with Trivy
+        id: trivy
+        if: steps.docker-build.outcome == 'success'
         uses: aquasecurity/trivy-action@0.28.0
         with:
-          image-ref: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:sha-${{ github.sha }}
+          image-ref: ${{ fromJSON(steps.meta.outputs.json).tags[0] }}
           format: 'sarif'
           output: 'trivy-backend.sarif'
           severity: 'CRITICAL,HIGH'
@@ -135,7 +150,7 @@ jobs:
 
       - name: Upload Trivy scan results
         uses: github/codeql-action/upload-sarif@v3
-        if: always()
+        if: always() && steps.trivy.outcome == 'success'
         with:
           sarif_file: trivy-backend.sarif
           category: trivy-backend
@@ -149,6 +164,7 @@ jobs:
     permissions:
       security-events: write
       contents: read
+      actions: read
 
     steps:
       - uses: actions/checkout@v4
@@ -172,3 +188,4 @@ jobs:
         uses: github/codeql-action/analyze@v3
         with:
           category: '/language:csharp'
+          upload: false  # Desabilitado temporariamente até habilitar Code Scanning no repositório

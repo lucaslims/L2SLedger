@@ -3,7 +3,13 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { AppLayout } from '@/shared/components/layout/AppLayout';
 import { Button } from '@/shared/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/shared/components/ui/card';
 import { Separator } from '@/shared/components/ui/separator';
 import { UserStatusBadge } from '../components/UserStatusBadge';
 import { UserApprovalDialog } from '../components/UserApprovalDialog';
@@ -53,10 +59,8 @@ export default function UserDetailPage() {
   if (error || !user) {
     return (
       <AppLayout>
-        <div className="flex flex-col items-center justify-center py-8 space-y-4">
-          <p className="text-lg font-medium text-destructive">
-            Usuário não encontrado
-          </p>
+        <div className="flex flex-col items-center justify-center space-y-4 py-8">
+          <p className="text-lg font-medium text-destructive">Usuário não encontrado</p>
           <Button variant="outline" onClick={() => navigate(ROUTES.ADMIN_USERS)}>
             <ArrowLeft className="mr-2 h-4 w-4" />
             Voltar para Lista
@@ -71,11 +75,7 @@ export default function UserDetailPage() {
       <div className="space-y-6">
         {/* Header */}
         <div className="flex items-center gap-4">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => navigate(ROUTES.ADMIN_USERS)}
-          >
+          <Button variant="ghost" size="sm" onClick={() => navigate(ROUTES.ADMIN_USERS)}>
             <ArrowLeft className="mr-2 h-4 w-4" />
             Voltar
           </Button>
@@ -146,10 +146,7 @@ export default function UserDetailPage() {
                     Este usuário está aguardando aprovação.
                   </p>
                   <div className="flex gap-2">
-                    <Button
-                      onClick={() => setApprovalDialogOpen(true)}
-                      className="flex-1"
-                    >
+                    <Button onClick={() => setApprovalDialogOpen(true)} className="flex-1">
                       <CheckCircle className="mr-2 h-4 w-4" />
                       Aprovar / Rejeitar
                     </Button>
@@ -162,10 +159,7 @@ export default function UserDetailPage() {
                   <p className="text-sm text-muted-foreground">
                     Usuário ativo. Você pode suspendê-lo se necessário.
                   </p>
-                  <Button
-                    variant="destructive"
-                    onClick={() => setSuspendDialogOpen(true)}
-                  >
+                  <Button variant="destructive" onClick={() => setSuspendDialogOpen(true)}>
                     <Ban className="mr-2 h-4 w-4" />
                     Suspender
                   </Button>
@@ -177,10 +171,7 @@ export default function UserDetailPage() {
                   <p className="text-sm text-muted-foreground">
                     Usuário suspenso. Você pode reativá-lo.
                   </p>
-                  <Button
-                    onClick={handleReactivate}
-                    disabled={isReactivating}
-                  >
+                  <Button onClick={handleReactivate} disabled={isReactivating}>
                     <RotateCcw className="mr-2 h-4 w-4" />
                     {isReactivating ? 'Reativando...' : 'Reativar'}
                   </Button>
@@ -205,10 +196,7 @@ export default function UserDetailPage() {
               <div className="space-y-2">
                 <h3 className="text-sm font-semibold">Roles do Usuário</h3>
                 {user.status === 'Active' ? (
-                  <UserRolesForm
-                    userId={user.id}
-                    currentRoles={user.roles}
-                  />
+                  <UserRolesForm userId={user.id} currentRoles={user.roles} />
                 ) : (
                   <p className="text-sm text-muted-foreground">
                     Roles só podem ser alteradas para usuários ativos.

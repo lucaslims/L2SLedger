@@ -1,9 +1,4 @@
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from '@/shared/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui/card';
 import { formatCurrency } from '@/shared/lib/utils/formatters';
 import { TrendingUp, TrendingDown, Wallet } from 'lucide-react';
 import { cn } from '@/shared/lib/utils/cn';
@@ -37,10 +32,10 @@ const cardConfig = {
 
 /**
  * BalanceCard
- * 
+ *
  * Card para exibição de valores financeiros no dashboard.
  * Suporta 3 tipos: income (receita), expense (despesa), balance (saldo).
- * 
+ *
  * Não contém lógica financeira — apenas formatação e exibição.
  */
 export function BalanceCard({ type, value, label }: BalanceCardProps) {
@@ -56,7 +51,7 @@ export function BalanceCard({ type, value, label }: BalanceCardProps) {
       </CardHeader>
       <CardContent>
         <div
-          className={cn('text-2xl font-bold font-mono', textColor)}
+          className={cn('font-mono text-2xl font-bold', textColor)}
           data-testid={`balance-value-${type}`}
         >
           {formatCurrency(value)}

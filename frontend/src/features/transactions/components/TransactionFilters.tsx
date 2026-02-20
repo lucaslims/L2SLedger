@@ -8,7 +8,10 @@ import {
 } from '@/shared/components/ui/select';
 import { useCategories } from '@/features/categories/hooks/useCategories';
 import { X } from 'lucide-react';
-import type { TransactionFilters as FiltersType, TransactionTypeValue } from '../types/transaction.types';
+import type {
+  TransactionFilters as FiltersType,
+  TransactionTypeValue,
+} from '../types/transaction.types';
 
 interface TransactionFiltersProps {
   filters: FiltersType;

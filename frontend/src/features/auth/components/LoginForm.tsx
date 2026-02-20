@@ -45,7 +45,7 @@ export function LoginForm() {
   // Redirecionar para página de verificação se email não verificado
   useEffect(() => {
     if (error instanceof ApiError && error.code === 'AUTH_EMAIL_NOT_VERIFIED') {
-      const email = (error as any).email || form.getValues('email');
+      const email = (error as ApiError & { email?: string }).email || form.getValues('email');
       navigate(ROUTES.VERIFY_EMAIL, { state: { email } });
     }
   }, [error, navigate, form]);

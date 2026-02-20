@@ -23,7 +23,6 @@ const createWrapper = () => {
       mutations: { retry: false },
     },
   });
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return ({ children }: any) => {
     return QueryClientProvider({ client: queryClient, children });
   };
@@ -107,9 +106,7 @@ describe('useCategories', () => {
   });
 
   it('deve tratar erro na busca de categorias', async () => {
-    vi.mocked(categoryService.getAll).mockRejectedValue(
-      new Error('Network error')
-    );
+    vi.mocked(categoryService.getAll).mockRejectedValue(new Error('Network error'));
 
     const { result } = renderHook(() => useCategories(), {
       wrapper: createWrapper(),

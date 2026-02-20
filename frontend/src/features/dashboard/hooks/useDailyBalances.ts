@@ -4,7 +4,7 @@ import { QUERY_KEYS } from '@/shared/lib/utils/constants';
 
 /**
  * Hook para buscar saldos diários (gráficos)
- * 
+ *
  * @param startDate - Data inicial (ISO string, opcional)
  * @param endDate - Data final (ISO string, opcional)
  */
