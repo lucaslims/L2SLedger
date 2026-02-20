@@ -1,15 +1,10 @@
 name: Deploy to DEMO (Auto)
 
 on:
-  push:
-    branches:
-      - main
-      - 'release/**'
-    paths:
-      - 'backend/**'
-      - 'frontend/**'
-      - 'docker-compose.prod.yml'
-      - '.github/workflows/deploy-demo.yml'
+  workflow_run:
+    workflows: ["Backend CI", "Frontend CI"]
+    branches: [main]
+    types: [completed]
 
 # Only one deploy at a time per branch
 concurrency:
@@ -29,6 +24,7 @@ jobs:
   detect-changes:
     name: Detect Changes
     runs-on: ubuntu-latest
+    if: github.event.workflow_run.conclusion == 'success'
     outputs:
       backend: ${{ steps.filter.outputs.backend }}
       frontend: ${{ steps.filter.outputs.frontend }}
