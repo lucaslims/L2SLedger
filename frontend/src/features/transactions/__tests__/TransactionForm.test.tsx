@@ -33,7 +33,6 @@ function createWrapper() {
     },
   });
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return ({ children }: any) => (
     <QueryClientProvider client={queryClient}>
       {children}

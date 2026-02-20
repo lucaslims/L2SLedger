@@ -188,3 +188,4 @@ jobs:
         uses: github/codeql-action/analyze@v3
         with:
           category: '/language:csharp'
+          upload: false  # Desabilitado temporariamente até habilitar Code Scanning no repositório

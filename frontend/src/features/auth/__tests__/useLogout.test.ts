@@ -35,7 +35,6 @@ const createWrapper = () => {
       mutations: { retry: false },
     },
   });
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return ({ children }: any) => {
     const qcp = QueryClientProvider({ client: queryClient, children });
     return BrowserRouter({ children: qcp });
