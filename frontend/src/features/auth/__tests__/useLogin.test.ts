@@ -5,6 +5,7 @@ import { useLogin } from '../hooks/useLogin';
 import * as firebaseAuth from '@/shared/lib/firebase/auth';
 import * as authService from '../services/authService';
 import { ApiError } from '@/shared/types/errors.types';
+import type { UserRole } from '@/shared/types/common.types';
 
 // Mock Firebase
 vi.mock('@/shared/lib/firebase/auth', () => ({
@@ -45,9 +46,9 @@ describe('useLogin', () => {
         id: '123',
         email: 'test@test.com',
         displayName: 'Test User',
-        status: 'Active',
+        status: 'Active' as const,
         emailVerified: true,
-        roles: ['Leitura'],
+        roles: ['Leitura'] as UserRole[],
         createdAt: '2026-01-01T00:00:00Z',
         updatedAt: null,
       },
