@@ -170,9 +170,7 @@ export const Loading: Story = {
 export const OnlyIncome: Story = {
   decorators: [
     (Story) => {
-      const incomeCategories = mockCategories.filter(
-        (c) => c.type === 'Income'
-      );
+      const incomeCategories = mockCategories.filter((c) => c.type === 'Income');
       return (
         <QueryClientProvider client={createMockQueryClient(incomeCategories)}>
           <Story />
@@ -188,9 +186,7 @@ export const OnlyIncome: Story = {
 export const OnlyExpenses: Story = {
   decorators: [
     (Story) => {
-      const expenseCategories = mockCategories.filter(
-        (c) => c.type === 'Expense'
-      );
+      const expenseCategories = mockCategories.filter((c) => c.type === 'Expense');
       return (
         <QueryClientProvider client={createMockQueryClient(expenseCategories)}>
           <Story />

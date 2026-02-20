@@ -5,7 +5,7 @@ import '@/shared/styles/globals.css';
 
 /**
  * App Component
- * 
+ *
  * Root da aplicação
  */
 function App() {

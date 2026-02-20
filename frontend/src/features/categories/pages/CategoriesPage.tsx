@@ -19,9 +19,7 @@ export default function CategoriesPage() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold">Categorias</h1>
-            <p className="text-muted-foreground">
-              Gerencie as categorias de receitas e despesas
-            </p>
+            <p className="text-muted-foreground">Gerencie as categorias de receitas e despesas</p>
           </div>
           <Button onClick={() => navigate('/categories/new')}>
             <Plus className="mr-2 h-4 w-4" />

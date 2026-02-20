@@ -32,7 +32,7 @@ const mockResponse: GetTransactionsResponse = {
     {
       id: '1',
       description: 'Supermercado',
-      amount: 150.50,
+      amount: 150.5,
       type: 2,
       transactionDate: '2026-01-15T00:00:00Z',
       categoryId: 'cat-1',
@@ -47,7 +47,7 @@ const mockResponse: GetTransactionsResponse = {
     {
       id: '2',
       description: 'Salário Janeiro',
-      amount: 5000.00,
+      amount: 5000.0,
       type: 1,
       transactionDate: '2026-01-05T00:00:00Z',
       categoryId: 'cat-2',
@@ -64,9 +64,9 @@ const mockResponse: GetTransactionsResponse = {
   page: 1,
   pageSize: 20,
   totalPages: 1,
-  totalIncome: 5000.00,
-  totalExpense: 150.50,
-  balance: 4849.50,
+  totalIncome: 5000.0,
+  totalExpense: 150.5,
+  balance: 4849.5,
 };
 
 describe('useTransactions', () => {
@@ -112,15 +112,13 @@ describe('useTransactions', () => {
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
-    expect(result.current.data?.totalIncome).toBe(5000.00);
-    expect(result.current.data?.totalExpense).toBe(150.50);
-    expect(result.current.data?.balance).toBe(4849.50);
+    expect(result.current.data?.totalIncome).toBe(5000.0);
+    expect(result.current.data?.totalExpense).toBe(150.5);
+    expect(result.current.data?.balance).toBe(4849.5);
   });
 
   it('deve tratar erro na busca de transações', async () => {
-    vi.mocked(transactionService.getAll).mockRejectedValue(
-      new Error('Network error')
-    );
+    vi.mocked(transactionService.getAll).mockRejectedValue(new Error('Network error'));
 
     const { result } = renderHook(() => useTransactions(), {
       wrapper: createWrapper(),

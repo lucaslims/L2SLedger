@@ -22,7 +22,7 @@ export default function LoginPage() {
 
         <div className="text-center text-sm">
           <span className="text-muted-foreground">Não tem uma conta? </span>
-          <Link to={ROUTES.REGISTER} className="text-primary hover:underline font-medium">
+          <Link to={ROUTES.REGISTER} className="font-medium text-primary hover:underline">
             Cadastre-se
           </Link>
         </div>

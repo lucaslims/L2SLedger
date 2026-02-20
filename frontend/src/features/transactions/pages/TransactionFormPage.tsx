@@ -4,12 +4,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useTransaction } from '../hooks/useTransaction';
 import { useCreateTransaction } from '../hooks/useCreateTransaction';
 import { useUpdateTransaction } from '../hooks/useUpdateTransaction';
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from '@/shared/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui/card';
 import { Button } from '@/shared/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 import { Skeleton } from '@/shared/components/ui/skeleton';
@@ -62,9 +57,7 @@ export default function TransactionFormPage() {
           >
             <ArrowLeft className="h-5 w-5" />
           </Button>
-          <h1 className="text-3xl font-bold">
-            {isEdit ? 'Editar Transação' : 'Nova Transação'}
-          </h1>
+          <h1 className="text-3xl font-bold">{isEdit ? 'Editar Transação' : 'Nova Transação'}</h1>
         </div>
 
         <Card>

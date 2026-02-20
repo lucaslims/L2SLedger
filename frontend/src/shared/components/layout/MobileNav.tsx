@@ -20,7 +20,7 @@ const mobileNavItems: MobileNavItem[] = [
 
 /**
  * MobileNav
- * 
+ *
  * Barra de navegação inferior para dispositivos móveis.
  * Fixa na parte inferior da tela com ícones e labels.
  */
@@ -38,9 +38,7 @@ export function MobileNav() {
             className={({ isActive }) =>
               cn(
                 'flex flex-col items-center gap-1 rounded-lg px-3 py-1.5 text-xs font-medium transition-colors',
-                isActive
-                  ? 'text-primary'
-                  : 'text-muted-foreground hover:text-foreground'
+                isActive ? 'text-primary' : 'text-muted-foreground hover:text-foreground'
               )
             }
           >

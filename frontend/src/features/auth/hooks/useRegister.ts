@@ -20,7 +20,11 @@ interface RegisterResult {
  */
 export function useRegister() {
   return useMutation({
-    mutationFn: async ({ email, password, displayName: _displayName }: RegisterCredentials): Promise<RegisterResult> => {
+    mutationFn: async ({
+      email,
+      password,
+      displayName: _displayName,
+    }: RegisterCredentials): Promise<RegisterResult> => {
       // 1. Criar usuário no Firebase
       const firebaseUser = await signUpWithEmail(email, password);
 

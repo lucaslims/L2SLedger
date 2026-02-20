@@ -157,10 +157,7 @@ describe('useDeleteCategory', () => {
 
   it('deve tratar erro FIN_CATEGORY_HAS_TRANSACTIONS', async () => {
     vi.mocked(categoryService.delete).mockRejectedValue(
-      new ApiError(
-        'FIN_CATEGORY_HAS_TRANSACTIONS',
-        'Categoria possui lançamentos'
-      )
+      new ApiError('FIN_CATEGORY_HAS_TRANSACTIONS', 'Categoria possui lançamentos')
     );
 
     const { result } = renderHook(() => useDeleteCategory(), {
@@ -172,9 +169,7 @@ describe('useDeleteCategory', () => {
     await waitFor(() => expect(result.current.isError).toBe(true));
 
     expect(result.current.error).toBeInstanceOf(ApiError);
-    expect((result.current.error as ApiError).code).toBe(
-      'FIN_CATEGORY_HAS_TRANSACTIONS'
-    );
+    expect((result.current.error as ApiError).code).toBe('FIN_CATEGORY_HAS_TRANSACTIONS');
   });
 
   it('deve tratar erro FIN_CATEGORY_ALREADY_DELETED', async () => {
@@ -190,8 +185,6 @@ describe('useDeleteCategory', () => {
 
     await waitFor(() => expect(result.current.isError).toBe(true));
 
-    expect((result.current.error as ApiError).code).toBe(
-      'FIN_CATEGORY_ALREADY_DELETED'
-    );
+    expect((result.current.error as ApiError).code).toBe('FIN_CATEGORY_ALREADY_DELETED');
   });
 });

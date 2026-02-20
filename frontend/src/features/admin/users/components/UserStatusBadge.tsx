@@ -14,9 +14,5 @@ const variants: Record<UserStatus, 'secondary' | 'default' | 'destructive' | 'ou
 };
 
 export function UserStatusBadge({ status }: UserStatusBadgeProps) {
-  return (
-    <Badge variant={variants[status]}>
-      {USER_STATUS_LABELS[status]}
-    </Badge>
-  );
+  return <Badge variant={variants[status]}>{USER_STATUS_LABELS[status]}</Badge>;
 }

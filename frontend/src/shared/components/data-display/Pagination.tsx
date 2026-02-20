@@ -28,7 +28,9 @@ export function Pagination({
       <p className="text-sm text-muted-foreground">
         Página {currentPage} de {totalPages}
         {totalItems !== undefined && (
-          <span className="ml-2">({totalItems} {totalItems === 1 ? 'item' : 'itens'})</span>
+          <span className="ml-2">
+            ({totalItems} {totalItems === 1 ? 'item' : 'itens'})
+          </span>
         )}
       </p>
 

@@ -18,10 +18,7 @@ export function PendingUsersAlert() {
         <span>
           Você tem <strong>{pendingCount}</strong> usuário(s) aguardando aprovação
         </span>
-        <Button
-          size="sm"
-          onClick={() => navigate(`${ROUTES.ADMIN_USERS}?status=Pending`)}
-        >
+        <Button size="sm" onClick={() => navigate(`${ROUTES.ADMIN_USERS}?status=Pending`)}>
           Ver Pendentes
         </Button>
       </AlertDescription>

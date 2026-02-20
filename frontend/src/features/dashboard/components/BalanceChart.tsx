@@ -1,10 +1,5 @@
 import { AreaChart } from '@tremor/react';
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from '@/shared/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui/card';
 import { useDailyBalances } from '../hooks/useDailyBalances';
 import { formatCurrency } from '@/shared/lib/utils/formatters';
 import { formatDate } from '@/shared/lib/utils/formatters';
@@ -12,10 +7,10 @@ import { Skeleton } from '@/shared/components/ui/skeleton';
 
 /**
  * BalanceChart
- * 
+ *
  * Gráfico de evolução financeira diária.
  * Exibe receitas, despesas e saldo ao longo do tempo.
- * 
+ *
  * Usa Tremor AreaChart para renderização.
  * Não contém lógica financeira — apenas visualização.
  */

@@ -9,10 +9,10 @@ interface AppLayoutProps {
 
 /**
  * AppLayout
- * 
+ *
  * Layout principal para usuários autenticados.
  * Inclui Sidebar (desktop), Header, e MobileNav (mobile).
- * 
+ *
  * Responsivo:
  * - Desktop: Sidebar fixa + conteúdo principal
  * - Mobile: Bottom navigation + Header
@@ -29,9 +29,7 @@ export function AppLayout({ children }: AppLayoutProps) {
       <div className="flex flex-1 flex-col">
         <Header />
 
-        <main className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8">
-          {children}
-        </main>
+        <main className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8">{children}</main>
       </div>
 
       {/* Mobile Navigation */}

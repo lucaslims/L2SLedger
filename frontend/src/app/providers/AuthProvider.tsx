@@ -22,12 +22,12 @@ interface AuthProviderProps {
 
 /**
  * AuthProvider
- * 
+ *
  * Responsável por:
  * 1. Monitorar estado do Firebase Auth
  * 2. Verificar sessão no backend (/auth/me)
  * 3. Prover contexto de autenticação
- * 
+ *
  * Segurança:
  * - Não carrega código protegido até sessão confirmada
  * - Usa cookies HttpOnly (não armazena tokens)

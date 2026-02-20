@@ -3,7 +3,7 @@ import { AuthContext } from './AuthProvider';
 
 /**
  * Hook para acessar contexto de autenticação
- * 
+ *
  * Deve ser usado dentro de AuthProvider
  */
 export function useAuth() {

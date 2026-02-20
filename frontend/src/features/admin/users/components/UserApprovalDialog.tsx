@@ -75,8 +75,8 @@ export function UserApprovalDialog({
             {action === 'approve'
               ? 'Aprovar Usuário'
               : action === 'reject'
-              ? 'Rejeitar Usuário'
-              : 'Aprovar ou Rejeitar Usuário'}
+                ? 'Rejeitar Usuário'
+                : 'Aprovar ou Rejeitar Usuário'}
           </DialogTitle>
           <DialogDescription>
             {action
@@ -88,18 +88,10 @@ export function UserApprovalDialog({
         <div className="space-y-4">
           {!action && (
             <div className="flex gap-2">
-              <Button
-                onClick={() => setAction('approve')}
-                className="flex-1"
-                variant="default"
-              >
+              <Button onClick={() => setAction('approve')} className="flex-1" variant="default">
                 Aprovar
               </Button>
-              <Button
-                onClick={() => setAction('reject')}
-                className="flex-1"
-                variant="destructive"
-              >
+              <Button onClick={() => setAction('reject')} className="flex-1" variant="destructive">
                 Rejeitar
               </Button>
             </div>
@@ -136,8 +128,8 @@ export function UserApprovalDialog({
                 {isApproving || isRejecting
                   ? 'Processando...'
                   : action === 'approve'
-                  ? 'Confirmar Aprovação'
-                  : 'Confirmar Rejeição'}
+                    ? 'Confirmar Aprovação'
+                    : 'Confirmar Rejeição'}
               </Button>
             </>
           )}

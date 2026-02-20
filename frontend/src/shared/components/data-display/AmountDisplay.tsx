@@ -11,7 +11,7 @@ interface AmountDisplayProps {
 /**
  * Exibe valor monetário formatado em BRL com cor semântica
  * Income = verde (+), Expense = vermelho (-)
- * 
+ *
  * Aceita tipo como string ('Income'/'Expense') ou int (1/2) do backend
  */
 export function AmountDisplay({ amount, type, className, showSign = true }: AmountDisplayProps) {
@@ -20,7 +20,7 @@ export function AmountDisplay({ amount, type, className, showSign = true }: Amou
   return (
     <span
       className={cn(
-        'font-semibold font-mono tabular-nums',
+        'font-mono font-semibold tabular-nums',
         isIncome ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400',
         className
       )}

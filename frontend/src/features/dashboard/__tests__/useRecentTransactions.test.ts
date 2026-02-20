@@ -59,9 +59,7 @@ describe('useRecentTransactions', () => {
   });
 
   it('deve buscar transações recentes com sucesso', async () => {
-    vi.mocked(dashboardService.getRecentTransactions).mockResolvedValue(
-      mockTransactions
-    );
+    vi.mocked(dashboardService.getRecentTransactions).mockResolvedValue(mockTransactions);
 
     const { result } = renderHook(() => useRecentTransactions(), {
       wrapper: createWrapper(),
@@ -74,9 +72,7 @@ describe('useRecentTransactions', () => {
   });
 
   it('deve tratar erro na busca', async () => {
-    vi.mocked(dashboardService.getRecentTransactions).mockRejectedValue(
-      new Error('API error')
-    );
+    vi.mocked(dashboardService.getRecentTransactions).mockRejectedValue(new Error('API error'));
 
     const { result } = renderHook(() => useRecentTransactions(), {
       wrapper: createWrapper(),

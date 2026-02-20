@@ -1,4 +1,10 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/shared/components/ui/card';
 import { XCircle } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { ROUTES } from '@/shared/lib/utils/constants';
@@ -17,18 +23,18 @@ export default function RejectedPage() {
             <XCircle className="h-8 w-8 text-red-600" />
           </div>
           <CardTitle>Cadastro Não Aprovado</CardTitle>
-          <CardDescription>
-            Seu cadastro foi analisado e não foi aprovado
-          </CardDescription>
+          <CardDescription>Seu cadastro foi analisado e não foi aprovado</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="rounded-lg border bg-muted/50 p-4 text-sm text-muted-foreground">
             <p className="font-semibold text-foreground">O que isso significa?</p>
             <p className="mt-2">
-              Após análise, sua solicitação de cadastro não foi aprovada pelos nossos administradores.
+              Após análise, sua solicitação de cadastro não foi aprovada pelos nossos
+              administradores.
             </p>
             <p className="mt-2">
-              Isso pode ter ocorrido por diversos motivos, incluindo informações incompletas ou não atendimento aos requisitos do sistema.
+              Isso pode ter ocorrido por diversos motivos, incluindo informações incompletas ou não
+              atendimento aos requisitos do sistema.
             </p>
           </div>
 
@@ -42,9 +48,7 @@ export default function RejectedPage() {
           </div>
 
           <Button asChild variant="outline" className="w-full">
-            <Link to={ROUTES.LOGIN}>
-              Voltar para login
-            </Link>
+            <Link to={ROUTES.LOGIN}>Voltar para login</Link>
           </Button>
         </CardContent>
       </Card>

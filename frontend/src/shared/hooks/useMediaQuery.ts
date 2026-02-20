@@ -2,10 +2,10 @@ import { useState, useEffect } from 'react';
 
 /**
  * Hook para verificar media queries responsivas
- * 
+ *
  * @param query - Media query string (ex: '(max-width: 768px)')
  * @returns boolean indicando se a query corresponde
- * 
+ *
  * @example
  * const isMobile = useMediaQuery('(max-width: 768px)');
  * const isTablet = useMediaQuery('(max-width: 1024px)');

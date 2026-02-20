@@ -1,9 +1,4 @@
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from '@/shared/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui/card';
 import { useRecentTransactions } from '../hooks/useRecentTransactions';
 import { formatCurrency, formatDate } from '@/shared/lib/utils/formatters';
 import { cn } from '@/shared/lib/utils/cn';
@@ -15,10 +10,10 @@ import { ArrowRight } from 'lucide-react';
 
 /**
  * RecentTransactions
- * 
+ *
  * Preview das últimas transações no dashboard.
  * Exibe até 5 transações recentes com tipo, valor e data.
- * 
+ *
  * Não contém lógica financeira — apenas exibição.
  */
 export function RecentTransactions() {
@@ -53,9 +48,7 @@ export function RecentTransactions() {
           <CardTitle>Transações Recentes</CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-sm text-muted-foreground">
-            Erro ao carregar transações recentes
-          </p>
+          <p className="text-sm text-muted-foreground">Erro ao carregar transações recentes</p>
         </CardContent>
       </Card>
     );
@@ -77,31 +70,21 @@ export function RecentTransactions() {
       </CardHeader>
       <CardContent>
         {!transactions || transactions.length === 0 ? (
-          <p className="text-sm text-muted-foreground">
-            Nenhuma transação encontrada
-          </p>
+          <p className="text-sm text-muted-foreground">Nenhuma transação encontrada</p>
         ) : (
           <div className="space-y-4">
             {transactions.map((transaction) => (
-              <div
-                key={transaction.id}
-                className="flex items-center justify-between"
-              >
+              <div key={transaction.id} className="flex items-center justify-between">
                 <div className="space-y-0.5">
-                  <p className="text-sm font-medium">
-                    {transaction.description}
-                  </p>
+                  <p className="text-sm font-medium">{transaction.description}</p>
                   <p className="text-xs text-muted-foreground">
-                    {transaction.categoryName} •{' '}
-                    {formatDate(transaction.date)}
+                    {transaction.categoryName} • {formatDate(transaction.date)}
                   </p>
                 </div>
                 <span
                   className={cn(
-                    'text-sm font-mono font-semibold',
-                    transaction.type === 'Income'
-                      ? 'text-income'
-                      : 'text-expense'
+                    'font-mono text-sm font-semibold',
+                    transaction.type === 'Income' ? 'text-income' : 'text-expense'
                   )}
                 >
                   {transaction.type === 'Income' ? '+' : '-'}

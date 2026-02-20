@@ -8,14 +8,14 @@ import { Skeleton } from '@/shared/components/ui/skeleton';
 
 /**
  * DashboardPage
- * 
+ *
  * Página principal do sistema autenticado.
  * Exibe:
  * - Cards de saldo (receitas, despesas, saldo atual)
  * - Gráfico de evolução financeira
  * - Transações recentes
  * - Ações rápidas
- * 
+ *
  * Não contém lógica financeira — consome API via hooks.
  */
 export default function DashboardPage() {
@@ -27,9 +27,7 @@ export default function DashboardPage() {
         {/* Header */}
         <div>
           <h1 className="text-3xl font-bold">Dashboard</h1>
-          <p className="text-muted-foreground">
-            Visão geral das suas finanças
-          </p>
+          <p className="text-muted-foreground">Visão geral das suas finanças</p>
         </div>
 
         {/* Balance Cards */}
@@ -51,11 +49,7 @@ export default function DashboardPage() {
               value={balances?.totalExpense ?? 0}
               label="Total de Despesas"
             />
-            <BalanceCard
-              type="balance"
-              value={balances?.currentBalance ?? 0}
-              label="Saldo Atual"
-            />
+            <BalanceCard type="balance" value={balances?.currentBalance ?? 0} label="Saldo Atual" />
           </div>
         )}
 

@@ -23,12 +23,8 @@ export function UserList({ users }: UserListProps) {
   if (users.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center rounded-lg border border-dashed p-8 text-center">
-        <p className="text-lg font-medium text-muted-foreground">
-          Nenhum usuário encontrado
-        </p>
-        <p className="text-sm text-muted-foreground">
-          Tente alterar os filtros de busca.
-        </p>
+        <p className="text-lg font-medium text-muted-foreground">Nenhum usuário encontrado</p>
+        <p className="text-sm text-muted-foreground">Tente alterar os filtros de busca.</p>
       </div>
     );
   }

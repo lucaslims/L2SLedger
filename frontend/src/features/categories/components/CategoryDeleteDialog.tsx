@@ -45,8 +45,8 @@ export function CategoryDeleteDialog({
         <AlertDialogHeader>
           <AlertDialogTitle>Confirmar Exclusão</AlertDialogTitle>
           <AlertDialogDescription>
-            Tem certeza que deseja excluir a categoria{' '}
-            <strong>{categoryName}</strong>? Esta ação não pode ser desfeita.
+            Tem certeza que deseja excluir a categoria <strong>{categoryName}</strong>? Esta ação
+            não pode ser desfeita.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>

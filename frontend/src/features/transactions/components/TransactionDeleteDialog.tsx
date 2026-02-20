@@ -41,12 +41,8 @@ export function TransactionDeleteDialog({
           <AlertDialogDescription>
             Tem certeza que deseja excluir a transação{' '}
             <strong>&quot;{transaction.description}&quot;</strong> no valor de{' '}
-            <AmountDisplay
-              amount={transaction.amount}
-              type={transaction.type}
-              showSign={false}
-            />
-            ? Esta ação não pode ser desfeita.
+            <AmountDisplay amount={transaction.amount} type={transaction.type} showSign={false} />?
+            Esta ação não pode ser desfeita.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>

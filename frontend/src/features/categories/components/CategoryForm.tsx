@@ -20,10 +20,7 @@ import {
 } from '@/shared/components/ui/select';
 
 const categorySchema = z.object({
-  name: z
-    .string()
-    .min(1, 'Nome é obrigatório')
-    .max(100, 'Nome deve ter no máximo 100 caracteres'),
+  name: z.string().min(1, 'Nome é obrigatório').max(100, 'Nome deve ter no máximo 100 caracteres'),
   description: z.string().optional(),
   parentCategoryId: z.string().optional(),
   type: z.enum(['Income', 'Expense'], {
@@ -45,11 +42,7 @@ interface CategoryFormProps {
  * Validação via Zod + React Hook Form.
  * Suporta modo criação (sem initialValues) e edição (com initialValues).
  */
-export function CategoryForm({
-  initialValues,
-  onSubmit,
-  isPending,
-}: CategoryFormProps) {
+export function CategoryForm({ initialValues, onSubmit, isPending }: CategoryFormProps) {
   const form = useForm<CategoryFormData>({
     resolver: zodResolver(categorySchema),
     defaultValues: initialValues || {
@@ -95,10 +88,7 @@ export function CategoryForm({
           render={({ field }) => (
             <FormItem>
               <FormLabel>Tipo</FormLabel>
-              <Select
-                onValueChange={field.onChange}
-                defaultValue={field.value}
-              >
+              <Select onValueChange={field.onChange} defaultValue={field.value}>
                 <FormControl>
                   <SelectTrigger>
                     <SelectValue placeholder="Selecione o tipo" />
@@ -115,25 +105,21 @@ export function CategoryForm({
         />
 
         <FormField
-            control={form.control}
-            name="parentCategoryId"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Categoria Pai (opcional)</FormLabel>
-                <FormControl>
-                  <Input placeholder="ID da categoria pai" {...field} value={field.value ?? ''} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+          control={form.control}
+          name="parentCategoryId"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Categoria Pai (opcional)</FormLabel>
+              <FormControl>
+                <Input placeholder="ID da categoria pai" {...field} value={field.value ?? ''} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
         <Button type="submit" disabled={isPending} className="w-full">
-          {isPending
-            ? 'Salvando...'
-            : initialValues
-              ? 'Atualizar'
-              : 'Criar'}
+          {isPending ? 'Salvando...' : initialValues ? 'Atualizar' : 'Criar'}
         </Button>
       </form>
     </Form>
