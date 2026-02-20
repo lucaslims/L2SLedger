@@ -9,6 +9,81 @@ O formato segue o padrão [Keep a Changelog](https://keepachangelog.com/en/1.0.0
 
 ---
 
+## [2026-02-20] - Correção Crítica: 10 Erros de CI/CD
+
+### Contexto
+
+Os pipelines de CI/CD apresentavam 10 erros críticos que impediam builds consistentes e causavam deployments de código não validado. Erros incluíam cache failure do npm ci, versão inválida para NuGet, race conditions em deploys, e falhas de scan de segurança.
+
+### Causa Raiz
+
+1. **package-lock.json** estava no .gitignore, impedindo cache do npm e reprodutibilidade
+2. **SemVer inválido** sendo passado para .NET builds (string "main" ao invés de versão numérica)
+3. **SHA mismatch** entre tags Docker (7 chars) e referências de scan (40 chars)
+4. **Cascade failures** onde Trivy executava mesmo com Docker build quebrado
+5. **Permissões ausentes** (`actions: read`) para CodeQL telemetry
+6. **Race conditions** onde deploys executavam antes do CI completar
+
+### Tipo
+CI/CD — Bugfix Crítico
+
+### Correções Aplicadas
+
+#### 1. `.gitignore` — Remoção de package-lock.json
+- Removida linha `package-lock.json` para permitir versionamento
+- `package-lock.json` adicionado ao Git com `--force`
+- Garante reprodutibilidade de builds e cache funcional do npm ci
+
+#### 2. `backend-ci.yml` — 4 correções
+- **SemVer resolution**: Novo step resolve versão (`0.0.0-dev` para branches, SemVer real para tags `v*`)
+- **Trivy guards**: `id: docker-build`, `id: trivy`, condição `if: steps.docker-build.outcome == 'success'`
+- **SHA fix**: `image-ref` usa `fromJSON(steps.meta.outputs.json).tags[0]` (7 chars consistentes)
+- **CodeQL permissions**: Adicionado `actions: read`
+
+#### 3. `frontend-ci.yml` — 3 correções
+- **Trivy guards**: `id: docker-build`, `id: trivy`, condição `if: steps.docker-build.outcome == 'success'`
+- **SHA fix**: `image-ref` usa `fromJSON(steps.meta.outputs.json).tags[0]`
+- **CodeQL permissions**: Adicionado `actions: read`
+
+#### 4. `deploy-demo.yml` — workflow_run trigger
+- **Trigger alterado**: De `on: push` para `on: workflow_run` com workflows `["Backend CI", "Frontend CI"]`
+- **Condição adicionada**: `if: github.event.workflow_run.conclusion == 'success'` no job `detect-changes`
+- Elimina race condition, garante deploy somente após CI bem-sucedido
+
+#### 5. `storybook-deploy.yml` — workflow_run trigger
+- **Trigger alterado**: De `on: push` com `paths` para `on: workflow_run` com workflow `["Frontend CI"]`
+- **Condição adicionada**: `if: github.event.workflow_run.conclusion == 'success'` no job `deploy`
+- Previne publicação de stories com código não validado
+
+### Arquivos Modificados
+- `.gitignore` — Remoção de `package-lock.json`
+- `frontend/package-lock.json` — Adicionado ao versionamento (novo arquivo)
+- `.github/workflows/backend-ci.yml` — Versão SemVer, Trivy guards, SHA fix, CodeQL perms
+- `.github/workflows/frontend-ci.yml` — Trivy guards, SHA fix, CodeQL perms
+- `.github/workflows/deploy-demo.yml` — workflow_run trigger + condição
+- `.github/workflows/storybook-deploy.yml` — workflow_run trigger + condição
+
+### Validação Esperada
+
+Após merge:
+- ✅ Frontend CI: Setup Node + npm ci completa com cache
+- ✅ Backend CI: Docker build usa versão SemVer válida (`0.0.0-dev`)
+- ✅ Trivy scans: Executam somente se Docker build bem-sucedido
+- ✅ SARIF upload: Graceful skip quando Trivy não executa
+- ✅ CodeQL: Completa sem erro de permissão
+- ✅ Deploy DEMO: Executa somente após CI completar
+- ✅ Storybook: Publica somente código validado
+
+### Implementado Por
+GitHub Copilot (Claude Sonnet 4.5) — Master Agent (CI/CD mode)
+
+### Referências
+- Plano: `docs/planning/ci-cd-planning/ci-cd-fix-plan.md` v2.0
+- SPEC: `docs/planning/ci-cd-planning/ci-cd-fix-SPEC.md` v1.0
+- ADRs: Nenhum ADR violado (mudanças infraestruturais)
+
+---
+
 ## [2026-02-19] - Bugfix Crítico: Tela Admin Usuários em Branco
 
 ### Contexto
