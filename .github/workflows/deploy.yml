@@ -79,6 +79,17 @@ jobs:
           sparse-checkout: |
             docker-compose.prod.yml
 
+      - name: Copy docker-compose to server
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.VM_HOST }}
+          username: ${{ secrets.VM_USER }}
+          key: ${{ secrets.VM_SSH_KEY }}
+          port: ${{ secrets.VM_SSH_PORT || 22 }}
+          source: docker-compose.prod.yml
+          target: ${{ secrets.VM_DEPLOY_PATH || '/opt/l2sledger' }}
+          overwrite: true
+
       - name: Deploy via SSH
         uses: appleboy/ssh-action@v1
         with:
