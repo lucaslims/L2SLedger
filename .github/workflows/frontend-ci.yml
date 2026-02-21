@@ -140,6 +140,7 @@ jobs:
         with:
           sarif_file: trivy-frontend.sarif
           category: trivy-frontend
+          upload: false  # Disabled until Code Scanning is enabled in repository settings
 
   # ── Step 3: CodeQL Analysis ───────────────────────────────────
   codeql:
