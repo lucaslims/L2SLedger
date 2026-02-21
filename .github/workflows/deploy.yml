@@ -70,7 +70,7 @@ jobs:
     runs-on: ubuntu-latest
     environment:
       name: production
-      url: https://${{ secrets.PROD_DOMAIN || 'yourdomain.com' }}
+      url: https://${{secrets.PROD_DOMAIN}}
     # ⚠️ IMPORTANT: Configure environment protection rules in GitHub:
     # Settings → Environments → production → Required reviewers
     # This enforces manual approval before deploying to production
