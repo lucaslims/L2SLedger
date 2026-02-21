@@ -148,13 +148,14 @@ jobs:
           severity: 'CRITICAL,HIGH'
           exit-code: '0'
 
+      # Trivy SARIF upload disabled until Code Scanning is enabled in repository settings
+      # To enable: Remove 'if: false' after enabling Advanced Security in Settings > Code security
       - name: Upload Trivy scan results
         uses: github/codeql-action/upload-sarif@v3
-        if: always() && steps.trivy.outcome == 'success'
+        if: false  # Disabled: Code Scanning not enabled (requires GitHub Advanced Security)
         with:
           sarif_file: trivy-backend.sarif
           category: trivy-backend
-          upload: false  # Disabled until Code Scanning is enabled in repository settings
 
   # ── Step 3: CodeQL Analysis ───────────────────────────────────
   codeql:
@@ -185,8 +186,10 @@ jobs:
         working-directory: backend
         run: dotnet build -c Release
 
+      # CodeQL SARIF upload disabled until Code Scanning is enabled in repository settings
+      # To enable: Remove 'if: false' after enabling Advanced Security in Settings > Code security
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v3
+        if: false  # Disabled: Code Scanning not enabled (requires GitHub Advanced Security)
         with:
           category: '/language:csharp'
-          upload: false  # Desabilitado temporariamente até habilitar Code Scanning no repositório

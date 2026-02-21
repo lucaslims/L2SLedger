@@ -134,13 +134,14 @@ jobs:
           severity: 'CRITICAL,HIGH'
           exit-code: '0'
 
+      # Trivy SARIF upload disabled until Code Scanning is enabled in repository settings
+      # To enable: Remove 'if: false' after enabling Advanced Security in Settings > Code security
       - name: Upload Trivy scan results
         uses: github/codeql-action/upload-sarif@v3
-        if: always() && steps.trivy.outcome == 'success'
+        if: false  # Disabled: Code Scanning not enabled (requires GitHub Advanced Security)
         with:
           sarif_file: trivy-frontend.sarif
           category: trivy-frontend
-          upload: false  # Disabled until Code Scanning is enabled in repository settings
 
   # ── Step 3: CodeQL Analysis ───────────────────────────────────
   codeql:
