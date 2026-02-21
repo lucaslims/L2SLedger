@@ -68,11 +68,9 @@ jobs:
     name: Deploy to PROD VM
     needs: validate
     runs-on: ubuntu-latest
-    environment:
-      name: production
-      url: https://${{secrets.PROD_DOMAIN}}
+    environment: production
     # ⚠️ IMPORTANT: Configure environment protection rules in GitHub:
-    # Settings → Environments → production → Required reviewers
+    # Settings → Environments → production → Required reviewers + Environment URL
     # This enforces manual approval before deploying to production
 
     steps:
