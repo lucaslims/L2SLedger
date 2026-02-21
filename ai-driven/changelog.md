@@ -9,6 +9,40 @@ O formato segue o padrão [Keep a Changelog](https://keepachangelog.com/en/1.0.0
 
 ---
 
+## [2026-02-21] - Fix Deploy PROD: Remoção do SCP Step ✅ CONCLUÍDO
+
+### Contexto
+
+O deploy em produção falhava com `Permission denied` ao copiar `docker-compose.prod.yml` via `appleboy/scp-action`. O `tar` usado internamente pela action não tinha permissão de escrita no diretório de destino.
+
+### Causa Raiz
+
+A action `appleboy/scp-action@v0.1.7` usa `tar` para extrair arquivos no servidor remoto, e o usuário SSH não tinha permissão de escrita para o `tar` no diretório alvo.
+
+### Tipo
+CI/CD — Bugfix
+
+### Correções Aplicadas
+
+#### 1. `deploy.yml` — Remoção do step SCP e consolidação
+- Removido step `Copy docker-compose to server` (`appleboy/scp-action@v0.1.7`)
+- Adicionado step `Encode compose file` que codifica o arquivo em base64
+- Transferência do arquivo via `envs` do `appleboy/ssh-action` com decodificação no servidor
+- Todas as alterações no servidor remoto consolidadas em um único step SSH
+
+### Resultados
+- Eliminada dependência do `appleboy/scp-action`
+- Deploy de compose file via SSH evita problemas de permissão do `tar`
+- Todas as modificações remotas em um único step
+
+### ADRs Aplicados
+- Nenhum ADR novo necessário
+
+### Ferramenta
+- GitHub Copilot
+
+---
+
 ## [2026-02-20] - Correção Crítica: 10 Erros de CI/CD
 
 ### Contexto
