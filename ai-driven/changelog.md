@@ -9,6 +9,56 @@ O formato segue o padrão [Keep a Changelog](https://keepachangelog.com/en/1.0.0
 
 ---
 
+## [2026-02-22] - Suporte Multi-Plataforma Docker (ARM64 + AMD64) ✅ CONCLUÍDO
+
+### Contexto
+
+O deploy em produção falhava ao tentar executar `docker compose pull` no servidor OCI ARM64 com erro:
+```
+no matching manifest for linux/arm64/v8 in the manifest list entries
+```
+
+### Causa Raiz
+
+De acordo com [ADR-033](../docs/adr/adr-033.md), a infraestrutura OCI usa VMs **ARM64** (Arm64 2 OCPUs, 12 GB RAM), mas as imagens Docker estavam sendo construídas apenas para **AMD64** (arquitetura padrão dos GitHub Actions runners `ubuntu-latest`).
+
+### Tipo
+CI/CD — Infraestrutura
+
+### Correções Aplicadas
+
+#### 1. `backend-ci.yml` — Adicionar plataforma ARM64
+- Adicionado parâmetro `platforms: linux/amd64,linux/arm64` ao step `Build and push Docker image`
+- Docker Buildx já configurado com `docker/setup-buildx-action@v3` (suporta QEMU automaticamente)
+
+#### 2. `frontend-ci.yml` — Adicionar plataforma ARM64
+- Adicionado parâmetro `platforms: linux/amd64,linux/arm64` ao step `Build and push Docker image`
+
+### Impacto Técnico
+
+**Build Time:**
+- Builds multi-plataforma levam aproximadamente 2-3x mais tempo devido à emulação QEMU
+- Backend: ~8-12 minutos (antes ~5 minutos)
+- Frontend: ~5-8 minutos (antes ~3 minutos)
+
+**Compatibilidade:**
+- Imagens agora funcionam em servidores AMD64 (desenvolvimento local, outros clouds)
+- Imagens agora funcionam em servidores ARM64 (OCI Always Free Tier)
+
+### Resultados
+- ✅ Imagens Docker publicadas com manifests para ambas arquiteturas
+- ✅ Deploy em OCI ARM64 agora funcional
+- ✅ Compatibilidade mantida com ambientes AMD64
+
+### ADRs Relacionados
+- [ADR-033](../docs/adr/adr-033.md) — Define infraestrutura OCI como ARM64
+- [ADR-032](../docs/adr/adr-032.md) — Docker como padrão de containerização
+
+### Ferramenta
+- GitHub Copilot
+
+---
+
 ## [2026-02-21] - Fix Deploy PROD: Remoção do SCP Step ✅ CONCLUÍDO
 
 ### Contexto
