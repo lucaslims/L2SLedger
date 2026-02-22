@@ -31,6 +31,7 @@ services:
       - Cors__AllowedOrigins=${CORS_ALLOWED_ORIGINS:-http://localhost}
     volumes:
       - ${FIREBASE_CREDENTIAL_PATH:-./secrets/firebase-credential.json}:/secrets/firebase-credential.json:ro
+      - l2sledger-keys:/app/keys
     ports:
       - "8080:8080"
     networks:
@@ -65,13 +66,16 @@ services:
     restart: unless-stopped
 
 volumes:
-  postgres-data:
-  redis-data:
-
+  # Persists ASP.NET Data Protection keys across container restarts.
+  # Losing these keys would invalidate all active sessions/cookies.
+  l2sledger-keys:
+    name: l2sledger-keys
+    driver: local
+    
 networks:
   l2snet:
     driver: bridge
   shared-db-network:
     external: true
-  caddy-network:           
+  caddy-network:
     external: true

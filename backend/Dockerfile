@@ -46,7 +46,9 @@ ENV ASPNETCORE_ENVIRONMENT=Production \
 
 COPY --from=build --chown=appuser:appgroup /app/publish .
 
-RUN chown appuser:appgroup /app -R
+# Pre-create /app/keys so Data Protection can write keys even on read-only filesystems
+# (the named volume declared in docker-compose.prod.yml is mounted here at runtime)
+RUN mkdir -p /app/keys && chown appuser:appgroup /app /app/keys -R
 
 # Switch to non-root user
 USER appuser

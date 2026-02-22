@@ -9,6 +9,39 @@ O formato segue o padrão [Keep a Changelog](https://keepachangelog.com/en/1.0.0
 
 ---
 
+## [2026-02-22] - Correção: permissão negada em /app/keys (Data Protection) ✅ CONCLUÍDO
+
+### Contexto
+
+O backend falhava ao iniciar em produção com o erro:
+```
+System.IO.IOException: Read-only file system : '/app/keys'
+```
+O ASP.NET Data Protection tenta criar o diretório `/app/keys` em tempo de execução para persistir chaves criptográficas.
+
+### Causa Raiz
+
+O `docker-compose.prod.yml` define `read_only: true` no container do backend por segurança, tornando todo o sistema de arquivos somente-leitura. Apenas `/tmp` era montado como tmpfs gravável. O diretório `/app/keys` não existia na imagem e não podia ser criado em runtime.
+
+### Tipo
+Hotfix — Infraestrutura / Deploy
+
+### Correções Aplicadas
+
+#### 1. `backend/Dockerfile` — Pré-criar `/app/keys` com ownership correto
+Adicionado `RUN mkdir -p /app/keys && chown appuser:appgroup /app /app/keys -R` para que o ponto de montagem exista na imagem com as permissões corretas.
+
+#### 2. `docker-compose.prod.yml` — Volume nomeado para `/app/keys`
+- Adicionado volume `l2sledger-keys:/app/keys` ao serviço `backend`.
+- Declarado volume `l2sledger-keys` no nível raiz do compose.
+- Um named volume (ao invés de tmpfs) foi escolhido deliberadamente: perder as chaves de Data Protection invalida todos os cookies/sessões ativos, forçando logout de todos os usuários.
+
+### Arquivos Alterados
+- `backend/Dockerfile`
+- `docker-compose.prod.yml`
+
+---
+
 ## [2026-02-22] - Suporte Multi-Plataforma Docker (ARM64 + AMD64) ✅ CONCLUÍDO
 
 ### Contexto
