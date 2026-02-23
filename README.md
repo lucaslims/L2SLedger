@@ -1,87 +1,100 @@
 # L2SLedger
 
-**L2SLedger** é um sistema de controle financeiro e fluxo de caixa projetado com foco em **segurança, auditabilidade, previsibilidade e evolução controlada**.
-
-O projeto foi estruturado desde o início com decisões arquiteturais formais (ADRs), tornando-o adequado para ambientes corporativos, financeiros e regulatórios.
+Sistema de controle financeiro e fluxo de caixa com foco em **segurança, auditabilidade e evolução controlada**. Estruturado com 47 ADRs formais, adequado para ambientes corporativos e regulatórios.
 
 ---
 
-## 🎯 Objetivos do Sistema
+## Objetivos
 
-* Controle de fluxo de caixa
-* Rastreabilidade completa de operações financeiras
-* Auditoria imutável
-* Separação clara entre domínio e infraestrutura
-* Evolução segura e previsível
-
----
-
-## 🧱 Arquitetura (Visão Geral)
-
-* Frontend SPA (React + TypeScript)
-* Backend (.NET 10)
-* PostgreSQL como banco relacional
-* Firebase Authentication como IdP
-* Infraestrutura baseada em OCI
-* Containers Docker
-* CI/CD com GitHub Actions
+- Controle de fluxo de caixa com rastreabilidade completa
+- Auditoria financeira imutável
+- Separação rigorosa entre domínio e infraestrutura
+- Evolução segura via governança por ADRs
 
 ---
 
-## 🔐 Princípios Fundamentais
+## Arquitetura
 
-* Backend é a fonte da verdade
-* Fail-fast obrigatório
-* Contratos públicos imutáveis
-* Auditoria financeira obrigatória
-* Separação de ambientes (DEV / DEMO / PROD)
+| Componente   | Tecnologia                  |
+| ------------ | --------------------------- |
+| Frontend     | React 18 + TypeScript + Vite |
+| Backend      | .NET 10 (Clean Architecture) |
+| Banco        | PostgreSQL                   |
+| Autenticação | Firebase Authentication      |
+| Infra        | Docker + OCI (ARM64)         |
+| CI/CD        | GitHub Actions               |
 
----
-
-## 📂 Documentação
-
-| Documento         | Descrição                                 |
-| ----------------- | ----------------------------------------- |
-| `docs/adr-index.md`    | Índice completo de decisões arquiteturais |
-| `architecture.md` | Visão detalhada da arquitetura            |
-| `docs/`           | Documentação técnica complementar         |
+Detalhes em [Architecture.md](Architecture.md).
 
 ---
 
-## 🧪 Qualidade & Testes
+## Princípios
 
-* Testes unitários, integração e contrato
-* Testes de regressão financeira
-* Testes de frontend focados em comportamento
-* Pipeline CI bloqueia regressões
-
----
-
-## 🚀 Deploy & Operação
-
-* Deploy automatizado via GitHub Actions
-* Containers Docker imutáveis
-* Configuração por variáveis de ambiente
-* Backups e DR definidos por ADR
+- **Backend é a fonte da verdade** para dados e cálculos financeiros
+- **Fail-fast** obrigatório em todas as camadas (ADR-021)
+- **Contratos públicos imutáveis** — breaking changes exigem versionamento (ADR-022)
+- **Auditoria financeira** obrigatória e imutável (ADR-014)
+- **Ambientes isolados** — DEV / DEMO / PROD nunca compartilham dados (ADR-030)
 
 ---
 
-## 📜 Governança
+## Estrutura do Repositório
 
-Todas as decisões técnicas relevantes estão documentadas como ADRs.
-Nenhuma mudança estrutural deve ser feita sem criação ou atualização de um ADR.
-Consulte `docs/adr-index.md` para o índice completo.
-
-Esse projeto segue estritamente o modelo de governança definido em `docs/governance/`:
-
-* [`flow-planejar-provar-executar.md`](./docs/governance/flow-planejar-provar-executar.md): Fluxo oficial de Planejar → Aprovar → Executar
-* [`approval-checklist.md`](./docs/governance/approval-checklist.md): Checklist obrigatório para aprovação de mudanças
-* [`ai-playbook.md`](./docs/governance/ai-playbook.md): Regras para uso de IA na geração de 
-* [`github-pr-governance.md`](./docs/governance/github-pr-governance.md): Fluxo completo de PRs no GitHub
+```
+├── backend/        # API .NET 10 — Clean Architecture + DDD
+├── frontend/       # SPA React + TypeScript
+├── docs/           # ADRs, governança, deploy e planejamentos
+├── ai-driven/      # Governança de uso de IA
+└── Architecture.md # Visão arquitetural consolidada
+```
 
 ---
 
-## 📌 Status do Projeto
+## Documentação
 
-> **Arquitetura e governança finalizadas**
-> Pronto para desenvolvimento incremental e operação controlada.
+| Documento                                                          | Descrição                          |
+| ------------------------------------------------------------------ | ---------------------------------- |
+| [Architecture.md](Architecture.md)                                 | Visão detalhada da arquitetura     |
+| [docs/adr/adr-index.md](docs/adr/adr-index.md)                    | Índice dos 47 ADRs                 |
+| [docs/README.md](docs/README.md)                                  | Organização da documentação        |
+| [backend/README.md](backend/README.md)                            | Documentação do backend            |
+| [frontend/README.md](frontend/README.md)                          | Documentação do frontend           |
+| [docs/deployment/README.md](docs/deployment/README.md)            | Guias de deploy e operação         |
+
+---
+
+## Testes
+
+- Unitários, integração e contrato (ADR-037, ADR-039)
+- Regressão financeira (ADR-038)
+- Frontend focado em comportamento (ADR-040)
+- Pipeline CI bloqueia merge em caso de falha
+
+---
+
+## Deploy
+
+- GitHub Actions com deploy automático em DEMO e aprovação em PROD (ADR-043)
+- Containers Docker imutáveis, multi-plataforma AMD64 + ARM64 (ADR-032, ADR-033)
+- Configuração por variáveis de ambiente (ADR-010)
+- Backups e DR definidos por ADR (ADR-012, ADR-036)
+
+---
+
+## Governança
+
+Todas as decisões técnicas são ADRs imutáveis. Mudanças estruturais exigem novo ADR.
+
+| Documento                                                                          | Descrição                            |
+| ---------------------------------------------------------------------------------- | ------------------------------------ |
+| [flow-planejar-provar-executar.md](docs/governance/flow-planejar-provar-executar.md) | Fluxo Planejar → Aprovar → Executar |
+| [approval-checklist.md](docs/governance/approval-checklist.md)                      | Checklist obrigatório de aprovação   |
+| [ai-playbook.md](docs/governance/ai-playbook.md)                                   | Regras para uso de IA                |
+| [github-pr-governance.md](docs/governance/github-pr-governance.md)                  | Governança de Pull Requests          |
+| [ai-driven/agent-rules.md](ai-driven/agent-rules.md)                               | Regras obrigatórias para agentes IA  |
+
+---
+
+## Status
+
+> Arquitetura e governança finalizadas. Pronto para desenvolvimento incremental e operação controlada.
