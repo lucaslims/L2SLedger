@@ -2,21 +2,37 @@
 # Generates /app/dist/env-config.js at runtime
 # with all VITE_* environment variables from the container.
 # Used as ENTRYPOINT — exec's the CMD after generating the file.
+#
+# Uses awk to avoid pipe-subshell issues on Alpine (busybox ash).
+# Handles values with '=' signs correctly (Firebase keys, URLs, etc.).
+
+set -e
 
 ENV_FILE="/app/dist/env-config.js"
+TMP_FILE="$(mktemp)"
 
-echo "window.__ENV__ = {" > "$ENV_FILE"
+# Build the JS file without pipe-subshell — awk reads env vars directly
+printf 'window.__ENV__ = {\n' > "$TMP_FILE"
 
-# Iterate all environment variables starting with VITE_
-env | grep '^VITE_' | sort | while IFS='=' read -r key value; do
-  # Escape single quotes in the value
-  escaped=$(echo "$value" | sed "s/'/\\\\'/g")
-  echo "  $key: '$escaped'," >> "$ENV_FILE"
-done
+env | grep '^VITE_' | sort | awk '
+{
+  # Split only on the FIRST = to safely handle values containing =
+  n = index($0, "=")
+  key = substr($0, 1, n - 1)
+  val = substr($0, n + 1)
+  # Escape backslashes then single quotes
+  gsub(/\\/, "\\\\", val)
+  gsub(/\'/, "\\\x27", val)
+  printf "  %s: \x27%s\x27,\n", key, val
+}' >> "$TMP_FILE"
 
-echo "};" >> "$ENV_FILE"
+printf '};\n' >> "$TMP_FILE"
 
-echo "[env.sh] env-config.js generated with $(grep -c ':' "$ENV_FILE") variable(s)"
+# Atomically replace the target file
+mv "$TMP_FILE" "$ENV_FILE"
+
+COUNT=$(env | grep -c '^VITE_' || echo 0)
+echo "[env.sh] env-config.js generated with ${COUNT} VITE_* variable(s)"
 
 # Execute the CMD (serve)
 exec "$@"

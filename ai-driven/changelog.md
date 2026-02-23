@@ -9,6 +9,48 @@ O formato segue o padrão [Keep a Changelog](https://keepachangelog.com/en/1.0.0
 
 ---
 
+## [2026-02-23] - Fix: env.sh e Dockerfile do Frontend (env-config.js MIME error) ✅ CONCLUÍDO
+
+### Contexto
+
+Após deploy, o browser retornava MIME type `text/html` para `/env-config.js`, porque o `serve` em modo SPA servia `index.html` para qualquer 404 — ou seja, o arquivo não estava sendo gerado corretamente pelo `env.sh`.
+
+### Causas identificadas
+
+1. **`env.sh` com bug silencioso**: o loop `while IFS='=' read -r key value` via pipe rodava em subshell no `busybox ash` do Alpine (não causava falha visível). Valores com `=` no corpo (como URLs e tokens Firebase) seriam potencialmente truncados.
+2. **Dockerfile com ARGs faltando**: as variáveis `VITE_FIREBASE_STORAGE_BUCKET`, `VITE_FIREBASE_MESSAGING_SENDER_ID`, `VITE_FIREBASE_APP_ID`, `VITE_EMAIL_VERIFICATION_RESEND_COOLDOWN`, `VITE_ENABLE_DEVTOOLS` e todo o bloco `ENV` haviam sido removidos do build stage, quebrando o build Vite em CI.
+
+### Correções
+
+- `frontend/docker/env.sh` — Reescrito com `awk` (sem subshell), `set -e`, `mktemp` atômico e escaping correto para valores com `=`
+- `frontend/Dockerfile` — Restaurados todos os `ARG`/`ENV` do build stage
+
+---
+
+## [2026-02-23] - Release v1.0.4 — Exports Volume & Full Documentation Refactor ✅ CONCLUÍDO
+
+### Contexto
+
+Criação do documento de release notes para a tag `v1.0.4`, cobrindo a adição do volume persistido `l2sledger-exports` para arquivos de exportação no backend e o refactor completo de toda a documentação do projeto.
+
+### Tipo
+Release / DevOps / Documentação
+
+### Ações Executadas
+- Comparação com a tag `v1.0.3` via `git log` e `git diff`
+- Criação do documento `docs/PRs/release-v1.0.4-notes.md`
+
+### Arquivos Modificados / Criados
+- `docs/PRs/release-v1.0.4-notes.md` — Novo: release notes completo para v1.0.4
+- `ai-driven/changelog.md` — Esta entrada
+
+### Resumo das Mudanças na v1.0.4
+- `fix`: pré-criação do diretório `/app/exports` no `Dockerfile` com `chown` correto
+- `fix`: volume `l2sledger-exports` adicionado ao `docker-compose.prod.yml` e `docker-compose.yml`
+- `docs`: refactor completo de toda documentação — `Architecture.md`, `README.md`, `backend/README.md` (novo), `frontend/README.md`, `docs/README.md` (novo), `docs/deployment/README.md`, `ai-driven/README.md`
+
+---
+
 ## [2026-02-22] - Atualização Completa de Documentação: Todos os READMEs + Architecture.md ✅ CONCLUÍDO
 
 ### Contexto
