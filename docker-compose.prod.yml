@@ -34,6 +34,7 @@ services:
     volumes:
       - ${FIREBASE_CREDENTIAL_PATH}:/secrets/firebase-credential.json:ro
       - l2sledger-keys:/app/keys
+      - l2sledger-exports:/app/exports
     expose:
       - "8080"
     networks:
@@ -86,6 +87,9 @@ volumes:
   # Losing these keys would invalidate all active sessions/cookies.
   l2sledger-keys:
     name: l2sledger-keys
+    driver: local
+  l2sledger-exports:
+    name: l2sledger-exports
     driver: local
 
 networks:
