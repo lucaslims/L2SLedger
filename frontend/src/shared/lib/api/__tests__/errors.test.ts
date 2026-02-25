@@ -25,13 +25,10 @@ describe('handleAuthError', () => {
     ['AUTH_USER_INACTIVE', '/login'],
     ['AUTH_USER_NOT_FOUND', '/login'],
     ['AUTH_FIREBASE_ERROR', '/login'],
-  ] as [string, string][])(
-    'deve redirecionar %s para %s',
-    (code: string, expectedPath: string) => {
-      handleAuthError(new ApiError(code, 'Error'));
-      expect(window.location.href).toContain(expectedPath);
-    },
-  );
+  ] as [string, string][])('deve redirecionar %s para %s', (code: string, expectedPath: string) => {
+    handleAuthError(new ApiError(code, 'Error'));
+    expect(window.location.href).toContain(expectedPath);
+  });
 
   it('deve logar e não redirecionar para código desconhecido', () => {
     const consoleSpy = vi.spyOn(console, 'error');

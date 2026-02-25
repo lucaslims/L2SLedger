@@ -6,14 +6,14 @@ import { Pagination } from '../Pagination';
 describe('Pagination', () => {
   it('não deve renderizar nada quando totalPages <= 1', () => {
     const { container } = render(
-      <Pagination currentPage={1} totalPages={1} onPageChange={vi.fn()} />,
+      <Pagination currentPage={1} totalPages={1} onPageChange={vi.fn()} />
     );
     expect(container).toBeEmptyDOMElement();
   });
 
   it('não deve renderizar nada quando totalPages é 0', () => {
     const { container } = render(
-      <Pagination currentPage={1} totalPages={0} onPageChange={vi.fn()} />,
+      <Pagination currentPage={1} totalPages={0} onPageChange={vi.fn()} />
     );
     expect(container).toBeEmptyDOMElement();
   });
@@ -24,16 +24,12 @@ describe('Pagination', () => {
   });
 
   it('deve exibir totalItems no plural quando > 1', () => {
-    render(
-      <Pagination currentPage={1} totalPages={3} totalItems={10} onPageChange={vi.fn()} />,
-    );
+    render(<Pagination currentPage={1} totalPages={3} totalItems={10} onPageChange={vi.fn()} />);
     expect(screen.getByText(/10 itens/)).toBeInTheDocument();
   });
 
   it('deve exibir totalItems no singular quando === 1', () => {
-    render(
-      <Pagination currentPage={1} totalPages={2} totalItems={1} onPageChange={vi.fn()} />,
-    );
+    render(<Pagination currentPage={1} totalPages={2} totalItems={1} onPageChange={vi.fn()} />);
     expect(screen.getByText(/1 item/)).toBeInTheDocument();
   });
 
