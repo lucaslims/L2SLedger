@@ -9,6 +9,48 @@ O formato segue o padrão [Keep a Changelog](https://keepachangelog.com/en/1.0.0
 
 ---
 
+## [2026-02-25] - Fix: Health checks e limpeza de imagens no deploy (prod e demo) ✅ CONCLUÍDO
+
+### Contexto
+
+1. Health checks falhavam com portas não publicadas no host
+2. Imagens antigas de backend/frontend ficavam retidas no disco após cada deploy
+3. Verificação sobre suporte a arm64 nas imagens Docker
+
+### Causa raiz — health checks
+
+Os workflows executavam `curl localhost:PORT` no VM host, mas `docker-compose.prod.yml` usa `expose:` (sem `ports:`). Ambas as portas (8080 e 3000) só são acessíveis internamente pela rede Docker (Caddy). Ambos os `Dockerfile`s já possuem `HEALTHCHECK` interno.
+
+### Causa raiz — imagens antigas
+
+`docker image prune -f --filter "until=168h"` só remove imagens dangling (sem tag) com mais de 7 dias. Imagens antigas com tag SHA do deploy anterior (`sha-xxxxxxx`) **nunca eram removidas**, pois ainda estavam taggeadas.
+
+### Sobre ARM64
+
+Ambos os workflows de CI já constroem imagens multi-arch (`linux/amd64,linux/arm64`) via `docker/build-push-action`. Nenhuma alteração necessária.
+
+### Solução aplicada
+
+**Health checks** (4 steps em 2 arquivos): substituído `curl` por `docker inspect`:
+```bash
+until [ "$(docker inspect -f '{{.State.Health.Status}}' l2sledger-SERVIÇO 2>/dev/null)" = "healthy" ]
+```
+
+**Limpeza de imagens** (2 scripts de deploy): antes de cada `pull`, captura o digest da imagem em uso e o remove explicitamente após o novo container subir:
+```bash
+OLD_IMAGE=$(docker inspect CONTAINER --format='{{.Image}}' 2>/dev/null || echo "")
+# ... pull + up ...
+docker rmi "$OLD_IMAGE" 2>/dev/null || true
+```
+`docker image prune -f --filter "until=168h"` substituído por `docker image prune -f` (remove dangling imediatamente).
+
+### Arquivos modificados
+
+- `.github/workflows/deploy.yml` — deploy script + 2 health check steps
+- `.github/workflows/deploy-demo.yml` — deploy script + 2 health check steps
+
+---
+
 ## [2026-02-25] - Fix: Health checks de frontend e backend no deploy (porta não publicada no host) ✅ CONCLUÍDO
 
 ### Contexto

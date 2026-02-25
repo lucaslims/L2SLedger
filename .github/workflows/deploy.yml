@@ -112,22 +112,34 @@ jobs:
 
             if [ "$SERVICE" = "all" ] || [ "$SERVICE" = "backend" ]; then
               echo "═══ Pulling backend image ═══"
+              OLD_BACKEND_IMAGE=$(docker inspect l2sledger-backend --format='{{.Image}}' 2>/dev/null || echo "")
               docker compose -f docker-compose.prod.yml pull backend
 
               echo "═══ Restarting backend ═══"
               docker compose -f docker-compose.prod.yml up -d --no-deps backend
+
+              if [ -n "$OLD_BACKEND_IMAGE" ]; then
+                echo "═══ Removing old backend image ($OLD_BACKEND_IMAGE) ═══"
+                docker rmi "$OLD_BACKEND_IMAGE" 2>/dev/null || true
+              fi
             fi
 
             if [ "$SERVICE" = "all" ] || [ "$SERVICE" = "frontend" ]; then
               echo "═══ Pulling frontend image ═══"
+              OLD_FRONTEND_IMAGE=$(docker inspect l2sledger-frontend --format='{{.Image}}' 2>/dev/null || echo "")
               docker compose -f docker-compose.prod.yml pull frontend
 
               echo "═══ Restarting frontend ═══"
               docker compose -f docker-compose.prod.yml up -d --no-deps frontend
+
+              if [ -n "$OLD_FRONTEND_IMAGE" ]; then
+                echo "═══ Removing old frontend image ($OLD_FRONTEND_IMAGE) ═══"
+                docker rmi "$OLD_FRONTEND_IMAGE" 2>/dev/null || true
+              fi
             fi
 
-            echo "═══ Cleaning old images ═══"
-            docker image prune -f --filter "until=168h"
+            echo "═══ Cleaning dangling images ═══"
+            docker image prune -f
 
             echo "═══ Health check ═══"
             sleep 10
