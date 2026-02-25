@@ -8,7 +8,7 @@
 
 set -e
 
-ENV_FILE="/app/dist/env-config.js"
+ENV_FILE="/tmp/env-config.js"
 TMP_FILE="$(mktemp)"
 
 # Build the JS file without pipe-subshell — awk reads env vars directly

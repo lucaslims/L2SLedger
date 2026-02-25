@@ -59,6 +59,10 @@ WORKDIR /app
 # Copy only the built static assets — no node_modules, no source code
 COPY --from=build --chown=appuser:appgroup /app/dist ./dist
 
+# Symlink env-config.js to /tmp so env.sh can write it on read-only filesystems
+# /tmp is mounted as tmpfs in production (docker-compose read_only: true)
+RUN ln -sf /tmp/env-config.js ./dist/env-config.js
+
 # Copy env.sh entrypoint script for runtime VITE_* injection
 COPY --chown=appuser:appgroup docker/env.sh ./env.sh
 RUN sed -i 's/\r$//' ./env.sh && chmod +x ./env.sh
