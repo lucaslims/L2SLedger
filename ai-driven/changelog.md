@@ -9,6 +9,43 @@ O formato segue o padrão [Keep a Changelog](https://keepachangelog.com/en/1.0.0
 
 ---
 
+## [2026-02-25] - Fix: Health checks de frontend e backend no deploy (porta não publicada no host) ✅ CONCLUÍDO
+
+### Contexto
+
+O deploy do frontend estava falhando com `Frontend health check failed after 10 retries`, mesmo com o container em pé e servindo HTTP 200. O mesmo problema existia latente no health check do backend.
+
+### Causa raiz
+
+Os workflows `deploy.yml` e `deploy-demo.yml` executavam `curl` diretamente nos ports da VM host:
+- Frontend: `curl http://localhost:3000/`
+- Backend: `curl http://localhost:8080/health`
+
+Porém, o `docker-compose.prod.yml` usa `expose:` (sem `ports:`) para **ambos os serviços**, portanto as portas **nunca são publicadas para o host** — são acessíveis apenas na rede Docker interna (pelo Caddy). O `curl` sempre falhava, não porque os serviços estavam down, mas porque as portas eram inacessíveis externamente.
+
+### Solução aplicada
+
+Substituída a checagem via `curl` pelo status nativo do Docker em todos os 4 steps afetados:
+
+```bash
+docker inspect -f '{{.State.Health.Status}}' l2sledger-frontend  # ou l2sledger-backend
+```
+
+Ambos os `Dockerfile`s já possuem `HEALTHCHECK` interno (`wget http://localhost:PORT/`). Os workflows agora aguardam que os containers reportem status `healthy` em vez de tentar acessar as portas externamente.
+
+### Arquivos modificados
+
+- `.github/workflows/deploy.yml` — steps `Verify backend health` e `Verify frontend health`
+- `.github/workflows/deploy-demo.yml` — steps `Verify backend health` e `Verify frontend health`
+
+### Ajustes adicionais
+
+- `max_retries`: 10 → 15 (intervalo do HEALTHCHECK do Docker é 30s)
+- `sleep` por iteração: 5s → 10s (sem necessidade de polling agressivo)
+- `sleep 10` inicial antes do loop para aguardar a inicialização do container
+
+---
+
 ## [2026-02-23] - Fix: env.sh e Dockerfile do Frontend (env-config.js MIME error) ✅ CONCLUÍDO
 
 ### Contexto
