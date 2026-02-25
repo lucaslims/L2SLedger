@@ -81,4 +81,4 @@ HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
 
 # env.sh generates env-config.js then exec's the CMD
 ENTRYPOINT ["./env.sh"]
-CMD ["serve", "./dist", "-l", "3000", "-s"]
+CMD ["serve", "./dist", "-l", "3000", "-s", "--symlinks"]
