@@ -14,7 +14,7 @@ TMP_FILE="$(mktemp)"
 # Build the JS file without pipe-subshell — awk reads env vars directly
 printf 'window.__ENV__ = {\n' > "$TMP_FILE"
 
-env | grep '^VITE_' | sort | awk '
+env | grep '^VITE_' | sort | awk -v sq="'" '
 {
   # Split only on the FIRST = to safely handle values containing =
   n = index($0, "=")
@@ -22,8 +22,8 @@ env | grep '^VITE_' | sort | awk '
   val = substr($0, n + 1)
   # Escape backslashes then single quotes
   gsub(/\\/, "\\\\", val)
-  gsub(/\'/, "\\\x27", val)
-  printf "  %s: \x27%s\x27,\n", key, val
+  gsub(sq, "\\" sq, val)
+  printf "  %s: %s%s%s,\n", key, sq, val, sq
 }' >> "$TMP_FILE"
 
 printf '};\n' >> "$TMP_FILE"
