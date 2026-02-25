@@ -103,8 +103,7 @@ public static class ApiExtensions
             }
         });
 
-        app.UseHttpsRedirection();
-
+        // HTTPS é terminado pelo proxy reverso (Caddy) — não usar HttpsRedirection no container
         // Configurar CORS
         app.UseCors("AllowFrontend");
 

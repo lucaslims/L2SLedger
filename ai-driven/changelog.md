@@ -9,6 +9,85 @@ O formato segue o padrão [Keep a Changelog](https://keepachangelog.com/en/1.0.0
 
 ---
 
+## [2026-02-25] - Fix: Health checks e limpeza de imagens no deploy (prod e demo) ✅ CONCLUÍDO
+
+### Contexto
+
+1. Health checks falhavam com portas não publicadas no host
+2. Imagens antigas de backend/frontend ficavam retidas no disco após cada deploy
+3. Verificação sobre suporte a arm64 nas imagens Docker
+
+### Causa raiz — health checks
+
+Os workflows executavam `curl localhost:PORT` no VM host, mas `docker-compose.prod.yml` usa `expose:` (sem `ports:`). Ambas as portas (8080 e 3000) só são acessíveis internamente pela rede Docker (Caddy). Ambos os `Dockerfile`s já possuem `HEALTHCHECK` interno.
+
+### Causa raiz — imagens antigas
+
+`docker image prune -f --filter "until=168h"` só remove imagens dangling (sem tag) com mais de 7 dias. Imagens antigas com tag SHA do deploy anterior (`sha-xxxxxxx`) **nunca eram removidas**, pois ainda estavam taggeadas.
+
+### Sobre ARM64
+
+Ambos os workflows de CI já constroem imagens multi-arch (`linux/amd64,linux/arm64`) via `docker/build-push-action`. Nenhuma alteração necessária.
+
+### Solução aplicada
+
+**Health checks** (4 steps em 2 arquivos): substituído `curl` por `docker inspect`:
+```bash
+until [ "$(docker inspect -f '{{.State.Health.Status}}' l2sledger-SERVIÇO 2>/dev/null)" = "healthy" ]
+```
+
+**Limpeza de imagens** (2 scripts de deploy): antes de cada `pull`, captura o digest da imagem em uso e o remove explicitamente após o novo container subir:
+```bash
+OLD_IMAGE=$(docker inspect CONTAINER --format='{{.Image}}' 2>/dev/null || echo "")
+# ... pull + up ...
+docker rmi "$OLD_IMAGE" 2>/dev/null || true
+```
+`docker image prune -f --filter "until=168h"` substituído por `docker image prune -f` (remove dangling imediatamente).
+
+### Arquivos modificados
+
+- `.github/workflows/deploy.yml` — deploy script + 2 health check steps
+- `.github/workflows/deploy-demo.yml` — deploy script + 2 health check steps
+
+---
+
+## [2026-02-25] - Fix: Health checks de frontend e backend no deploy (porta não publicada no host) ✅ CONCLUÍDO
+
+### Contexto
+
+O deploy do frontend estava falhando com `Frontend health check failed after 10 retries`, mesmo com o container em pé e servindo HTTP 200. O mesmo problema existia latente no health check do backend.
+
+### Causa raiz
+
+Os workflows `deploy.yml` e `deploy-demo.yml` executavam `curl` diretamente nos ports da VM host:
+- Frontend: `curl http://localhost:3000/`
+- Backend: `curl http://localhost:8080/health`
+
+Porém, o `docker-compose.prod.yml` usa `expose:` (sem `ports:`) para **ambos os serviços**, portanto as portas **nunca são publicadas para o host** — são acessíveis apenas na rede Docker interna (pelo Caddy). O `curl` sempre falhava, não porque os serviços estavam down, mas porque as portas eram inacessíveis externamente.
+
+### Solução aplicada
+
+Substituída a checagem via `curl` pelo status nativo do Docker em todos os 4 steps afetados:
+
+```bash
+docker inspect -f '{{.State.Health.Status}}' l2sledger-frontend  # ou l2sledger-backend
+```
+
+Ambos os `Dockerfile`s já possuem `HEALTHCHECK` interno (`wget http://localhost:PORT/`). Os workflows agora aguardam que os containers reportem status `healthy` em vez de tentar acessar as portas externamente.
+
+### Arquivos modificados
+
+- `.github/workflows/deploy.yml` — steps `Verify backend health` e `Verify frontend health`
+- `.github/workflows/deploy-demo.yml` — steps `Verify backend health` e `Verify frontend health`
+
+### Ajustes adicionais
+
+- `max_retries`: 10 → 15 (intervalo do HEALTHCHECK do Docker é 30s)
+- `sleep` por iteração: 5s → 10s (sem necessidade de polling agressivo)
+- `sleep 10` inicial antes do loop para aguardar a inicialização do container
+
+---
+
 ## [2026-02-23] - Fix: env.sh e Dockerfile do Frontend (env-config.js MIME error) ✅ CONCLUÍDO
 
 ### Contexto
