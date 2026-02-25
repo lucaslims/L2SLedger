@@ -1,0 +1,30 @@
+# ══════════════════════════════════════════════════════════════════
+# Caddyfile.local — Local Development Reverse Proxy
+# ══════════════════════════════════════════════════════════════════
+# Mirrors the production Caddy setup without TLS.
+# Routes /api/* to the backend, everything else to the frontend.
+# ══════════════════════════════════════════════════════════════════
+
+:80 {
+    # ── Backend API (/api/*) ──────────────────
+    handle /api/* {
+        reverse_proxy l2sledger-backend:8080 {
+            header_up X-Real-IP {remote_host}
+            header_up X-Forwarded-For {remote_host}
+            header_up X-Forwarded-Proto {scheme}
+        }
+    }
+
+    # ── Frontend SPA (catch-all) ──────────────
+    handle {
+        reverse_proxy l2sledger-frontend:3000
+    }
+
+    # ── Security Headers (same as production) ─
+    header {
+        X-Content-Type-Options "nosniff"
+        X-Frame-Options "DENY"
+        X-XSS-Protection "1; mode=block"
+        Referrer-Policy "strict-origin-when-cross-origin"
+    }
+}
