@@ -85,12 +85,7 @@ describe('CategoryForm', () => {
       { id: '2', name: 'Alimentação' },
     ];
 
-    render(
-      <CategoryForm
-        onSubmit={mockOnSubmit}
-        parentCategories={parentCategories}
-      />
-    );
+    render(<CategoryForm onSubmit={mockOnSubmit} parentCategories={parentCategories} />);
 
     // Deve exibir botão do combobox (não input de ID)
     expect(screen.getByRole('combobox', { name: /selecionar categoria pai/i })).toBeInTheDocument();
@@ -111,12 +106,7 @@ describe('CategoryForm', () => {
       { id: '2', name: 'Alimentação' },
     ];
 
-    render(
-      <CategoryForm
-        onSubmit={mockOnSubmit}
-        parentCategories={parentCategories}
-      />
-    );
+    render(<CategoryForm onSubmit={mockOnSubmit} parentCategories={parentCategories} />);
 
     await user.click(screen.getByRole('combobox', { name: /selecionar categoria pai/i }));
 
@@ -134,12 +124,7 @@ describe('CategoryForm', () => {
       { id: '3', name: 'Transporte' },
     ];
 
-    render(
-      <CategoryForm
-        onSubmit={mockOnSubmit}
-        parentCategories={parentCategories}
-      />
-    );
+    render(<CategoryForm onSubmit={mockOnSubmit} parentCategories={parentCategories} />);
 
     await user.click(screen.getByRole('combobox', { name: /selecionar categoria pai/i }));
     await user.type(screen.getByPlaceholderText('Buscar categoria...'), 'mora');
@@ -156,18 +141,15 @@ describe('CategoryForm', () => {
       { id: 'cat-2', name: 'Alimentação' },
     ];
 
-    render(
-      <CategoryForm
-        onSubmit={mockOnSubmit}
-        parentCategories={parentCategories}
-      />
-    );
+    render(<CategoryForm onSubmit={mockOnSubmit} parentCategories={parentCategories} />);
 
     // Abrir popover e selecionar
     await user.click(screen.getByRole('combobox', { name: /selecionar categoria pai/i }));
     await user.click(await screen.findByText('Moradia'));
 
     // Botão deve mostrar o nome selecionado
-    expect(screen.getByRole('combobox', { name: /selecionar categoria pai/i })).toHaveTextContent('Moradia');
+    expect(screen.getByRole('combobox', { name: /selecionar categoria pai/i })).toHaveTextContent(
+      'Moradia'
+    );
   });
 });

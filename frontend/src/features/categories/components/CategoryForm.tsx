@@ -20,11 +20,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/shared/components/ui/select';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/shared/components/ui/popover';
+import { Popover, PopoverContent, PopoverTrigger } from '@/shared/components/ui/popover';
 import { cn } from '@/shared/lib/utils/cn';
 
 const categorySchema = z.object({
@@ -57,7 +53,12 @@ interface CategoryFormProps {
  * Validação via Zod + React Hook Form.
  * Suporta modo criação (sem initialValues) e edição (com initialValues).
  */
-export function CategoryForm({ initialValues, onSubmit, isPending, parentCategories = [] }: CategoryFormProps) {
+export function CategoryForm({
+  initialValues,
+  onSubmit,
+  isPending,
+  parentCategories = [],
+}: CategoryFormProps) {
   const [parentOpen, setParentOpen] = useState(false);
   const [parentSearch, setParentSearch] = useState('');
 
@@ -161,7 +162,7 @@ export function CategoryForm({ initialValues, onSubmit, isPending, parentCategor
                         className="mb-2"
                         aria-label="Buscar categoria pai"
                       />
-                      <div className="max-h-48 overflow-y-auto space-y-1">
+                      <div className="max-h-48 space-y-1 overflow-y-auto">
                         <button
                           type="button"
                           onClick={() => {
@@ -213,11 +214,7 @@ export function CategoryForm({ initialValues, onSubmit, isPending, parentCategor
                   </Popover>
                 ) : (
                   <FormControl>
-                    <Input
-                      placeholder="ID da categoria pai"
-                      {...field}
-                      value={field.value ?? ''}
-                    />
+                    <Input placeholder="ID da categoria pai" {...field} value={field.value ?? ''} />
                   </FormControl>
                 )}
                 <FormMessage />

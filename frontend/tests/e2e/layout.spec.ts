@@ -193,7 +193,7 @@ test.describe('Layout — Responsividade (Bug 3.3)', () => {
     await page.goto('/dashboard');
 
     // Sidebar desktop deve estar hidden em mobile (Tailwind: hidden md:flex)
-    const sidebar = page.locator('aside.hidden, aside[class*="hidden"]').first();
+    //const sidebar = page.locator('aside.hidden, aside[class*="hidden"]').first();
     // Em mobile: computedStyle display deve ser none
     const sidebarDisplay = await page.locator('aside').first().evaluate(
       (el) => window.getComputedStyle(el).display
