@@ -1,0 +1,31 @@
+# ══════════════════════════════════════════════════════════════════
+# docker-compose.caddy.yml — LOCAL REVERSE PROXY (mirrors production)
+# ══════════════════════════════════════════════════════════════════
+# Simulates the production Caddy reverse proxy locally.
+# Run alongside the main docker-compose.yml:
+#
+#   docker compose -f docker-compose.yml -f docker-compose.caddy.yml up -d --build
+#
+# After starting, access the application at:
+#   http://localhost (port 80)
+#
+# Caddy routes:
+#   /api/*  → l2sledger-backend:8080
+#   /*      → l2sledger-frontend:3000
+# ══════════════════════════════════════════════════════════════════
+
+services:
+  caddy:
+    container_name: l2sledger-caddy
+    image: caddy:alpine
+    ports:
+      - "80:80"
+    volumes:
+      - ./caddy/Caddyfile.dev:/etc/caddy/Caddyfile:ro
+    networks:
+      - l2snet
+      - caddy-network
+    depends_on:
+      - backend
+      - frontend
+    restart: unless-stopped

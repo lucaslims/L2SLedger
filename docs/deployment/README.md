@@ -1,82 +1,47 @@
-# Deploy Documentation — L2SLedger
+# Deploy — L2SLedger
 
-> Documentação completa de configuração, deploy e operação do L2SLedger.
-
----
-
-## 🌍 Ambientes
-
-| Ambiente | Propósito | URL Base | Isolamento |
-|----------|-----------|----------|------------|
-| **DEV** | Desenvolvimento local | `http://localhost:3000` / `http://localhost:8080` | Total |
-| **DEMO** | Demonstração e testes | Definido por projeto | Total |
-| **PROD** | Produção (OCI VM) | `https://yourdomain.com` | Total |
-
-> Bancos de dados, configurações e credenciais são **completamente isolados** entre ambientes.
+Documentação de configuração, deploy e operação do sistema.
 
 ---
 
-## 📚 Guias Disponíveis
+## Ambientes (ADR-028, ADR-030)
+
+| Ambiente | Propósito | Isolamento |
+|----------|-----------|------------|
+| **DEV** | Desenvolvimento local | Total |
+| **DEMO** | Demonstração e testes | Total |
+| **PROD** | Produção (OCI ARM64) | Total |
+
+Bancos, configurações e credentials são **completamente isolados** entre ambientes.
+
+---
+
+## Guias
 
 | # | Documento | Descrição |
 |---|-----------|-----------|
-| 1 | [Pré-requisitos](1-prerequisites.md) | Ferramentas, serviços e infraestrutura necessários |
-| 2 | [Desenvolvimento Local](2-local-development.md) | Rodar backend e frontend sem Docker |
+| 1 | [Pré-requisitos](1-prerequisites.md) | Ferramentas e serviços necessários |
+| 2 | [Desenvolvimento Local](2-local-development.md) | Backend e frontend sem Docker |
 | 3 | [Docker Local](3-docker-local.md) | Stack completa via Docker Compose |
-| 4 | [Setup de Produção](4-production-setup.md) | Configuração inicial do servidor (one-time) |
-| 5 | [Deploy em Produção](5-production-deploy.md) | Deploy via GitHub Actions ou SSH manual |
-| 6 | [Variáveis de Ambiente](6-environment-variables.md) | Referência completa de todas as variáveis |
-| 7 | [Configuração do Caddy](7-caddy-configuration.md) | Reverse proxy, TLS e roteamento |
+| 4 | [Setup de Produção](4-production-setup.md) | Configuração inicial do servidor |
+| 5 | [Deploy em Produção](5-production-deploy.md) | Deploy via GitHub Actions ou SSH |
+| 6 | [Variáveis de Ambiente](6-environment-variables.md) | Referência completa |
+| 7 | [Configuração do Caddy](7-caddy-configuration.md) | Reverse proxy e TLS |
 | 8 | [Monitoramento e Health](8-monitoring-health.md) | Health checks, logs e métricas |
-| 9 | [Troubleshooting](9-troubleshooting.md) | Resolução de problemas comuns |
+| 9 | [Troubleshooting](9-troubleshooting.md) | Problemas comuns |
 | 10 | [Rollback e Recuperação](10-rollback-recovery.md) | Rollback e disaster recovery |
 
 ---
 
-## 🧭 Decisões Rápidas
+## Fluxos Rápidos
 
-### O que você quer fazer?
-
-| Situação | Vá para |
+| Situação | Caminho |
 |----------|---------|
-| 🆕 **Primeira vez no projeto** | [1-prerequisites.md](1-prerequisites.md) → [2-local-development.md](2-local-development.md) |
-| 💻 **Desenvolver sem Docker** | [2-local-development.md](2-local-development.md) |
-| 🐳 **Rodar com Docker localmente** | [3-docker-local.md](3-docker-local.md) |
-| 🏗️ **Preparar servidor novo** | [4-production-setup.md](4-production-setup.md) |
-| 🚀 **Fazer deploy em produção** | [5-production-deploy.md](5-production-deploy.md) |
-| 🔧 **Verificar variáveis de ambiente** | [6-environment-variables.md](6-environment-variables.md) |
-| 🌐 **Configurar reverse proxy** | [7-caddy-configuration.md](7-caddy-configuration.md) |
-| 📊 **Monitorar saúde do sistema** | [8-monitoring-health.md](8-monitoring-health.md) |
-| 🐛 **Resolver um problema** | [9-troubleshooting.md](9-troubleshooting.md) |
-| ⏪ **Reverter um deploy** | [10-rollback-recovery.md](10-rollback-recovery.md) |
-
----
-
-## 🔄 Fluxo de Trabalho Típico
-
-### Novo Desenvolvedor
-
-```
-1-prerequisites.md → 2-local-development.md → Desenvolver!
-```
-
-### Deploy para Produção
-
-```
-5-production-deploy.md → 8-monitoring-health.md → Verificar!
-```
-
-### Primeiro Deploy (Servidor Novo)
-
-```
-1-prerequisites.md → 4-production-setup.md → 7-caddy-configuration.md → 5-production-deploy.md
-```
-
-### Problema em Produção
-
-```
-9-troubleshooting.md → (se necessário) → 10-rollback-recovery.md
-```
+| Primeira vez no projeto | 1 → 2 |
+| Rodar com Docker local | 3 |
+| Preparar servidor novo | 1 → 4 → 7 → 5 |
+| Deploy em produção | 5 → 8 |
+| Problema em produção | 9 → 10 |
 
 ---
 
@@ -92,7 +57,7 @@
 
 ---
 
-## 📐 Convenções
+## Convenções
 
 ### Terminologia
 
@@ -108,23 +73,21 @@
 
 ### Padrões de Nomenclatura
 
-| Recurso | Padrão | Exemplo |
-|---------|--------|---------|
-| Container backend | `l2sledger-backend` | — |
-| Container frontend | `l2sledger-frontend` | — |
-| Rede Caddy | `caddy-network` | — |
-| Rede Database | `shared-db-network` | — |
-| Diretório deploy (VM) | `/opt/l2sledger` | — |
-| Diretório secrets (VM) | `/opt/l2sledger/secrets` | — |
-| Image tag | `v{major}.{minor}.{patch}` | `v1.2.3` |
-| Image tag (commit) | `sha-{short}` | `sha-abc1234` |
+| Recurso | Padrão |
+|---------|--------|
+| Container backend | `l2sledger-backend` |
+| Container frontend | `l2sledger-frontend` |
+| Rede Caddy | `caddy-network` |
+| Rede Database | `shared-db-network` |
+| Diretório deploy | `/opt/l2sledger` |
+| Image tag | `v{major}.{minor}.{patch}` ou `sha-{short}` |
 
 ---
 
-## 📖 Referências
+## Referências
 
 - [Architecture.md](../../Architecture.md) — Visão arquitetural
-- [DevOps Strategy](../devops-strategy.md) — Decisões DevOps e segurança
+- [DevOps Strategy](../devops-strategy.md) — Decisões DevOps
 - [ADR Index](../adr/adr-index.md) — Decisões arquiteturais
-- [Backend RUNNING.md](../../backend/RUNNING.md) — Guia original do backend
-- [Frontend README.md](../../frontend/README.md) — Quick start do frontend
+- [Backend README](../../backend/README.md) — Documentação do backend
+- [Frontend README](../../frontend/README.md) — Documentação do frontend

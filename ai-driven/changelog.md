@@ -9,6 +9,306 @@ O formato segue o padrão [Keep a Changelog](https://keepachangelog.com/en/1.0.0
 
 ---
 
+## [2026-02-25] - Fix: Health checks e limpeza de imagens no deploy (prod e demo) ✅ CONCLUÍDO
+
+### Contexto
+
+1. Health checks falhavam com portas não publicadas no host
+2. Imagens antigas de backend/frontend ficavam retidas no disco após cada deploy
+3. Verificação sobre suporte a arm64 nas imagens Docker
+
+### Causa raiz — health checks
+
+Os workflows executavam `curl localhost:PORT` no VM host, mas `docker-compose.prod.yml` usa `expose:` (sem `ports:`). Ambas as portas (8080 e 3000) só são acessíveis internamente pela rede Docker (Caddy). Ambos os `Dockerfile`s já possuem `HEALTHCHECK` interno.
+
+### Causa raiz — imagens antigas
+
+`docker image prune -f --filter "until=168h"` só remove imagens dangling (sem tag) com mais de 7 dias. Imagens antigas com tag SHA do deploy anterior (`sha-xxxxxxx`) **nunca eram removidas**, pois ainda estavam taggeadas.
+
+### Sobre ARM64
+
+Ambos os workflows de CI já constroem imagens multi-arch (`linux/amd64,linux/arm64`) via `docker/build-push-action`. Nenhuma alteração necessária.
+
+### Solução aplicada
+
+**Health checks** (4 steps em 2 arquivos): substituído `curl` por `docker inspect`:
+```bash
+until [ "$(docker inspect -f '{{.State.Health.Status}}' l2sledger-SERVIÇO 2>/dev/null)" = "healthy" ]
+```
+
+**Limpeza de imagens** (2 scripts de deploy): antes de cada `pull`, captura o digest da imagem em uso e o remove explicitamente após o novo container subir:
+```bash
+OLD_IMAGE=$(docker inspect CONTAINER --format='{{.Image}}' 2>/dev/null || echo "")
+# ... pull + up ...
+docker rmi "$OLD_IMAGE" 2>/dev/null || true
+```
+`docker image prune -f --filter "until=168h"` substituído por `docker image prune -f` (remove dangling imediatamente).
+
+### Arquivos modificados
+
+- `.github/workflows/deploy.yml` — deploy script + 2 health check steps
+- `.github/workflows/deploy-demo.yml` — deploy script + 2 health check steps
+
+---
+
+## [2026-02-25] - Fix: Health checks de frontend e backend no deploy (porta não publicada no host) ✅ CONCLUÍDO
+
+### Contexto
+
+O deploy do frontend estava falhando com `Frontend health check failed after 10 retries`, mesmo com o container em pé e servindo HTTP 200. O mesmo problema existia latente no health check do backend.
+
+### Causa raiz
+
+Os workflows `deploy.yml` e `deploy-demo.yml` executavam `curl` diretamente nos ports da VM host:
+- Frontend: `curl http://localhost:3000/`
+- Backend: `curl http://localhost:8080/health`
+
+Porém, o `docker-compose.prod.yml` usa `expose:` (sem `ports:`) para **ambos os serviços**, portanto as portas **nunca são publicadas para o host** — são acessíveis apenas na rede Docker interna (pelo Caddy). O `curl` sempre falhava, não porque os serviços estavam down, mas porque as portas eram inacessíveis externamente.
+
+### Solução aplicada
+
+Substituída a checagem via `curl` pelo status nativo do Docker em todos os 4 steps afetados:
+
+```bash
+docker inspect -f '{{.State.Health.Status}}' l2sledger-frontend  # ou l2sledger-backend
+```
+
+Ambos os `Dockerfile`s já possuem `HEALTHCHECK` interno (`wget http://localhost:PORT/`). Os workflows agora aguardam que os containers reportem status `healthy` em vez de tentar acessar as portas externamente.
+
+### Arquivos modificados
+
+- `.github/workflows/deploy.yml` — steps `Verify backend health` e `Verify frontend health`
+- `.github/workflows/deploy-demo.yml` — steps `Verify backend health` e `Verify frontend health`
+
+### Ajustes adicionais
+
+- `max_retries`: 10 → 15 (intervalo do HEALTHCHECK do Docker é 30s)
+- `sleep` por iteração: 5s → 10s (sem necessidade de polling agressivo)
+- `sleep 10` inicial antes do loop para aguardar a inicialização do container
+
+---
+
+## [2026-02-23] - Fix: env.sh e Dockerfile do Frontend (env-config.js MIME error) ✅ CONCLUÍDO
+
+### Contexto
+
+Após deploy, o browser retornava MIME type `text/html` para `/env-config.js`, porque o `serve` em modo SPA servia `index.html` para qualquer 404 — ou seja, o arquivo não estava sendo gerado corretamente pelo `env.sh`.
+
+### Causas identificadas
+
+1. **`env.sh` com bug silencioso**: o loop `while IFS='=' read -r key value` via pipe rodava em subshell no `busybox ash` do Alpine (não causava falha visível). Valores com `=` no corpo (como URLs e tokens Firebase) seriam potencialmente truncados.
+2. **Dockerfile com ARGs faltando**: as variáveis `VITE_FIREBASE_STORAGE_BUCKET`, `VITE_FIREBASE_MESSAGING_SENDER_ID`, `VITE_FIREBASE_APP_ID`, `VITE_EMAIL_VERIFICATION_RESEND_COOLDOWN`, `VITE_ENABLE_DEVTOOLS` e todo o bloco `ENV` haviam sido removidos do build stage, quebrando o build Vite em CI.
+
+### Correções
+
+- `frontend/docker/env.sh` — Reescrito com `awk` (sem subshell), `set -e`, `mktemp` atômico e escaping correto para valores com `=`
+- `frontend/Dockerfile` — Restaurados todos os `ARG`/`ENV` do build stage
+
+---
+
+## [2026-02-23] - Release v1.0.4 — Exports Volume & Full Documentation Refactor ✅ CONCLUÍDO
+
+### Contexto
+
+Criação do documento de release notes para a tag `v1.0.4`, cobrindo a adição do volume persistido `l2sledger-exports` para arquivos de exportação no backend e o refactor completo de toda a documentação do projeto.
+
+### Tipo
+Release / DevOps / Documentação
+
+### Ações Executadas
+- Comparação com a tag `v1.0.3` via `git log` e `git diff`
+- Criação do documento `docs/PRs/release-v1.0.4-notes.md`
+
+### Arquivos Modificados / Criados
+- `docs/PRs/release-v1.0.4-notes.md` — Novo: release notes completo para v1.0.4
+- `ai-driven/changelog.md` — Esta entrada
+
+### Resumo das Mudanças na v1.0.4
+- `fix`: pré-criação do diretório `/app/exports` no `Dockerfile` com `chown` correto
+- `fix`: volume `l2sledger-exports` adicionado ao `docker-compose.prod.yml` e `docker-compose.yml`
+- `docs`: refactor completo de toda documentação — `Architecture.md`, `README.md`, `backend/README.md` (novo), `frontend/README.md`, `docs/README.md` (novo), `docs/deployment/README.md`, `ai-driven/README.md`
+
+---
+
+## [2026-02-22] - Atualização Completa de Documentação: Todos os READMEs + Architecture.md ✅ CONCLUÍDO
+
+### Contexto
+
+Segunda execução do prompt `L2SLedger-Documentation.prompt.md`. Atualização de todos os 6 README.md existentes no projeto e do Architecture.md, garantindo consistência com os 47 ADRs, concisão e alinhamento total com a governança.
+
+### Tipo
+Documentação
+
+### Arquivos Modificados
+- `README.md` — Reescrito: mais conciso, tabela de arquitetura, links diretos para todos os READMEs do projeto, referências completas aos ADRs e governança
+- `backend/README.md` — Revisado para consistência com root README atualizado
+- `frontend/README.md` — Reescrito: estrutura de pastas real (`app/`, `features/`, `shared/`), princípios arquiteturais com ADRs, segurança, stack atualizada, referências cruzadas
+- `docs/README.md` — Reescrito: mais conciso, inclui `devops-strategy.md`, referência ao changelog
+- `docs/deployment/README.md` — Reescrito: tabelas compactas, fluxos rápidos simplificados, referências atualizadas para backend/frontend READMEs
+- `ai-driven/README.md` — Reescrito: tabela de papéis dos agentes, regras e proibições condensadas, estrutura mais limpa
+- `Architecture.md` — Referências atualizadas com links para todos os READMEs do projeto
+
+### Justificativa Técnica
+Os READMEs existentes tinham verbosidade excessiva, inconsistências entre si e links desatualizados. A atualização garante: concisão, consistência com todos os 47 ADRs, cross-references corretas entre todos os documentos e aderência total à governança.
+
+### Documentos Analisados
+- Todos os 8 documentos obrigatórios do prompt de documentação
+- Todos os 6 README.md existentes
+- `Architecture.md`, `frontend/package.json`, estrutura de pastas do frontend e backend
+
+### Ferramenta
+GitHub Copilot (Claude Opus 4.6)
+
+---
+
+## [2026-02-22] - Atualização de Documentação: Architecture.md + READMEs ✅ CONCLUÍDO
+
+### Contexto
+
+Execução do prompt oficial `L2SLedger-Documentation.prompt.md` para atualização da documentação do projeto, garantindo consistência com os 47 ADRs e a governança oficial.
+
+### Tipo
+Documentação
+
+### Arquivos Criados
+- `backend/README.md` — Visão arquitetural do backend com estrutura, princípios, segurança, testes e ADRs relevantes
+- `docs/README.md` — Organização da documentação, guia de ADRs, governança e uso de IA
+
+### Arquivos Modificados
+- `Architecture.md` — Reescrito com cobertura completa: todas as camadas do backend, segurança, auditoria, persistência, observabilidade, CI/CD, ambientes, compliance, comercialização, testes e contratos da API. Diagrama Mermaid atualizado. Referências a todos os ADRs relevantes.
+
+### Justificativa Técnica
+A documentação existente estava desalinhada com o estado atual do projeto (47 ADRs, observabilidade implementada, CI/CD multi-plataforma, modelo SaaS). Os novos READMEs preenchem lacunas documentais no backend e na pasta docs conforme exigido pela governança.
+
+### Documentos Analisados
+- `README.md`, `Architecture.md`, `docs/adr/adr-index.md`
+- `ai-driven/agent-rules.md`, `docs/governance/ai-playbook.md`
+- `docs/governance/flow-planejar-provar-executar.md`
+- `docs/governance/approval-checklist.md`, `docs/governance/github-pr-governance.md`
+- `backend/STATUS.md`, `frontend/README.md`
+
+### Ferramenta
+GitHub Copilot (Claude Opus 4.6)
+
+---
+
+## [2026-02-22] - Correção: permissão negada em /app/keys (Data Protection) ✅ CONCLUÍDO
+
+### Contexto
+
+O backend falhava ao iniciar em produção com o erro:
+```
+System.IO.IOException: Read-only file system : '/app/keys'
+```
+O ASP.NET Data Protection tenta criar o diretório `/app/keys` em tempo de execução para persistir chaves criptográficas.
+
+### Causa Raiz
+
+O `docker-compose.prod.yml` define `read_only: true` no container do backend por segurança, tornando todo o sistema de arquivos somente-leitura. Apenas `/tmp` era montado como tmpfs gravável. O diretório `/app/keys` não existia na imagem e não podia ser criado em runtime.
+
+### Tipo
+Hotfix — Infraestrutura / Deploy
+
+### Correções Aplicadas
+
+#### 1. `backend/Dockerfile` — Pré-criar `/app/keys` com ownership correto
+Adicionado `RUN mkdir -p /app/keys && chown appuser:appgroup /app /app/keys -R` para que o ponto de montagem exista na imagem com as permissões corretas.
+
+#### 2. `docker-compose.prod.yml` — Volume nomeado para `/app/keys`
+- Adicionado volume `l2sledger-keys:/app/keys` ao serviço `backend`.
+- Declarado volume `l2sledger-keys` no nível raiz do compose.
+- Um named volume (ao invés de tmpfs) foi escolhido deliberadamente: perder as chaves de Data Protection invalida todos os cookies/sessões ativos, forçando logout de todos os usuários.
+
+### Arquivos Alterados
+- `backend/Dockerfile`
+- `docker-compose.prod.yml`
+
+---
+
+## [2026-02-22] - Suporte Multi-Plataforma Docker (ARM64 + AMD64) ✅ CONCLUÍDO
+
+### Contexto
+
+O deploy em produção falhava ao tentar executar `docker compose pull` no servidor OCI ARM64 com erro:
+```
+no matching manifest for linux/arm64/v8 in the manifest list entries
+```
+
+### Causa Raiz
+
+De acordo com [ADR-033](../docs/adr/adr-033.md), a infraestrutura OCI usa VMs **ARM64** (Arm64 2 OCPUs, 12 GB RAM), mas as imagens Docker estavam sendo construídas apenas para **AMD64** (arquitetura padrão dos GitHub Actions runners `ubuntu-latest`).
+
+### Tipo
+CI/CD — Infraestrutura
+
+### Correções Aplicadas
+
+#### 1. `backend-ci.yml` — Adicionar plataforma ARM64
+- Adicionado parâmetro `platforms: linux/amd64,linux/arm64` ao step `Build and push Docker image`
+- Docker Buildx já configurado com `docker/setup-buildx-action@v3` (suporta QEMU automaticamente)
+
+#### 2. `frontend-ci.yml` — Adicionar plataforma ARM64
+- Adicionado parâmetro `platforms: linux/amd64,linux/arm64` ao step `Build and push Docker image`
+
+### Impacto Técnico
+
+**Build Time:**
+- Builds multi-plataforma levam aproximadamente 2-3x mais tempo devido à emulação QEMU
+- Backend: ~8-12 minutos (antes ~5 minutos)
+- Frontend: ~5-8 minutos (antes ~3 minutos)
+
+**Compatibilidade:**
+- Imagens agora funcionam em servidores AMD64 (desenvolvimento local, outros clouds)
+- Imagens agora funcionam em servidores ARM64 (OCI Always Free Tier)
+
+### Resultados
+- ✅ Imagens Docker publicadas com manifests para ambas arquiteturas
+- ✅ Deploy em OCI ARM64 agora funcional
+- ✅ Compatibilidade mantida com ambientes AMD64
+
+### ADRs Relacionados
+- [ADR-033](../docs/adr/adr-033.md) — Define infraestrutura OCI como ARM64
+- [ADR-032](../docs/adr/adr-032.md) — Docker como padrão de containerização
+
+### Ferramenta
+- GitHub Copilot
+
+---
+
+## [2026-02-21] - Fix Deploy PROD: Remoção do SCP Step ✅ CONCLUÍDO
+
+### Contexto
+
+O deploy em produção falhava com `Permission denied` ao copiar `docker-compose.prod.yml` via `appleboy/scp-action`. O `tar` usado internamente pela action não tinha permissão de escrita no diretório de destino.
+
+### Causa Raiz
+
+A action `appleboy/scp-action@v0.1.7` usa `tar` para extrair arquivos no servidor remoto, e o usuário SSH não tinha permissão de escrita para o `tar` no diretório alvo.
+
+### Tipo
+CI/CD — Bugfix
+
+### Correções Aplicadas
+
+#### 1. `deploy.yml` — Remoção do step SCP e consolidação
+- Removido step `Copy docker-compose to server` (`appleboy/scp-action@v0.1.7`)
+- Adicionado step `Encode compose file` que codifica o arquivo em base64
+- Transferência do arquivo via `envs` do `appleboy/ssh-action` com decodificação no servidor
+- Todas as alterações no servidor remoto consolidadas em um único step SSH
+
+### Resultados
+- Eliminada dependência do `appleboy/scp-action`
+- Deploy de compose file via SSH evita problemas de permissão do `tar`
+- Todas as modificações remotas em um único step
+
+### ADRs Aplicados
+- Nenhum ADR novo necessário
+
+### Ferramenta
+- GitHub Copilot
+
+---
+
 ## [2026-02-20] - Correção Crítica: 10 Erros de CI/CD
 
 ### Contexto

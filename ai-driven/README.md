@@ -1,185 +1,81 @@
-# AI‑Driven — Governança do Uso de Agentes IA (L2SLedger)
+# AI-Driven — Governança de IA (L2SLedger)
 
-> **Este diretório é o núcleo de governança do uso de IA no projeto L2SLedger.**
->
-> Tudo o que está aqui define **as regras, limites e responsabilidades** para que agentes de IA possam **planejar e executar mudanças** de forma segura, auditável e alinhada à arquitetura.
+> Núcleo de governança do uso de agentes IA no projeto. Define regras, limites e auditoria.
 
 ---
 
-## 🎯 Objetivo da Pasta `ai-driven`
+## Objetivo
 
-A pasta `/ai-driven` **NÃO contém prompts executáveis**.
+Centralizar **governança e controle** do uso de IA — não contém prompts executáveis.
 
-Ela centraliza exclusivamente **governança e controle** do uso de IA:
+Garante que:
 
-* Regras obrigatórias e imutáveis para agentes IA
-* Definição do fluxo oficial Planejar → Aprovar → Executar
-* Responsabilidades de cada tipo de agente
-* Registro auditável das execuções realizadas com apoio de IA
-
-Ela existe para garantir que:
-
-* Nenhuma execução de IA viole ADRs
-* Planejamento, aprovação e execução estejam claramente separados
-* Toda alteração seja rastreável
-* O uso de IA seja **disciplinado, previsível e seguro**
+- Nenhuma execução viole ADRs
+- Planejamento, aprovação e execução estejam separados
+- Toda alteração seja rastreável e auditável
 
 ---
 
-## 📂 Estrutura da Pasta
+## Estrutura
 
-```text
+```
 ai-driven/
-├── README.md        # Este documento (governança e uso de IA)
-├── agent-rules.md   # Regras globais e obrigatórias para agentes IA
-├── changelog.md     # Registro auditável das execuções de IA
+├── README.md        # Este documento
+├── agent-rules.md   # Regras globais obrigatórias para agentes IA
+└── changelog.md     # Registro auditável das execuções de IA
 ```
 
-📌 **Importante:**
-
-> Nenhum prompt executável deve existir dentro desta pasta.
+> Prompts executáveis ficam em `.github/prompts/` — separação intencional entre governança e execução.
 
 ---
 
-## 🧠 Conceito Central
+## Fluxo: Planejar → Aprovar → Executar
 
-### Planejar → Aprovar → Executar
-
-O L2SLedger segue **estritamente** o fluxo abaixo:
-
-1. **Planejar** — Criar plano técnico detalhado (sem escrever código)
-2. **Aprovar** — Validar checklist e obter aprovação humana
-3. **Executar** — Executar mudanças via agentes especializados
+1. **Planejar** — Criar plano técnico sem escrever código
+2. **Aprovar** — Validar checklist + aprovação humana
+3. **Executar** — Implementar via agentes especializados
 
 ⚠️ **Execução sem planejamento aprovado é proibida.**
 
 ---
 
-## 🤖 Papéis dos Agentes de IA
+## Papéis dos Agentes
 
-### 1️⃣ Agente de Planejamento
+| Agente | Responsabilidade | Permissões |
+| ------ | ---------------- | ---------- |
+| **Planner** | Análise e plano técnico | Analisar, propor — **não executa** |
+| **Master** | Orquestração e validação | Coordenar agentes — **não coda** |
+| **Backend** | Domínio, APIs, persistência | Criar código + docs |
+| **Frontend** | SPA, UX, integração | Criar código + docs |
+| **CI/CD** | Pipelines, Docker, deploy | Criar código + testes + docs |
+| **QA** | Testes automatizados | Criar testes + validar execução |
 
-*Responsabilidade:* **Planejamento apenas**
-
-Responsável por:
-
-* Analisar a solicitação
-* Criar plano técnico detalhado
-* Identificar impactos em arquitetura, testes e documentação
-
-📌 Não escreve código
-📌 Não executa comandos
-📌 Não atualiza changelog
+Cada agente possui **escopo fechado**. Decisões fora do escopo são proibidas.
 
 ---
 
-### 2️⃣ Agente Orquestrador (Prompt Master)
+## Regras Obrigatórias
 
-*Responsabilidade:* **Execução coordenada**
+Antes de executar, todo agente deve carregar:
 
-Responsável por:
+- `ai-driven/agent-rules.md`
+- `docs/adr/adr-index.md`
+- `Architecture.md`
+- Documentos em `docs/governance/`
 
-* Validar que planejamento e aprovação existem
-* Orquestrar agentes especializados
-* Garantir aderência total aos ADRs
-* Exigir atualização de testes e documentação
-* Registrar execução no changelog
-
-📌 Atua **somente na fase de execução**.
+Detalhes completos em [agent-rules.md](agent-rules.md).
 
 ---
 
-### 3️⃣ Agentes Especializados
+## Changelog
 
-Executam tarefas **somente após autorização do Orquestrador**.
+Após **toda execução**, atualizar `ai-driven/changelog.md` com: data, arquivos alterados, descrição e justificativa.
 
-#### Backend
-
-* Domínio financeiro
-* APIs
-* Persistência
-* Segurança
-
-#### Frontend
-
-* SPA
-* UX
-* Integração com backend
-* Autenticação
-
-#### CI/CD
-
-* Pipelines
-* Docker
-* Deploy por ambiente
-
-Cada agente possui **escopo fechado**.
-Decisões fora do escopo são proibidas.
+Planejamento **não** gera changelog — apenas execução.
 
 ---
 
-## 📍 Onde Estão os Prompts Executáveis
-
-Os prompts **NÃO ficam nesta pasta**.
-
-Eles estão localizados em:
-
-```text
-.github/prompts/
-```
-
-Essa decisão é **intencional** e faz parte da governança do projeto:
-
-* Melhor integração com **VS Code (Custom Agents)**
-* Compatibilidade nativa com **GitHub Copilot / Prompt Files**
-* Separação clara entre **governança** e **execução**
-
-### Regra fundamental
-
-* `/ai-driven` → **regras, limites e auditoria**
-* `/.github/prompts` → **prompts executáveis usados pelas ferramentas**
-
-
-Misturar esses papéis é proibido.
-
----
-
-## 📜 Regras Obrigatórias (`agent-rules.md`)
-
-Antes de qualquer execução, **todo agente deve carregar e respeitar**:
-
-* `ai-driven/agent-rules.md`
-* `docs/adr/adr-index.md`
-* `docs/adr/adr-041.md`
-* `architecture.md`
-* Documentos em `docs/governance/`
-
-Essas regras são **imutáveis**.
-
----
-
-## 🧾 Changelog de IA (`changelog.md`)
-
-Após **toda execução**, é obrigatório atualizar:
-
-```text
-ai-driven/changelog.md
-```
-
-O registro deve conter:
-
-* Data
-* Agentes envolvidos
-* O que foi alterado
-* Motivo da alteração
-* Impacto técnico
-
-📌 Planejamento **NÃO** gera changelog.
-📌 Apenas execução gera registro.
-
----
-
-## ⚙️ Uso Correto no Dia a Dia
+## Uso Correto no Dia a Dia
 
 Fluxo recomendado:
 
@@ -192,16 +88,16 @@ Fluxo recomendado:
 
 ---
 
-## 🚫 Proibições Absolutas
+## Proibições
 
-Agentes IA **NUNCA** podem:
+Agentes IA **nunca** podem:
 
-* Executar código sem planejamento aprovado
-* Violar ADRs
-* Introduzir lógica financeira no frontend
-* Alterar contratos públicos sem versionamento
-* Atualizar changelog fora da fase de execução
-* Finalizar execução sem atualizar testes e documentação (quando aplicável)
+- Executar sem planejamento aprovado
+- Violar ADRs
+- Introduzir lógica financeira no frontend
+- Alterar contratos sem versionamento
+- Finalizar sem atualizar testes/docs (quando aplicável)
+- Atualizar changelog fora da fase de execução
 
 ---
 
@@ -209,14 +105,12 @@ Agentes IA **NUNCA** podem:
 
 O uso de IA no L2SLedger deve resultar em:
 
-* Evolução segura do sistema
-* Alta previsibilidade
-* Auditoria completa
-* Arquitetura consistente
-* Confiança no uso de agentes
+- Evolução segura do sistema
+- Alta previsibilidade
+- Auditoria completa
+- Arquitetura consistente
+- Confiança no uso de agentes
 
 ---
 
 > **IA é uma força multiplicadora — nunca uma autoridade autônoma.**
->
-> Este diretório existe para garantir isso.

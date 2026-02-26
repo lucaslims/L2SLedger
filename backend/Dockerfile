@@ -46,7 +46,11 @@ ENV ASPNETCORE_ENVIRONMENT=Production \
 
 COPY --from=build --chown=appuser:appgroup /app/publish .
 
-RUN chown appuser:appgroup /app -R
+# Pre-create /app/keys so Data Protection can write keys even on read-only filesystems
+# (the named volume declared in docker-compose.prod.yml is mounted here at runtime)
+RUN mkdir -p /app/keys \
+&& mkdir -p /app/exports \
+&& chown appuser:appgroup /app /app/keys /app/exports -R
 
 # Switch to non-root user
 USER appuser
@@ -55,6 +59,6 @@ USER appuser
 EXPOSE 8080
 
 HEALTHCHECK --interval=30s --timeout=5s --start-period=15s --retries=3 \
-  CMD wget --no-verbose --tries=1 --spider http://localhost:8080/api/v1/health || exit 1
+  CMD wget --no-verbose --tries=1 --spider http://localhost:8080/health || exit 1
 
 ENTRYPOINT ["dotnet", "L2SLedger.API.dll"]

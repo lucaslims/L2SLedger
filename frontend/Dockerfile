@@ -1,12 +1,12 @@
 # ── Stage 1: Dependencies ───────────────────────────────────────
-FROM node:20-alpine AS deps
+FROM node:24-alpine AS deps
 WORKDIR /app
 
 COPY package.json package-lock.json ./
 RUN npm ci --ignore-scripts
 
 # ── Stage 2: Build ──────────────────────────────────────────────
-FROM node:20-alpine AS build
+FROM node:24-alpine AS build
 WORKDIR /app
 
 COPY --from=deps /app/node_modules ./node_modules
@@ -17,11 +17,28 @@ ARG VITE_API_BASE_URL=""
 ARG VITE_FIREBASE_API_KEY=""
 ARG VITE_FIREBASE_AUTH_DOMAIN=""
 ARG VITE_FIREBASE_PROJECT_ID=""
+ARG VITE_FIREBASE_STORAGE_BUCKET=""
+ARG VITE_FIREBASE_MESSAGING_SENDER_ID=""
+ARG VITE_FIREBASE_APP_ID=""
+ARG VITE_EMAIL_VERIFICATION_RESEND_COOLDOWN=60
+ARG VITE_ENABLE_DEVTOOLS=true
+ARG NODE_ENV=production
+
+ENV VITE_API_BASE_URL=$VITE_API_BASE_URL \
+  VITE_FIREBASE_API_KEY=$VITE_FIREBASE_API_KEY \
+  VITE_FIREBASE_AUTH_DOMAIN=$VITE_FIREBASE_AUTH_DOMAIN \
+  VITE_FIREBASE_PROJECT_ID=$VITE_FIREBASE_PROJECT_ID \
+  VITE_FIREBASE_STORAGE_BUCKET=$VITE_FIREBASE_STORAGE_BUCKET \
+  VITE_FIREBASE_MESSAGING_SENDER_ID=$VITE_FIREBASE_MESSAGING_SENDER_ID \
+  VITE_FIREBASE_APP_ID=$VITE_FIREBASE_APP_ID \
+  VITE_EMAIL_VERIFICATION_RESEND_COOLDOWN=$VITE_EMAIL_VERIFICATION_RESEND_COOLDOWN \
+  VITE_ENABLE_DEVTOOLS=$VITE_ENABLE_DEVTOOLS \
+  NODE_ENV=$NODE_ENV
 
 RUN npm run build
 
 # ── Stage 3: Production runtime (serve) ────────────────────────
-FROM node:20-alpine AS runtime
+FROM node:24-alpine AS runtime
 
 # OCI image metadata
 LABEL org.opencontainers.image.title="L2SLedger Frontend" \
@@ -42,9 +59,13 @@ WORKDIR /app
 # Copy only the built static assets — no node_modules, no source code
 COPY --from=build --chown=appuser:appgroup /app/dist ./dist
 
+# Symlink env-config.js to /tmp so env.sh can write it on read-only filesystems
+# /tmp is mounted as tmpfs in production (docker-compose read_only: true)
+RUN ln -sf /tmp/env-config.js ./dist/env-config.js
+
 # Copy env.sh entrypoint script for runtime VITE_* injection
 COPY --chown=appuser:appgroup docker/env.sh ./env.sh
-RUN chmod +x ./env.sh
+RUN sed -i 's/\r$//' ./env.sh && chmod +x ./env.sh
 
 # serve configuration: SPA mode, custom headers, cache control
 COPY --chown=appuser:appgroup docker/serve.json ./dist/serve.json
@@ -60,4 +81,4 @@ HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
 
 # env.sh generates env-config.js then exec's the CMD
 ENTRYPOINT ["./env.sh"]
-CMD ["serve", "./dist", "-l", "3000", "-s"]
+CMD ["serve", "./dist", "-l", "3000", "-s", "--symlinks"]
