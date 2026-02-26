@@ -517,7 +517,7 @@ tests/e2e/
 ## ⚠️ Considerações ADRs e Comerciais
 
 ### ADR-042-A — Contexto Comercial
-> **IMPORTANTE:** Após MVP, o Dashboard deverá consumir `GET /me/commercial-context` para:
+> **IMPORTANTE:** Após MVP, o Dashboard deverá consumir `GET /api/v1/me/commercial-context` para:
 > - Verificar limite de lançamentos
 > - Exibir anúncios (plano FREE)
 > - Mostrar features disponíveis
