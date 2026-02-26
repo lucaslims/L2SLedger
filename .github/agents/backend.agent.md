@@ -3,7 +3,7 @@ description: Agente especializado em backend do L2SLedger, respons√°vel por dom√
 
 tools: ['execute', 'read', 'edit', 'search', 'web', 'io.github.upstash/context7/*', 'agent', 'todo']
 
-model: Claude Sonnet 4.5 (copilot)
+model: Claude Sonnet 4.6 (copilot)
 
 ---
 
