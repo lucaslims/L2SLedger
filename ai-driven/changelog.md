@@ -2,10 +2,37 @@
 
 Este arquivo documenta as mudanças significativas feitas no projeto com a ajuda de ferramentas de IA. Cada entrada inclui a data, uma descrição da mudança e a ferramenta de IA utilizada.
 
-O formato segue o padrão [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
+O formato deve seguir o padrão [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## Mudanças Devem ser escritas Abaixo desta Linha
 <!-- BEGIN CHANGELOG -->
+## [Unreleased]
+
+---
+
+## [2026-02-25] - Fix: NullReferenceException no login — Firebase Admin SDK não inicializado
+
+### Contexto
+
+`POST /api/v1/auth/login` em produção retornava HTTP 500 com `System.NullReferenceException` em `FirebaseAuthService.ValidateTokenAsync` (linha 34).
+
+### Causa Raiz
+
+O arquivo de credenciais Firebase (`/secrets/firebase-credential.json`) não estava sendo montado corretamente no container em produção. A inicialização em `AuthenticationExtensions.cs` **silenciosamente ignorava** a ausência do arquivo (apenas logava um warning), fazendo com que `FirebaseApp.Create()` nunca fosse chamado. Com isso, `FirebaseAuth.DefaultInstance` retornava `null`, explodindo com `NullReferenceException` não descritiva em runtime.
+
+### Correções Realizadas
+
+**`backend/src/L2SLedger.API/Configuration/AuthenticationExtensions.cs`**  
+- Substituída a lógica condicional silenciosa por **fail-fast**: agora lança `InvalidOperationException` com mensagem clara se `Firebase:CredentialPath` não estiver configurado ou o arquivo não existir. A aplicação não sobe sem as credenciais configuradas.
+
+**`backend/src/L2SLedger.Infrastructure/Identity/FirebaseAuthService.cs`**  
+- Adicionado null-guard defensivo em `ValidateTokenAsync`: se `FirebaseAuth.DefaultInstance` for null por qualquer motivo, lança `InvalidOperationException` com mensagem descritiva em vez de `NullReferenceException` opaca.
+
+### Ação necessária em Produção
+
+Verificar e garantir no servidor:
+1. O arquivo de service account Firebase existe no host no caminho configurado
+2. A variável `FIREBASE_CREDENTIAL_PATH` está definida no `.env` apontando para esse arquivo
 
 ---
 

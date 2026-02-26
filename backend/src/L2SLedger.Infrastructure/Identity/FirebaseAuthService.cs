@@ -31,7 +31,12 @@ public class FirebaseAuthService : IFirebaseAuthService
             cts.CancelAfter(_tokenValidationTimeout);
 
             // Validar token com Firebase Admin SDK
-            var decodedToken = await FirebaseAuth.DefaultInstance
+            var firebaseAuth = FirebaseAuth.DefaultInstance
+                ?? throw new InvalidOperationException(
+                    "Firebase Admin SDK não foi inicializado. " +
+                    "Verifique se Firebase:CredentialPath está configurado e o arquivo de credenciais existe.");
+
+            var decodedToken = await firebaseAuth
                 .VerifyIdTokenAsync(idToken, cts.Token);
 
             _logger.LogInformation("Token Firebase validado com sucesso para UID {Uid}", decodedToken.Uid);
