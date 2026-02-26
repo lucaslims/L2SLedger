@@ -38,7 +38,6 @@ public class BalancesController : ControllerBase
     /// <param name="cancellationToken">Token de cancelamento</param>
     /// <returns>Saldos consolidados</returns>
     [HttpGet]
-    [Authorize(Roles = "Admin,Financeiro")]
     [ProducesResponseType(typeof(BalanceSummaryDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<BalanceSummaryDto>> GetBalance(
@@ -77,7 +76,6 @@ public class BalancesController : ControllerBase
     /// <param name="cancellationToken">Token de cancelamento</param>
     /// <returns>Lista de saldos diários</returns>
     [HttpGet("daily")]
-    [Authorize(Roles = "Admin,Financeiro")]
     [ProducesResponseType(typeof(List<DailyBalanceDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<List<DailyBalanceDto>>> GetDailyBalance(
