@@ -203,8 +203,7 @@ public class BalancesControllerTests
 
         _transactionRepositoryMock.Verify(
             x => x.GetBalanceByCategoryAsync(_userId, _startDate, _endDate, categoryId, It.IsAny<CancellationToken>()),
-            Times.Once,
-            because: "o filtro de categoria deve ser passado ao repositório");
+            Times.Once);
     }
 
     // ─── GetDailyBalance ─────────────────────────────────────────────────────

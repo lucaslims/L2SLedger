@@ -9,6 +9,98 @@ O formato segue o padrão [Keep a Changelog](https://keepachangelog.com/en/1.0.0
 
 ---
 
+## [2026-02-27] - ADR-045: Fix de Docs de Endpoints + Implementação Cookie Refresh
+
+### Contexto
+
+Sessão focada em duas frentes: (A) correção de inconsistências de documentação nos contratos de API, e (B) implementação completa do Bug 5.1 — ciclo de vida de sessão por cookie conforme ADR-045, cobrindo backend, frontend e testes.
+
+---
+
+### 📄 Parte A — Correções de Documentação (Endpoints)
+
+**Problema:** Cinco arquivos referenciavam `/me/commercial-context` sem o prefixo correto `/api/v1/`.
+
+**Arquivos corrigidos (path fix):**
+
+- `docs/adr/adr-042-a.md`
+- `docs/commercial/plans-and-features.md`
+- `docs/planning/frontend-planning/fase-2-dashboard.md`
+- `docs/planning/frontend-planning/SPEC.md`
+
+**Arquivo enriquecido:**
+
+- `docs/commercial/api-contracts-plan-and-subscriptions.md`
+  - Path corrigido: `GET /me/commercial-context` → `GET /api/v1/me/commercial-context`
+  - Adicionada interface TypeScript `CommercialContextResponse` com tipos completos (`PlanCode`, `FeatureCode`, `LimitType`, `LimitPeriod`)
+  - Adicionados dois exemplos JSON (plano FREE com limites/ads, plano PRO com `null` em max)
+  - Adicionada tabela de HTTP response codes (200, 401, 500)
+
+---
+
+### 🔵 Parte B — Bug 5.1: Implementação de Cookie Refresh (ADR-045)
+
+#### Backend
+
+**`backend/src/L2SLedger.API/Controllers/AuthController.cs`**
+- TTL do cookie alterado: `TimeSpan.FromDays(7)` → `TimeSpan.FromHours(1)` (conforme ADR-045 Opção C)
+- Novo endpoint `POST /auth/refresh` (`[AllowAnonymous]`):
+  - Extrai `Bearer {token}` do header `Authorization`
+  - Valida token via `IFirebaseAuthService.ValidateTokenAsync()`
+  - Constrói novo `ClaimsIdentity` a partir das claims existentes
+  - Emite novo cookie via `HttpContext.SignInAsync()` com `ExpiresUtc` renovado
+  - Retorna `200 OK` ou `401 Unauthorized`
+- `using L2SLedger.Application.Interfaces;` adicionado
+
+**`backend/tests/L2SLedger.API.Tests/Controllers/AuthControllerTests.cs`**
+- Nova classe `AuthControllerRefreshTests` com 8 testes:
+  - Atributos HTTP, TTL via reflexão, cenários de header inválido, token inválido, sessão expirada, sucesso
+- Aliases adicionados para resolver ambiguidade `IAuthenticationService`:
+  ```csharp
+  using AppAuth = L2SLedger.Application.Interfaces.IAuthenticationService;
+  using AspNetAuth = Microsoft.AspNetCore.Authentication.IAuthenticationService;
+  ```
+- Backend: 37 testes passando (era 17), 0 falhas ✅
+
+**`backend/tests/L2SLedger.API.Tests/Controllers/BalancesControllerTests.cs`**
+- Removido parâmetro nomeado `because:` inválido em chamada `Moq.Verify()`
+
+#### Frontend
+
+**`frontend/src/shared/lib/api/endpoints.ts`**
+- `AUTH_REFRESH: '/auth/refresh'` adicionado a `API_ENDPOINTS`
+
+**`frontend/src/features/auth/services/authService.ts`**
+- Método `refresh(firebaseIdToken: string): Promise<void>` adicionado
+- Envia `POST /auth/refresh` com header `Authorization: Bearer {token}`
+
+**`frontend/src/app/providers/AuthProvider.tsx`**
+- Constantes de tempo adicionadas:
+  ```typescript
+  const COOKIE_TTL_MS = 60 * 60 * 1000;     // 1 hora
+  const REFRESH_BEFORE_MS = 5 * 60 * 1000;  // 5 min antes do vencimento
+  const REFRESH_DELAY_MS = COOKIE_TTL_MS - REFRESH_BEFORE_MS; // 55 min
+  ```
+- `refreshTimerRef` + `isMountedRef` (`useRef`) para gerenciamento de timer
+- Funções `scheduleRefresh(fbUser)` e `cancelRefresh()` implementadas
+- Guard `isMountedRef.current` evita re-agendamento infinito após desmonte
+- Cleanup: `isMountedRef.current = false` + `cancelRefresh()` no `useEffect` return
+
+#### Testes Frontend (novos)
+
+**`frontend/src/features/auth/__tests__/authServiceRefresh.test.ts`** *(novo)*
+- 4 testes: POST com Bearer header, endpoint correto, propagação de erro 401, resolução com `undefined`
+
+**`frontend/src/app/providers/__tests__/AuthProvider.test.tsx`** *(novo)*
+- 4 testes: agendamento de 55 min, sem refresh sem usuário, tolerância a falha, cancelamento no unmount
+- Usa Vitest 4 `vi.advanceTimersByTimeAsync()` + `queueMicrotask` para flush de microtasks
+
+**Resultado final:** 193 testes passando (29 arquivos), 0 falhas ✅ | Build de produção limpo ✅
+
+---
+
+---
+
 ## [2026-02-26] - Fase 6 Continuação: Autorização Backend, ADR-045, E2E, P2 Combobox
 
 ### Contexto
