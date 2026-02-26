@@ -9,6 +9,141 @@ O formato segue o padrão [Keep a Changelog](https://keepachangelog.com/en/1.0.0
 
 ---
 
+## [2026-02-26] - Fix: Fase 6 - Correção de Bugs Dashboard, Mobile e Segurança ✅ CONCLUÍDO
+
+### Contexto
+
+Implementação da **Fase 6 - Correção de Bugs, Melhorias de Segurança, Usabilidade, QA e Otimização** do frontend, focando em bugs críticos (P0) e alta prioridade (P1) conforme [docs/planning/frontend-planning/fase-6-bugfix-melhorias.md](../docs/planning/frontend-planning/fase-6-bugfix-melhorias.md).
+
+### Bugs Corrigidos
+
+#### P0 — Dashboard (Crítico)
+
+**Bug 2.1 - Transações Recentes Não Listadas**
+- **Causa raiz**: `dashboardService.getRecentTransactions()` tentava acessar `response.data`, mas `apiClient.get` já retorna dados deserializados
+- **Solução**: Ajustado para usar `GetTransactionsResponse` e acessar `response.transactions`, mapeando `TransactionDto` para `RecentTransaction`
+
+**Bug 2.2 - Saldo Atual Não Contabilizado**
+- **Causa raiz**: Contrato incompatível entre frontend (`currentBalance`, `period: {start, end}`) e backend (`netBalance`, `startDate`, `endDate`)
+- **Solução**: 
+  - Ajustado `BalancesResponse` para corresponder a `BalanceSummaryDto` do backend
+  - Consumido estado `isError` no `DashboardPage` (antes era silenciado)
+  - Implementado fallback visual de erro no `BalanceCard`
+- **⚠️ Problema backend identificado**: Endpoint `/api/v1/balances` exige role `Admin` ou `Financeiro` — usuários comuns receberão 403
+
+**Bug 2.3 - Gráfico BalanceChart em Branco**
+- **Causa raiz**: Hook `useDailyBalances()` chamado sem parâmetros (`startDate` e `endDate` undefined), mas backend exige ambos como obrigatórios
+- **Solução**:
+  - Implementado período padrão de 30 dias no hook
+  - Ajustado `DailyBalance` para corresponder a `DailyBalanceDto` do backend (`closingBalance` ao invés de `balance`)
+- **⚠️ Problema backend identificado**: Endpoint `/api/v1/balances/daily` também exige role `Admin`/`Financeiro`
+
+#### P0 — Segurança (Crítico)
+
+**Bug 5.1 - Ciclo de Vida do Cookie/Token**
+- **Status**: ⚠️ **NÃO IMPLEMENTADO** — Requer decisão arquitetural, ADR e mudanças no backend (fora do escopo de bug fixes)
+
+**Bug 5.2 - Exposição de Variáveis de Ambiente**
+- **Causa raiz**: `env.sh` exportava **todas** as variáveis `VITE_*` para `window.__ENV__` sem controle
+- **Solução**:
+  - Implementada **whitelist explícita** em `docker/env.sh`
+  - Firebase vars (6): permitidas (públicas por design, protegidas por Firebase rules)
+  - `VITE_API_BASE_URL`: permitida (necessária)
+  - `VITE_EMAIL_VERIFICATION_RESEND_COOLDOWN`: permitida (config UX segura)
+  - `VITE_ENABLE_DEVTOOLS`: **bloqueada em produção**
+  - Documentação atualizada em `shared/lib/env.ts`
+
+#### P1 — Desktop
+
+**Bug 4.1 - Logo Desaparece ao Rolar**
+- **Causa raiz**: `Sidebar` não tinha posicionamento fixo, rolava junto com o conteúdo da página
+- **Solução**: Aplicado `sticky top-0 h-screen overflow-y-auto` ao `Sidebar`, logo com `shrink-0`
+
+#### P1 — Mobile
+
+**Bug 3.1 - MobileNav Sobrepondo Conteúdo**
+- **Causa raiz**: `MobileNav` fixo com 64px de altura, mas `<main>` sem padding-bottom suficiente
+- **Solução**: Adicionado `pb-24` (96px) condicional ao `<main>` quando `isMobile`
+
+**Bug 3.2 - Opções Admin Ausentes no Mobile**
+- **Causa raiz**: `MobileNav` tinha itens hardcoded sem verificação de roles Admin
+- **Solução**: 
+  - Adicionado item "Usuários" com flag `adminOnly: true`
+  - Implementado filtro condicional baseado em `useAuth()` e `ROLES.ADMIN`
+  - Layout se adapta automaticamente (3 itens para usuários normais, 4 para Admin)
+
+**Bug 3.3 - Layouts Quebrados em Transações/Categorias**
+- **Causa raiz**: `CategoryList` usava apenas `<Table>` sem suporte mobile
+- **Solução**: Implementada versão mobile com cards (pattern consistente com `TransactionList`)
+
+### Arquivos Modificados
+
+#### Dashboard (8 arquivos)
+- `frontend/src/features/dashboard/services/dashboardService.ts` — Contratos ajustados + imports
+- `frontend/src/features/dashboard/hooks/useDailyBalances.ts` — Período padrão 30 dias
+- `frontend/src/features/dashboard/hooks/useBalances.ts` — (sem alteração, já correto)
+- `frontend/src/features/dashboard/components/RecentTransactions.tsx` — (sem alteração, já tratava erro)
+- `frontend/src/features/dashboard/components/BalanceCard.tsx` — Prop `error` + fallback visual
+- `frontend/src/features/dashboard/components/BalanceChart.tsx` — Uso de `closingBalance`
+- `frontend/src/features/dashboard/pages/DashboardPage.tsx` — Consumo de `isError` + uso de `netBalance`
+
+#### Segurança (2 arquivos)
+- `frontend/docker/env.sh` — Whitelist explícita de variáveis permitidas
+- `frontend/src/shared/lib/env.ts` — Documentação de segurança
+
+#### Layout (4 arquivos)
+- `frontend/src/shared/components/layout/Sidebar.tsx` — Sticky + h-screen
+- `frontend/src/shared/components/layout/AppLayout.tsx` — Padding-bottom mobile
+- `frontend/src/shared/components/layout/MobileNav.tsx` — Verificação Admin + filtro
+- `frontend/src/features/categories/components/CategoryList.tsx` — Versão mobile com cards
+
+### Justificativa Técnica
+
+**Conformidade com ADRs**:
+- ADR-005 (Autenticação Firebase): Mantido — nenhuma mudança no fluxo de auth
+- ADR-021-A (Códigos de Erro): Respeitado — tratamento de erros implementado sem alterar contratos
+- ADR-016 (RBAC): Reforçado — verificação de roles Admin no MobileNav
+
+**Segurança**:
+- Variáveis sensíveis não são mais expostas acidentalmente
+- DevTools bloqueado em produção
+- Firebase vars mantidas (necessárias e seguras)
+
+**UX**:
+- Dashboard exibe erros de forma visível ao usuário
+- Mobile completamente funcional com Admin nav
+- Layouts responsivos consistentes
+
+### Problemas Identificados que Requerem Correção no Backend
+
+1. **Autorização nos endpoints de saldos**:
+   - `GET /api/v1/balances` e `GET /api/v1/balances/daily` exigem `[Authorize(Roles = "Admin,Financeiro")]`
+   - Usuários comuns não conseguem acessar o Dashboard (403 Forbidden)
+   - **Ação necessária**: Alterar backend para permitir que qualquer usuário autenticado acesse seus próprios saldos
+
+2. **Cookie/Token lifecycle**:
+   - Problema arquitetural que requer análise, ADR e implementação coordenada backend+frontend
+   - **Ação necessária**: Iniciar planejamento via Agente de Planejamento
+
+### Testes
+
+✅ Sem erros de compilação (validado via `get_errors`)  
+⚠️ Testes E2E pendentes (requerem backend com roles corretas)  
+⚠️ Testes unitários pendentes (após validação funcional)
+
+### Próximos Passos
+
+**Prioridade Crítica - Backend**:
+- [ ] Corrigir autorização em `BalancesController` (remover role restriction ou usar `[Authorize]` apenas)
+
+**Prioridade Média**:
+- [ ] Criar ADR para estratégia de cookie/token (Bug 5.1)
+- [ ] Implementar testes E2E para bugs corrigidos
+- [ ] Implementar melhorias de usabilidade (busca categoria PAI - P2)
+- [ ] Code splitting do Tremor (P3)
+
+---
+
 ## [2026-02-25] - Fix: Health checks e limpeza de imagens no deploy (prod e demo) ✅ CONCLUÍDO
 
 ### Contexto
