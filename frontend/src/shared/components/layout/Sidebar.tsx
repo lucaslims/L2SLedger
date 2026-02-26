@@ -31,9 +31,9 @@ export function Sidebar() {
   const isAdmin = currentUser?.roles.includes(ROLES.ADMIN);
 
   return (
-    <aside className="flex w-64 flex-col border-r bg-card">
+    <aside className="sticky top-0 flex h-screen w-64 flex-col overflow-y-auto border-r bg-card">
       {/* Logo */}
-      <div className="flex h-16 items-center border-b px-6">
+      <div className="flex h-16 shrink-0 items-center border-b px-6">
         <h1 className="text-2xl font-bold text-primary">L2SLedger</h1>
       </div>
 

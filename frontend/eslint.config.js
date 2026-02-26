@@ -10,7 +10,13 @@ import prettier from 'eslint-config-prettier';
 export default [
   // Global ignores
   {
-    ignores: ['dist/**', 'node_modules/**', '.eslintrc.cjs'],
+    ignores: [
+      'dist/**',
+      'node_modules/**',
+      '.eslintrc.cjs',
+      'storybook-static/**',
+      'coverage/**',
+    ],
   },
 
   // Base JS recommended

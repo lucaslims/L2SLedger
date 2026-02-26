@@ -19,7 +19,7 @@ import { Skeleton } from '@/shared/components/ui/skeleton';
  * Não contém lógica financeira — consome API via hooks.
  */
 export default function DashboardPage() {
-  const { data: balances, isLoading } = useBalances();
+  const { data: balances, isLoading, isError } = useBalances();
 
   return (
     <AppLayout>
@@ -37,6 +37,12 @@ export default function DashboardPage() {
             <Skeleton className="h-32 w-full" />
             <Skeleton className="h-32 w-full" />
           </div>
+        ) : isError ? (
+          <div className="grid gap-4 md:grid-cols-3">
+            <BalanceCard type="income" value={0} label="Total de Receitas" error />
+            <BalanceCard type="expense" value={0} label="Total de Despesas" error />
+            <BalanceCard type="balance" value={0} label="Saldo Atual" error />
+          </div>
         ) : (
           <div className="grid gap-4 md:grid-cols-3">
             <BalanceCard
@@ -49,7 +55,7 @@ export default function DashboardPage() {
               value={balances?.totalExpense ?? 0}
               label="Total de Despesas"
             />
-            <BalanceCard type="balance" value={balances?.currentBalance ?? 0} label="Saldo Atual" />
+            <BalanceCard type="balance" value={balances?.netBalance ?? 0} label="Saldo Atual" />
           </div>
         )}
 
