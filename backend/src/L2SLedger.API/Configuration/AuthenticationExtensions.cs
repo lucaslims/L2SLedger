@@ -20,18 +20,26 @@ public static class AuthenticationExtensions
         IConfiguration configuration)
     {
         var firebaseCredentialPath = configuration["Firebase:CredentialPath"];
-        if (!string.IsNullOrEmpty(firebaseCredentialPath) && File.Exists(firebaseCredentialPath))
+
+        if (string.IsNullOrWhiteSpace(firebaseCredentialPath))
         {
-            FirebaseApp.Create(new AppOptions
-            {
-                Credential = GoogleCredential.FromFile(firebaseCredentialPath)
-            });
-            Log.Information("Firebase Admin SDK inicializado");
+            throw new InvalidOperationException(
+                "Firebase:CredentialPath não está configurado. " +
+                "Defina a variável de ambiente FIREBASE_CREDENTIAL_PATH com o caminho para o arquivo de credenciais.");
         }
-        else
+
+        if (!File.Exists(firebaseCredentialPath))
         {
-            Log.Warning("Firebase credential não configurado ou arquivo não encontrado");
+            throw new InvalidOperationException(
+                $"Firebase credential file não encontrado em '{firebaseCredentialPath}'. " +
+                "Verifique se o volume está montado corretamente no container e se o arquivo existe no host.");
         }
+
+        FirebaseApp.Create(new AppOptions
+        {
+            Credential = GoogleCredential.FromFile(firebaseCredentialPath)
+        });
+        Log.Information("Firebase Admin SDK inicializado com sucesso a partir de '{Path}'", firebaseCredentialPath);
 
         return services;
     }

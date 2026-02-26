@@ -2,10 +2,389 @@
 
 Este arquivo documenta as mudanças significativas feitas no projeto com a ajuda de ferramentas de IA. Cada entrada inclui a data, uma descrição da mudança e a ferramenta de IA utilizada.
 
-O formato segue o padrão [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
+O formato deve seguir o padrão [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## Mudanças Devem ser escritas Abaixo desta Linha
 <!-- BEGIN CHANGELOG -->
+## [Unreleased]
+
+---
+
+## [2026-02-25] - Fix: NullReferenceException no login — Firebase Admin SDK não inicializado
+
+### Contexto
+
+`POST /api/v1/auth/login` em produção retornava HTTP 500 com `System.NullReferenceException` em `FirebaseAuthService.ValidateTokenAsync` (linha 34).
+
+### Causa Raiz
+
+O arquivo de credenciais Firebase (`/secrets/firebase-credential.json`) não estava sendo montado corretamente no container em produção. A inicialização em `AuthenticationExtensions.cs` **silenciosamente ignorava** a ausência do arquivo (apenas logava um warning), fazendo com que `FirebaseApp.Create()` nunca fosse chamado. Com isso, `FirebaseAuth.DefaultInstance` retornava `null`, explodindo com `NullReferenceException` não descritiva em runtime.
+
+### Correções Realizadas
+
+**`backend/src/L2SLedger.API/Configuration/AuthenticationExtensions.cs`**  
+- Substituída a lógica condicional silenciosa por **fail-fast**: agora lança `InvalidOperationException` com mensagem clara se `Firebase:CredentialPath` não estiver configurado ou o arquivo não existir. A aplicação não sobe sem as credenciais configuradas.
+
+**`backend/src/L2SLedger.Infrastructure/Identity/FirebaseAuthService.cs`**  
+- Adicionado null-guard defensivo em `ValidateTokenAsync`: se `FirebaseAuth.DefaultInstance` for null por qualquer motivo, lança `InvalidOperationException` com mensagem descritiva em vez de `NullReferenceException` opaca.
+
+### Ação necessária em Produção
+
+Verificar e garantir no servidor:
+1. O arquivo de service account Firebase existe no host no caminho configurado
+2. A variável `FIREBASE_CREDENTIAL_PATH` está definida no `.env` apontando para esse arquivo
+
+---
+
+## [2026-02-27] - ADR-045: Fix de Docs de Endpoints + Implementação Cookie Refresh
+
+### Contexto
+
+Sessão focada em duas frentes: (A) correção de inconsistências de documentação nos contratos de API, e (B) implementação completa do Bug 5.1 — ciclo de vida de sessão por cookie conforme ADR-045, cobrindo backend, frontend e testes.
+
+---
+
+### 📄 Parte A — Correções de Documentação (Endpoints)
+
+**Problema:** Cinco arquivos referenciavam `/me/commercial-context` sem o prefixo correto `/api/v1/`.
+
+**Arquivos corrigidos (path fix):**
+
+- `docs/adr/adr-042-a.md`
+- `docs/commercial/plans-and-features.md`
+- `docs/planning/frontend-planning/fase-2-dashboard.md`
+- `docs/planning/frontend-planning/SPEC.md`
+
+**Arquivo enriquecido:**
+
+- `docs/commercial/api-contracts-plan-and-subscriptions.md`
+  - Path corrigido: `GET /me/commercial-context` → `GET /api/v1/me/commercial-context`
+  - Adicionada interface TypeScript `CommercialContextResponse` com tipos completos (`PlanCode`, `FeatureCode`, `LimitType`, `LimitPeriod`)
+  - Adicionados dois exemplos JSON (plano FREE com limites/ads, plano PRO com `null` em max)
+  - Adicionada tabela de HTTP response codes (200, 401, 500)
+
+---
+
+### 🔵 Parte B — Bug 5.1: Implementação de Cookie Refresh (ADR-045)
+
+#### Backend
+
+**`backend/src/L2SLedger.API/Controllers/AuthController.cs`**
+- TTL do cookie alterado: `TimeSpan.FromDays(7)` → `TimeSpan.FromHours(1)` (conforme ADR-045 Opção C)
+- Novo endpoint `POST /auth/refresh` (`[AllowAnonymous]`):
+  - Extrai `Bearer {token}` do header `Authorization`
+  - Valida token via `IFirebaseAuthService.ValidateTokenAsync()`
+  - Constrói novo `ClaimsIdentity` a partir das claims existentes
+  - Emite novo cookie via `HttpContext.SignInAsync()` com `ExpiresUtc` renovado
+  - Retorna `200 OK` ou `401 Unauthorized`
+- `using L2SLedger.Application.Interfaces;` adicionado
+
+**`backend/tests/L2SLedger.API.Tests/Controllers/AuthControllerTests.cs`**
+- Nova classe `AuthControllerRefreshTests` com 8 testes:
+  - Atributos HTTP, TTL via reflexão, cenários de header inválido, token inválido, sessão expirada, sucesso
+- Aliases adicionados para resolver ambiguidade `IAuthenticationService`:
+  ```csharp
+  using AppAuth = L2SLedger.Application.Interfaces.IAuthenticationService;
+  using AspNetAuth = Microsoft.AspNetCore.Authentication.IAuthenticationService;
+  ```
+- Backend: 37 testes passando (era 17), 0 falhas ✅
+
+**`backend/tests/L2SLedger.API.Tests/Controllers/BalancesControllerTests.cs`**
+- Removido parâmetro nomeado `because:` inválido em chamada `Moq.Verify()`
+
+#### Frontend
+
+**`frontend/src/shared/lib/api/endpoints.ts`**
+- `AUTH_REFRESH: '/auth/refresh'` adicionado a `API_ENDPOINTS`
+
+**`frontend/src/features/auth/services/authService.ts`**
+- Método `refresh(firebaseIdToken: string): Promise<void>` adicionado
+- Envia `POST /auth/refresh` com header `Authorization: Bearer {token}`
+
+**`frontend/src/app/providers/AuthProvider.tsx`**
+- Constantes de tempo adicionadas:
+  ```typescript
+  const COOKIE_TTL_MS = 60 * 60 * 1000;     // 1 hora
+  const REFRESH_BEFORE_MS = 5 * 60 * 1000;  // 5 min antes do vencimento
+  const REFRESH_DELAY_MS = COOKIE_TTL_MS - REFRESH_BEFORE_MS; // 55 min
+  ```
+- `refreshTimerRef` + `isMountedRef` (`useRef`) para gerenciamento de timer
+- Funções `scheduleRefresh(fbUser)` e `cancelRefresh()` implementadas
+- Guard `isMountedRef.current` evita re-agendamento infinito após desmonte
+- Cleanup: `isMountedRef.current = false` + `cancelRefresh()` no `useEffect` return
+
+#### Testes Frontend (novos)
+
+**`frontend/src/features/auth/__tests__/authServiceRefresh.test.ts`** *(novo)*
+- 4 testes: POST com Bearer header, endpoint correto, propagação de erro 401, resolução com `undefined`
+
+**`frontend/src/app/providers/__tests__/AuthProvider.test.tsx`** *(novo)*
+- 4 testes: agendamento de 55 min, sem refresh sem usuário, tolerância a falha, cancelamento no unmount
+- Usa Vitest 4 `vi.advanceTimersByTimeAsync()` + `queueMicrotask` para flush de microtasks
+
+**Resultado final:** 193 testes passando (29 arquivos), 0 falhas ✅ | Build de produção limpo ✅
+
+---
+
+---
+
+## [2026-02-26] - Fase 6 Continuação: Autorização Backend, ADR-045, E2E, P2 Combobox
+
+### Contexto
+
+Continuação dos **Próximos Passos Recomendados** da Fase 6, cobrindo: correção crítica de autorização no backend, criação de ADR para ciclo de vida de sessão, scaffold de testes E2E e melhoria P2 de UX (busca de categoria pai).
+
+---
+
+### 🔴 Item 1 — BalancesController: Correção de Autorização + Testes (Backend)
+
+**Diagnóstico:** O `BalancesController.cs` já possuía `[Authorize]` sem restrições de Role no nível de classe. No entanto, os dois action methods (`GetBalance` e `GetDailyBalance`) tinham atributos `[Authorize]` redundantes.
+
+**Arquivos alterados:**
+
+- `backend/src/L2SLedger.API/Controllers/BalancesController.cs`
+  - Removidos `[Authorize]` redundantes dos dois actions (autorização já herdada da classe)
+  - Padrão limpo: `[Authorize]` apenas no nível de classe (ADR-016)
+
+- `backend/tests/L2SLedger.API.Tests/Controllers/BalancesControllerTests.cs` *(novo)*
+  - 9 testes de unidade cobrindo:
+    - Verificação de atributo `[Authorize]` no nível de classe
+    - Verificação de ausência de restrições de Role (ADR-016: leitura acessível por todos os roles)
+    - Verificação de ausência de `[Authorize]` redundante nos actions
+    - `GetBalance`: 200 OK com período válido, null (defaults), filtro por categoria, 400 com datas inválidas
+    - `GetDailyBalance`: 200 OK com request válida, 400 com datas inválidas, 400 com período > 365 dias, geração de 1 entry por dia do período
+
+**Resultado:** 17/17 testes passam (inclui os 9 novos)
+
+---
+
+### 🟡 Item 2 — ADR-045: Ciclo de Vida do Cookie de Sessão
+
+**Arquivo criado:** `docs/adr/adr-045.md`
+
+**Decisão documentada:** Opção C — Cookie curto (1h) + endpoint dedicado de refresh
+
+**Conteúdo:**
+- Diagnóstico do problema atual (Bug 5.1: desalinhamento cookie vs Firebase ID Token)
+- 3 opções avaliadas com prós/contras
+- Especificação técnica completa: `Max-Age=3600`, novo endpoint `POST /api/v1/auth/refresh`
+- Lógica de refresh silencioso no `AuthProvider` (timer 55 min)
+- Plano de implementação backend + frontend
+- Status: `Proposto` — implementação backend/frontend reservada para fase futura
+
+**Índice atualizado:** `docs/adr/adr-index.md` — total: 48 ADRs
+
+---
+
+### 🟡 Item 3 — Testes E2E (Playwright)
+
+**Scaffold de E2E para os bugs corrigidos na Fase 6:**
+
+- `frontend/playwright.config.ts` *(atualizado)*
+  - Substituída configuração placeholder por config real
+  - Projetos: `chromium` (1280×800) + `mobile-chrome` (Pixel 5)
+  - `webServer` automático em modo dev; desabilitado em CI
+  - Env var `PLAYWRIGHT_BASE_URL` para customização
+
+- `frontend/tests/e2e/layout.spec.ts` *(novo)*
+  - Bug 4.1: Sidebar fixa (sticky) com logo visível durante scroll
+  - Bug 3.1: MobileNav com padding-bottom suficiente (≥ 80px)
+  - Bug 3.2: Admin link condicional por role
+  - Bug 3.3: Sem overflow horizontal em mobile, sidebar hidden < 768px
+
+- `frontend/tests/e2e/categories.spec.ts` *(novo)*
+  - Bug 3.3: Tabela visível em desktop, cards visíveis em mobile
+  - Verificação de ausência de scroll horizontal em ambos os breakpoints
+  - Testes de ações (criar, confirmar exclusão)
+
+- `frontend/tests/e2e/dashboard.spec.ts` *(atualizado)*
+  - Novos test.describe para Bug 2.1 (Transações Recentes), Bug 2.2 (Saldo Atual), Bug 2.3 (BalanceChart)
+  - Testes marcados com `test.skip` onde requerem backend + sessão ativa (padrão do projeto)
+
+**TypeScript:** zero erros de compilação em todos os specs E2E
+
+---
+
+### 🟡 Item 4 — P2: Combobox com busca para Categoria Pai (Frontend)
+
+**Problema:** O campo "Categoria Pai" em `CategoryForm` usava `<Input placeholder="ID da categoria pai" />`, obrigando o usuário a digitar um UUID — UX inaceitável.
+
+**Solução implementada:** Combobox com busca usando `Popover` + filtro controlado (sem dependências novas).
+
+**Arquivos alterados:**
+
+- `frontend/src/features/categories/components/CategoryForm.tsx`
+  - Nova interface `ParentCategoryOption { id: string; name: string }`
+  - Nova prop `parentCategories?: ParentCategoryOption[]`
+  - Quando `parentCategories.length > 0`: renderiza Combobox (Popover + search Input + lista filtrada)
+  - Quando `parentCategories` vazio/ausente: fallback para Input de ID (compatibilidade retroativa)
+  - Features do Combobox: ícone de check no item selecionado, opção "Sem categoria pai", busca case-insensitive, scroll na lista
+
+- `frontend/src/features/categories/pages/CategoryFormPage.tsx`
+  - Adicionado `useCategories()` para carregar lista de categorias disponíveis
+  - `parentCategoryOptions`: exclui a categoria sendo editada (previne auto-referência circular)
+  - Passado `parentCategories={parentCategoryOptions}` ao `CategoryForm`
+
+- `frontend/src/features/categories/__tests__/CategoryForm.test.tsx`
+  - 5 novos testes cobrindo o Combobox:
+    - Exibe combobox quando `parentCategories` é fornecido
+    - Exibe input de ID como fallback quando sem `parentCategories`
+    - Abre popover com lista ao clicar
+    - Filtra categorias pela busca
+    - Seleciona categoria e atualiza o botão com o nome
+
+**Resultado:** 185/185 testes passam (inclui 5 novos), coverage mantida acima dos thresholds
+
+---
+
+### Resumo de Arquivos Modificados
+
+| Arquivo | Tipo | Descrição |
+|---------|------|-----------|
+| `backend/src/L2SLedger.API/Controllers/BalancesController.cs` | Fix | Remover [Authorize] redundantes |
+| `backend/tests/L2SLedger.API.Tests/Controllers/BalancesControllerTests.cs` | Novo | 9 testes de API para BalancesController |
+| `docs/adr/adr-045.md` | Novo | ADR ciclo de vida cookie/sessão |
+| `docs/adr/adr-index.md` | Atualizado | ADR-045 indexado, total: 48 |
+| `frontend/playwright.config.ts` | Atualizado | Config real substituindo placeholder |
+| `frontend/tests/e2e/layout.spec.ts` | Novo | E2E para bugs de layout (Fase 6) |
+| `frontend/tests/e2e/categories.spec.ts` | Novo | E2E para CategoryList responsivo |
+| `frontend/tests/e2e/dashboard.spec.ts` | Atualizado | E2E para bugs de dashboard (Fase 6) |
+| `frontend/src/features/categories/components/CategoryForm.tsx` | Feature | Combobox com busca para categoria pai |
+| `frontend/src/features/categories/pages/CategoryFormPage.tsx` | Atualizado | Passa categorias ao form |
+| `frontend/src/features/categories/__tests__/CategoryForm.test.tsx` | Atualizado | 5 novos testes para Combobox |
+
+---
+
+### Contexto
+
+Implementação da **Fase 6 - Correção de Bugs, Melhorias de Segurança, Usabilidade, QA e Otimização** do frontend, focando em bugs críticos (P0) e alta prioridade (P1) conforme [docs/planning/frontend-planning/fase-6-bugfix-melhorias.md](../docs/planning/frontend-planning/fase-6-bugfix-melhorias.md).
+
+### Bugs Corrigidos
+
+#### P0 — Dashboard (Crítico)
+
+**Bug 2.1 - Transações Recentes Não Listadas**
+- **Causa raiz**: `dashboardService.getRecentTransactions()` tentava acessar `response.data`, mas `apiClient.get` já retorna dados deserializados
+- **Solução**: Ajustado para usar `GetTransactionsResponse` e acessar `response.transactions`, mapeando `TransactionDto` para `RecentTransaction`
+
+**Bug 2.2 - Saldo Atual Não Contabilizado**
+- **Causa raiz**: Contrato incompatível entre frontend (`currentBalance`, `period: {start, end}`) e backend (`netBalance`, `startDate`, `endDate`)
+- **Solução**: 
+  - Ajustado `BalancesResponse` para corresponder a `BalanceSummaryDto` do backend
+  - Consumido estado `isError` no `DashboardPage` (antes era silenciado)
+  - Implementado fallback visual de erro no `BalanceCard`
+- **⚠️ Problema backend identificado**: Endpoint `/api/v1/balances` exige role `Admin` ou `Financeiro` — usuários comuns receberão 403
+
+**Bug 2.3 - Gráfico BalanceChart em Branco**
+- **Causa raiz**: Hook `useDailyBalances()` chamado sem parâmetros (`startDate` e `endDate` undefined), mas backend exige ambos como obrigatórios
+- **Solução**:
+  - Implementado período padrão de 30 dias no hook
+  - Ajustado `DailyBalance` para corresponder a `DailyBalanceDto` do backend (`closingBalance` ao invés de `balance`)
+- **⚠️ Problema backend identificado**: Endpoint `/api/v1/balances/daily` também exige role `Admin`/`Financeiro`
+
+#### P0 — Segurança (Crítico)
+
+**Bug 5.1 - Ciclo de Vida do Cookie/Token**
+- **Status**: ⚠️ **NÃO IMPLEMENTADO** — Requer decisão arquitetural, ADR e mudanças no backend (fora do escopo de bug fixes)
+
+**Bug 5.2 - Exposição de Variáveis de Ambiente**
+- **Causa raiz**: `env.sh` exportava **todas** as variáveis `VITE_*` para `window.__ENV__` sem controle
+- **Solução**:
+  - Implementada **whitelist explícita** em `docker/env.sh`
+  - Firebase vars (6): permitidas (públicas por design, protegidas por Firebase rules)
+  - `VITE_API_BASE_URL`: permitida (necessária)
+  - `VITE_EMAIL_VERIFICATION_RESEND_COOLDOWN`: permitida (config UX segura)
+  - `VITE_ENABLE_DEVTOOLS`: **bloqueada em produção**
+  - Documentação atualizada em `shared/lib/env.ts`
+
+#### P1 — Desktop
+
+**Bug 4.1 - Logo Desaparece ao Rolar**
+- **Causa raiz**: `Sidebar` não tinha posicionamento fixo, rolava junto com o conteúdo da página
+- **Solução**: Aplicado `sticky top-0 h-screen overflow-y-auto` ao `Sidebar`, logo com `shrink-0`
+
+#### P1 — Mobile
+
+**Bug 3.1 - MobileNav Sobrepondo Conteúdo**
+- **Causa raiz**: `MobileNav` fixo com 64px de altura, mas `<main>` sem padding-bottom suficiente
+- **Solução**: Adicionado `pb-24` (96px) condicional ao `<main>` quando `isMobile`
+
+**Bug 3.2 - Opções Admin Ausentes no Mobile**
+- **Causa raiz**: `MobileNav` tinha itens hardcoded sem verificação de roles Admin
+- **Solução**: 
+  - Adicionado item "Usuários" com flag `adminOnly: true`
+  - Implementado filtro condicional baseado em `useAuth()` e `ROLES.ADMIN`
+  - Layout se adapta automaticamente (3 itens para usuários normais, 4 para Admin)
+
+**Bug 3.3 - Layouts Quebrados em Transações/Categorias**
+- **Causa raiz**: `CategoryList` usava apenas `<Table>` sem suporte mobile
+- **Solução**: Implementada versão mobile com cards (pattern consistente com `TransactionList`)
+
+### Arquivos Modificados
+
+#### Dashboard (8 arquivos)
+- `frontend/src/features/dashboard/services/dashboardService.ts` — Contratos ajustados + imports
+- `frontend/src/features/dashboard/hooks/useDailyBalances.ts` — Período padrão 30 dias
+- `frontend/src/features/dashboard/hooks/useBalances.ts` — (sem alteração, já correto)
+- `frontend/src/features/dashboard/components/RecentTransactions.tsx` — (sem alteração, já tratava erro)
+- `frontend/src/features/dashboard/components/BalanceCard.tsx` — Prop `error` + fallback visual
+- `frontend/src/features/dashboard/components/BalanceChart.tsx` — Uso de `closingBalance`
+- `frontend/src/features/dashboard/pages/DashboardPage.tsx` — Consumo de `isError` + uso de `netBalance`
+
+#### Segurança (2 arquivos)
+- `frontend/docker/env.sh` — Whitelist explícita de variáveis permitidas
+- `frontend/src/shared/lib/env.ts` — Documentação de segurança
+
+#### Layout (4 arquivos)
+- `frontend/src/shared/components/layout/Sidebar.tsx` — Sticky + h-screen
+- `frontend/src/shared/components/layout/AppLayout.tsx` — Padding-bottom mobile
+- `frontend/src/shared/components/layout/MobileNav.tsx` — Verificação Admin + filtro
+- `frontend/src/features/categories/components/CategoryList.tsx` — Versão mobile com cards
+
+### Justificativa Técnica
+
+**Conformidade com ADRs**:
+- ADR-005 (Autenticação Firebase): Mantido — nenhuma mudança no fluxo de auth
+- ADR-021-A (Códigos de Erro): Respeitado — tratamento de erros implementado sem alterar contratos
+- ADR-016 (RBAC): Reforçado — verificação de roles Admin no MobileNav
+
+**Segurança**:
+- Variáveis sensíveis não são mais expostas acidentalmente
+- DevTools bloqueado em produção
+- Firebase vars mantidas (necessárias e seguras)
+
+**UX**:
+- Dashboard exibe erros de forma visível ao usuário
+- Mobile completamente funcional com Admin nav
+- Layouts responsivos consistentes
+
+### Problemas Identificados que Requerem Correção no Backend
+
+1. **Autorização nos endpoints de saldos**:
+   - `GET /api/v1/balances` e `GET /api/v1/balances/daily` exigem `[Authorize(Roles = "Admin,Financeiro")]`
+   - Usuários comuns não conseguem acessar o Dashboard (403 Forbidden)
+   - **Ação necessária**: Alterar backend para permitir que qualquer usuário autenticado acesse seus próprios saldos
+
+2. **Cookie/Token lifecycle**:
+   - Problema arquitetural que requer análise, ADR e implementação coordenada backend+frontend
+   - **Ação necessária**: Iniciar planejamento via Agente de Planejamento
+
+### Testes
+
+✅ Sem erros de compilação (validado via `get_errors`)  
+⚠️ Testes E2E pendentes (requerem backend com roles corretas)  
+⚠️ Testes unitários pendentes (após validação funcional)
+
+### Próximos Passos
+
+**Prioridade Crítica - Backend**:
+- [ ] Corrigir autorização em `BalancesController` (remover role restriction ou usar `[Authorize]` apenas)
+
+**Prioridade Média**:
+- [ ] Criar ADR para estratégia de cookie/token (Bug 5.1)
+- [ ] Implementar testes E2E para bugs corrigidos
+- [ ] Implementar melhorias de usabilidade (busca categoria PAI - P2)
+- [ ] Code splitting do Tremor (P3)
 
 ---
 

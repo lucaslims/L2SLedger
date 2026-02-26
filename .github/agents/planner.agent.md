@@ -3,7 +3,7 @@ description: Agente responsável exclusivamente pelo planejamento técnico no L2
 
 tools: ['read', 'search', 'web', 'io.github.upstash/context7/*', 'agent', 'mermaidchart.vscode-mermaid-chart/get_syntax_docs', 'mermaidchart.vscode-mermaid-chart/mermaid-diagram-validator', 'mermaidchart.vscode-mermaid-chart/mermaid-diagram-preview', 'todo']
 
-model: Claude Opus 4.5 (copilot)
+model: Claude Opus 4.6 (copilot)
 
 ---
 

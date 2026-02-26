@@ -184,3 +184,83 @@ test.describe('Dashboard - Layout Autenticado', () => {
     await expect(page.locator('main')).toBeVisible();
   });
 });
+
+// ─── Fase 6 — Bugs corrigidos ─────────────────────────────────────────────────
+
+test.describe('Dashboard — Saldo Atual (Bug 2.2)', () => {
+  test('deve exibir card de Saldo Atual com valor monetário', async ({ page }) => {
+    test.skip(true, 'Requer backend com sessão ativa');
+
+    await page.goto('/dashboard');
+    await page.waitForLoadState('networkidle');
+
+    // O card de saldo deve mostrar valor em BRL (não "--" de erro)
+    const balanceCard = page.getByText(/saldo atual/i).first();
+    await expect(balanceCard).toBeVisible({ timeout: 10000 });
+
+    // Deve conter valor monetário (R$ ...)
+    const balanceValue = page.locator('[data-testid="balance-value"], .balance-value').first();
+    const text = await balanceValue.textContent();
+    expect(text).toMatch(/R\$|−|0,00/i);
+  });
+
+  test('não deve exibir erro no card de saldo para usuário autenticado', async ({
+    page,
+  }) => {
+    test.skip(true, 'Requer backend com sessão ativa');
+
+    await page.goto('/dashboard');
+    await page.waitForLoadState('networkidle');
+
+    // Não deve haver mensagem de erro genérica nos cards de saldo
+    await expect(page.getByText(/erro ao carregar/i)).not.toBeVisible({ timeout: 5000 });
+  });
+});
+
+test.describe('Dashboard — Transações Recentes (Bug 2.1)', () => {
+  test('deve exibir lista de transações recentes', async ({ page }) => {
+    test.skip(true, 'Requer backend com sessão ativa e ao menos 1 transação cadastrada');
+
+    await page.goto('/dashboard');
+    await page.waitForLoadState('networkidle');
+
+    const section = page.getByText(/transações recentes/i);
+    await expect(section).toBeVisible({ timeout: 10000 });
+
+    // Deve exibir pelo menos uma transação (não estado vazio)
+    const emptyState = page.getByText(/nenhuma transação/i);
+    // Se há dados no backend, não deve mostrar estado vazio
+    await expect(emptyState).not.toBeVisible({ timeout: 3000 });
+  });
+
+  test('transações recentes devem exibir tipo correto (Receita/Despesa)', async ({
+    page,
+  }) => {
+    test.skip(true, 'Requer backend com sessão ativa e transações de diferentes tipos');
+
+    await page.goto('/dashboard');
+    await page.waitForLoadState('networkidle');
+
+    // Deve haver badges com "Receita" ou "Despesa"
+    const typeBadge = page.getByText(/receita|despesa/i).first();
+    await expect(typeBadge).toBeVisible({ timeout: 10000 });
+  });
+});
+
+test.describe('Dashboard — BalanceChart (Bug 2.3)', () => {
+  test('deve exibir gráfico de evolução do saldo', async ({ page }) => {
+    test.skip(true, 'Requer backend com sessão ativa e transações no período de 30 dias');
+
+    await page.goto('/dashboard');
+    await page.waitForLoadState('networkidle');
+
+    // O gráfico Tremor deve renderizar (contém SVG ou canvas)
+    // O container do gráfico deve estar visível e não vazio
+    const chartContainer = page.locator('[class*="tremor"], [data-testid="balance-chart"]').first();
+    await expect(chartContainer).toBeVisible({ timeout: 15000 });
+
+    // Não deve mostrar estado de loading indefinidamente
+    const loadingSpinner = page.locator('[class*="animate-spin"]');
+    await expect(loadingSpinner).not.toBeVisible({ timeout: 15000 });
+  });
+});

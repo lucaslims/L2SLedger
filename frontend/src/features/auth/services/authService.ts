@@ -34,4 +34,16 @@ export const authService = {
   async me(): Promise<CurrentUserResponse> {
     return apiClient.get<CurrentUserResponse>(API_ENDPOINTS.AUTH_ME);
   },
+
+  /**
+   * Renovar cookie de sessão silenciosamente (ADR-045)
+   * Envia Firebase ID Token fresco para o backend via header Authorization.
+   * Backend valida e reemite cookie com TTL renovado (1h).
+   * @param firebaseIdToken Token fresco emitido pelo Firebase SDK
+   */
+  async refresh(firebaseIdToken: string): Promise<void> {
+    return apiClient.post<void>(API_ENDPOINTS.AUTH_REFRESH, undefined, {
+      headers: { Authorization: `Bearer ${firebaseIdToken}` },
+    });
+  },
 };

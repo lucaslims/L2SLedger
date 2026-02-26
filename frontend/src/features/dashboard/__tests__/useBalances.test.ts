@@ -29,11 +29,10 @@ const createWrapper = () => {
 const mockBalances: BalancesResponse = {
   totalIncome: 5000,
   totalExpense: 3200,
-  currentBalance: 1800,
-  period: {
-    start: '2026-02-01',
-    end: '2026-02-28',
-  },
+  netBalance: 1800,
+  startDate: '2026-02-01',
+  endDate: '2026-02-28',
+  byCategory: [],
 };
 
 describe('useBalances', () => {
@@ -82,6 +81,6 @@ describe('useBalances', () => {
 
     expect(result.current.data?.totalIncome).toBe(5000);
     expect(result.current.data?.totalExpense).toBe(3200);
-    expect(result.current.data?.currentBalance).toBe(1800);
+    expect(result.current.data?.netBalance).toBe(1800);
   });
 });

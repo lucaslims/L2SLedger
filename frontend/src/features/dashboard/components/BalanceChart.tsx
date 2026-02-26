@@ -50,7 +50,7 @@ export function BalanceChart() {
       data: formatDate(item.date),
       Receitas: item.income,
       Despesas: item.expense,
-      Saldo: item.balance,
+      Saldo: item.closingBalance,
     })) || [];
 
   // Se não há dados, exibir estado vazio

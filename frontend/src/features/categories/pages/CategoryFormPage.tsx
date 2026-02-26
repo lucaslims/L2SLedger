@@ -2,6 +2,7 @@ import { AppLayout } from '@/shared/components/layout/AppLayout';
 import { CategoryForm } from '../components/CategoryForm';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useCategory } from '../hooks/useCategory';
+import { useCategories } from '../hooks/useCategories';
 import { useCreateCategory } from '../hooks/useCreateCategory';
 import { useUpdateCategory } from '../hooks/useUpdateCategory';
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui/card';
@@ -21,8 +22,16 @@ export default function CategoryFormPage() {
   const isEdit = !!id;
 
   const { data: category, isLoading } = useCategory(id);
+  const { data: allCategories } = useCategories();
   const { mutate: createCategory, isPending: isCreating } = useCreateCategory();
   const { mutate: updateCategory, isPending: isUpdating } = useUpdateCategory();
+
+  // Opções para o Combobox de categoria pai:
+  // - exclui a própria categoria (em modo edição, previne auto-referência)
+  // - mapeia apenas id + name necessários pelo formulário
+  const parentCategoryOptions = (allCategories ?? [])
+    .filter((c) => c.id !== id)
+    .map((c) => ({ id: c.id, name: c.name }));
 
   const handleSubmit = (data: {
     name: string;
@@ -88,6 +97,7 @@ export default function CategoryFormPage() {
               }
               onSubmit={handleSubmit}
               isPending={isCreating || isUpdating}
+              parentCategories={parentCategoryOptions}
             />
           </CardContent>
         </Card>
