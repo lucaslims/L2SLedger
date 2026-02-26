@@ -8,8 +8,8 @@
 
 ## Estatísticas
 
-* **Total de ADRs**: 47
-* **Última atualização**: 2026-02-18
+* **Total de ADRs**: 48
+* **Última atualização**: 2026-02-26
 
 ---
 
@@ -30,6 +30,7 @@
 | **Qualidade & Testes**            | 037–040                  |
 | **IA & Modelos de Agentes**       | 041                      |
 | **Comercialização & Monetização** | 042, 042-a               |
+| **Segurança & Sessão**            | 045                      |
 
 
 ---
@@ -85,6 +86,7 @@
 | ADR-042-a   | Contratos Comerciais Consumidos pelo Frontend no L2SLedger              | [Ver ADR-042-a](./adr-042-a.md) |
 | ADR-043     | Estratégia de Deploy Automático (DEMO) e com Aprovação (PROD)           | [Ver ADR-043](./adr-043.md) |
 | ADR-044     | Adição de Tipo (CategoryType) à Entidade de Categoria no L2SLedger      | [Ver ADR-044](./adr-044.md) |
+| ADR-045     | Ciclo de Vida do Cookie de Sessão e Renovação Silenciosa no L2SLedger   | [Ver ADR-045](./adr-045.md) |
 
 ---
 
