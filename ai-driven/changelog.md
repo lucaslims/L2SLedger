@@ -9,7 +9,132 @@ O formato segue o padrão [Keep a Changelog](https://keepachangelog.com/en/1.0.0
 
 ---
 
-## [2026-02-26] - Fix: Fase 6 - Correção de Bugs Dashboard, Mobile e Segurança ✅ CONCLUÍDO
+## [2026-02-26] - Fase 6 Continuação: Autorização Backend, ADR-045, E2E, P2 Combobox
+
+### Contexto
+
+Continuação dos **Próximos Passos Recomendados** da Fase 6, cobrindo: correção crítica de autorização no backend, criação de ADR para ciclo de vida de sessão, scaffold de testes E2E e melhoria P2 de UX (busca de categoria pai).
+
+---
+
+### 🔴 Item 1 — BalancesController: Correção de Autorização + Testes (Backend)
+
+**Diagnóstico:** O `BalancesController.cs` já possuía `[Authorize]` sem restrições de Role no nível de classe. No entanto, os dois action methods (`GetBalance` e `GetDailyBalance`) tinham atributos `[Authorize]` redundantes.
+
+**Arquivos alterados:**
+
+- `backend/src/L2SLedger.API/Controllers/BalancesController.cs`
+  - Removidos `[Authorize]` redundantes dos dois actions (autorização já herdada da classe)
+  - Padrão limpo: `[Authorize]` apenas no nível de classe (ADR-016)
+
+- `backend/tests/L2SLedger.API.Tests/Controllers/BalancesControllerTests.cs` *(novo)*
+  - 9 testes de unidade cobrindo:
+    - Verificação de atributo `[Authorize]` no nível de classe
+    - Verificação de ausência de restrições de Role (ADR-016: leitura acessível por todos os roles)
+    - Verificação de ausência de `[Authorize]` redundante nos actions
+    - `GetBalance`: 200 OK com período válido, null (defaults), filtro por categoria, 400 com datas inválidas
+    - `GetDailyBalance`: 200 OK com request válida, 400 com datas inválidas, 400 com período > 365 dias, geração de 1 entry por dia do período
+
+**Resultado:** 17/17 testes passam (inclui os 9 novos)
+
+---
+
+### 🟡 Item 2 — ADR-045: Ciclo de Vida do Cookie de Sessão
+
+**Arquivo criado:** `docs/adr/adr-045.md`
+
+**Decisão documentada:** Opção C — Cookie curto (1h) + endpoint dedicado de refresh
+
+**Conteúdo:**
+- Diagnóstico do problema atual (Bug 5.1: desalinhamento cookie vs Firebase ID Token)
+- 3 opções avaliadas com prós/contras
+- Especificação técnica completa: `Max-Age=3600`, novo endpoint `POST /api/v1/auth/refresh`
+- Lógica de refresh silencioso no `AuthProvider` (timer 55 min)
+- Plano de implementação backend + frontend
+- Status: `Proposto` — implementação backend/frontend reservada para fase futura
+
+**Índice atualizado:** `docs/adr/adr-index.md` — total: 48 ADRs
+
+---
+
+### 🟡 Item 3 — Testes E2E (Playwright)
+
+**Scaffold de E2E para os bugs corrigidos na Fase 6:**
+
+- `frontend/playwright.config.ts` *(atualizado)*
+  - Substituída configuração placeholder por config real
+  - Projetos: `chromium` (1280×800) + `mobile-chrome` (Pixel 5)
+  - `webServer` automático em modo dev; desabilitado em CI
+  - Env var `PLAYWRIGHT_BASE_URL` para customização
+
+- `frontend/tests/e2e/layout.spec.ts` *(novo)*
+  - Bug 4.1: Sidebar fixa (sticky) com logo visível durante scroll
+  - Bug 3.1: MobileNav com padding-bottom suficiente (≥ 80px)
+  - Bug 3.2: Admin link condicional por role
+  - Bug 3.3: Sem overflow horizontal em mobile, sidebar hidden < 768px
+
+- `frontend/tests/e2e/categories.spec.ts` *(novo)*
+  - Bug 3.3: Tabela visível em desktop, cards visíveis em mobile
+  - Verificação de ausência de scroll horizontal em ambos os breakpoints
+  - Testes de ações (criar, confirmar exclusão)
+
+- `frontend/tests/e2e/dashboard.spec.ts` *(atualizado)*
+  - Novos test.describe para Bug 2.1 (Transações Recentes), Bug 2.2 (Saldo Atual), Bug 2.3 (BalanceChart)
+  - Testes marcados com `test.skip` onde requerem backend + sessão ativa (padrão do projeto)
+
+**TypeScript:** zero erros de compilação em todos os specs E2E
+
+---
+
+### 🟡 Item 4 — P2: Combobox com busca para Categoria Pai (Frontend)
+
+**Problema:** O campo "Categoria Pai" em `CategoryForm` usava `<Input placeholder="ID da categoria pai" />`, obrigando o usuário a digitar um UUID — UX inaceitável.
+
+**Solução implementada:** Combobox com busca usando `Popover` + filtro controlado (sem dependências novas).
+
+**Arquivos alterados:**
+
+- `frontend/src/features/categories/components/CategoryForm.tsx`
+  - Nova interface `ParentCategoryOption { id: string; name: string }`
+  - Nova prop `parentCategories?: ParentCategoryOption[]`
+  - Quando `parentCategories.length > 0`: renderiza Combobox (Popover + search Input + lista filtrada)
+  - Quando `parentCategories` vazio/ausente: fallback para Input de ID (compatibilidade retroativa)
+  - Features do Combobox: ícone de check no item selecionado, opção "Sem categoria pai", busca case-insensitive, scroll na lista
+
+- `frontend/src/features/categories/pages/CategoryFormPage.tsx`
+  - Adicionado `useCategories()` para carregar lista de categorias disponíveis
+  - `parentCategoryOptions`: exclui a categoria sendo editada (previne auto-referência circular)
+  - Passado `parentCategories={parentCategoryOptions}` ao `CategoryForm`
+
+- `frontend/src/features/categories/__tests__/CategoryForm.test.tsx`
+  - 5 novos testes cobrindo o Combobox:
+    - Exibe combobox quando `parentCategories` é fornecido
+    - Exibe input de ID como fallback quando sem `parentCategories`
+    - Abre popover com lista ao clicar
+    - Filtra categorias pela busca
+    - Seleciona categoria e atualiza o botão com o nome
+
+**Resultado:** 185/185 testes passam (inclui 5 novos), coverage mantida acima dos thresholds
+
+---
+
+### Resumo de Arquivos Modificados
+
+| Arquivo | Tipo | Descrição |
+|---------|------|-----------|
+| `backend/src/L2SLedger.API/Controllers/BalancesController.cs` | Fix | Remover [Authorize] redundantes |
+| `backend/tests/L2SLedger.API.Tests/Controllers/BalancesControllerTests.cs` | Novo | 9 testes de API para BalancesController |
+| `docs/adr/adr-045.md` | Novo | ADR ciclo de vida cookie/sessão |
+| `docs/adr/adr-index.md` | Atualizado | ADR-045 indexado, total: 48 |
+| `frontend/playwright.config.ts` | Atualizado | Config real substituindo placeholder |
+| `frontend/tests/e2e/layout.spec.ts` | Novo | E2E para bugs de layout (Fase 6) |
+| `frontend/tests/e2e/categories.spec.ts` | Novo | E2E para CategoryList responsivo |
+| `frontend/tests/e2e/dashboard.spec.ts` | Atualizado | E2E para bugs de dashboard (Fase 6) |
+| `frontend/src/features/categories/components/CategoryForm.tsx` | Feature | Combobox com busca para categoria pai |
+| `frontend/src/features/categories/pages/CategoryFormPage.tsx` | Atualizado | Passa categorias ao form |
+| `frontend/src/features/categories/__tests__/CategoryForm.test.tsx` | Atualizado | 5 novos testes para Combobox |
+
+---
 
 ### Contexto
 
