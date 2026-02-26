@@ -10,6 +10,8 @@ interface BalanceCardProps {
   value: number;
   /** Label exibido no header */
   label: string;
+  /** Indica se houve erro ao carregar os dados */
+  error?: boolean;
 }
 
 const cardConfig = {
@@ -38,7 +40,7 @@ const cardConfig = {
  *
  * Não contém lógica financeira — apenas formatação e exibição.
  */
-export function BalanceCard({ type, value, label }: BalanceCardProps) {
+export function BalanceCard({ type, value, label, error = false }: BalanceCardProps) {
   const { icon: Icon, textColor, bgColor } = cardConfig[type];
 
   return (
@@ -50,12 +52,19 @@ export function BalanceCard({ type, value, label }: BalanceCardProps) {
         </div>
       </CardHeader>
       <CardContent>
-        <div
-          className={cn('font-mono text-2xl font-bold', textColor)}
-          data-testid={`balance-value-${type}`}
-        >
-          {formatCurrency(value)}
-        </div>
+        {error ? (
+          <div className="space-y-1">
+            <div className="font-mono text-2xl font-bold text-destructive">—</div>
+            <p className="text-xs text-muted-foreground">Erro ao carregar</p>
+          </div>
+        ) : (
+          <div
+            className={cn('font-mono text-2xl font-bold', textColor)}
+            data-testid={`balance-value-${type}`}
+          >
+            {formatCurrency(value)}
+          </div>
+        )}
       </CardContent>
     </Card>
   );

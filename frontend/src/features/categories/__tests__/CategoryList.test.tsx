@@ -81,8 +81,9 @@ describe('CategoryList', () => {
 
     render(<CategoryList />, { wrapper: createWrapper() });
 
-    expect(await screen.findByText('Alimentação')).toBeInTheDocument();
-    expect(screen.getByText('Salário')).toBeInTheDocument();
+    // Desktop + mobile views both render, so multiple elements exist
+    expect(await screen.findAllByText('Alimentação')).not.toHaveLength(0);
+    expect(screen.getAllByText('Salário')).not.toHaveLength(0);
   });
 
   it('deve exibir badges de tipo corretos', async () => {
@@ -90,8 +91,9 @@ describe('CategoryList', () => {
 
     render(<CategoryList />, { wrapper: createWrapper() });
 
-    expect(await screen.findByText('Despesa')).toBeInTheDocument();
-    expect(screen.getByText('Receita')).toBeInTheDocument();
+    // Desktop + mobile views both render badges
+    expect(await screen.findAllByText('Despesa')).not.toHaveLength(0);
+    expect(screen.getAllByText('Receita')).not.toHaveLength(0);
   });
 
   it('deve exibir mensagem quando não há categorias', async () => {
@@ -107,12 +109,13 @@ describe('CategoryList', () => {
 
     render(<CategoryList />, { wrapper: createWrapper() });
 
-    await screen.findByText('Alimentação');
+    await screen.findAllByText('Alimentação');
 
-    expect(screen.getByLabelText('Editar Alimentação')).toBeInTheDocument();
-    expect(screen.getByLabelText('Excluir Alimentação')).toBeInTheDocument();
-    expect(screen.getByLabelText('Editar Salário')).toBeInTheDocument();
-    expect(screen.getByLabelText('Excluir Salário')).toBeInTheDocument();
+    // Desktop + mobile both render action buttons
+    expect(screen.getAllByLabelText('Editar Alimentação').length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByLabelText('Excluir Alimentação').length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByLabelText('Editar Salário').length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByLabelText('Excluir Salário').length).toBeGreaterThanOrEqual(1);
   });
 
   it('deve abrir diálogo de exclusão ao clicar em excluir', async () => {
@@ -121,9 +124,10 @@ describe('CategoryList', () => {
 
     render(<CategoryList />, { wrapper: createWrapper() });
 
-    await screen.findByText('Alimentação');
+    await screen.findAllByText('Alimentação');
 
-    await user.click(screen.getByLabelText('Excluir Alimentação'));
+    // Click the first delete button (desktop or mobile)
+    await user.click(screen.getAllByLabelText('Excluir Alimentação')[0]);
 
     expect(await screen.findByText('Confirmar Exclusão')).toBeInTheDocument();
     expect(screen.getAllByText(/Alimentação/).length).toBeGreaterThanOrEqual(2);

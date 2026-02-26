@@ -107,7 +107,7 @@ Definir, de forma **explícita e auditável**, quais features e limites estão d
 
 * Seeds de `Plan`, `PlanFeature` e `PlanLimit`
 * Guards de casos de uso
-* Respostas do endpoint `/me/commercial-context`
+* Respostas do endpoint `/api/v1/me/commercial-context`
 
 ---
 

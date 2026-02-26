@@ -32,7 +32,7 @@ Esse contrato será consumido **no bootstrap da aplicação**.
 
 ### Contrato Oficial
 
-`GET /me/commercial-context`
+`GET /api/v1/me/commercial-context`
 
 Este endpoint é o **único contrato autorizado** para decisões comerciais no frontend.
 

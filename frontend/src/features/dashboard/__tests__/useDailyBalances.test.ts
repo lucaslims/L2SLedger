@@ -27,9 +27,9 @@ const createWrapper = () => {
 };
 
 const mockDailyBalances: DailyBalance[] = [
-  { date: '2026-02-01', income: 1000, expense: 500, balance: 500 },
-  { date: '2026-02-02', income: 2000, expense: 800, balance: 1700 },
-  { date: '2026-02-03', income: 500, expense: 1200, balance: 1000 },
+  { date: '2026-02-01', openingBalance: 0, income: 1000, expense: 500, closingBalance: 500 },
+  { date: '2026-02-02', openingBalance: 500, income: 2000, expense: 800, closingBalance: 1700 },
+  { date: '2026-02-03', openingBalance: 1700, income: 500, expense: 1200, closingBalance: 1000 },
 ];
 
 describe('useDailyBalances', () => {

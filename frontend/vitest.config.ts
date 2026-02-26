@@ -39,9 +39,10 @@ export default defineConfig({
         'src/shared/components/feedback/**',
         // Firebase config
         'src/shared/lib/firebase/**',
-        // API client (integration tested)
+        // API client + error handling (integration tested)
         'src/shared/lib/api/client.ts',
         'src/shared/lib/api/endpoints.ts',
+        'src/shared/lib/api/errors.ts',
         // Environment config
         'src/shared/lib/env.ts',
         // Index files (re-exports only)

@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using L2SLedger.API.Contracts;
 using L2SLedger.Application.DTOs.Auth;
+using L2SLedger.Application.Interfaces;
 using L2SLedger.Application.UseCases.Auth;
 using L2SLedger.Domain.Constants;
 using L2SLedger.Domain.Exceptions;
@@ -23,7 +24,10 @@ public class AuthController : ControllerBase
     private readonly AppAuthService _authService;
     private readonly ILogger<AuthController> _logger;
     private const string AuthCookieName = "l2sledger-auth";
-    private static readonly TimeSpan CookieExpiration = TimeSpan.FromDays(7);
+    /// <summary>
+    /// TTL do cookie de sessão: 1 hora, conforme ADR-045.
+    /// </summary>
+    private static readonly TimeSpan CookieExpiration = TimeSpan.FromHours(1);
 
     public AuthController(
         AppAuthService authService,
@@ -135,6 +139,80 @@ public class AuthController : ControllerBase
         Response.Cookies.Delete(AuthCookieName);
 
         return NoContent();
+    }
+
+    /// <summary>
+    /// Renova silenciosamente a sessão do usuário (ADR-045).
+    /// Requer um Firebase ID Token válido no header Authorization (Bearer).
+    /// </summary>
+    [HttpPost("refresh")]
+    [AllowAnonymous]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status401Unauthorized)]
+    public async Task<IActionResult> Refresh(
+        [FromServices] IFirebaseAuthService firebaseAuthService,
+        CancellationToken cancellationToken)
+    {
+        // Extrair Bearer token do header Authorization
+        var authHeader = Request.Headers.Authorization.ToString();
+        if (string.IsNullOrWhiteSpace(authHeader) || !authHeader.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase))
+        {
+            return Unauthorized(ErrorResponse.Create(
+                ErrorCodes.AUTH_INVALID_TOKEN,
+                "Firebase ID Token ausente no header Authorization"));
+        }
+
+        var firebaseIdToken = authHeader["Bearer ".Length..].Trim();
+
+        try
+        {
+            // Validar token Firebase (ADR-002)
+            var firebaseUser = await firebaseAuthService.ValidateTokenAsync(firebaseIdToken, cancellationToken);
+
+            // Recuperar claims atuais do cookie existente (se válido) ou montar mínimas
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var emailClaim = User.FindFirst(ClaimTypes.Email)?.Value ?? firebaseUser.Email;
+            var nameClaim = User.FindFirst(ClaimTypes.Name)?.Value ?? firebaseUser.DisplayName ?? firebaseUser.Email;
+            var roleClaims = User.FindAll(ClaimTypes.Role).Select(c => c.Value).ToList();
+
+            // Se não há sessão backend válida, não é possível renovar sem re-login
+            if (string.IsNullOrWhiteSpace(userIdClaim))
+            {
+                return Unauthorized(ErrorResponse.Create(
+                    ErrorCodes.AUTH_INVALID_TOKEN,
+                    "Sessão expirada. Realize login novamente."));
+            }
+
+            // Reemitir cookie com TTL renovado (ADR-045)
+            var claims = new List<Claim>
+            {
+                new(ClaimTypes.NameIdentifier, userIdClaim),
+                new(ClaimTypes.Email, emailClaim),
+                new(ClaimTypes.Name, nameClaim)
+            };
+            claims.AddRange(roleClaims.Select(r => new Claim(ClaimTypes.Role, r)));
+
+            var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+            var principal = new ClaimsPrincipal(identity);
+
+            await HttpContext.SignInAsync(
+                CookieAuthenticationDefaults.AuthenticationScheme,
+                principal,
+                new AuthenticationProperties
+                {
+                    IsPersistent = true,
+                    ExpiresUtc = DateTimeOffset.UtcNow.Add(CookieExpiration)
+                });
+
+            _logger.LogInformation("Sessão renovada (refresh) para usuário {UserId}", userIdClaim);
+
+            return Ok();
+        }
+        catch (AuthenticationException ex)
+        {
+            _logger.LogWarning("Refresh de sessão falhou: {Message}", ex.Message);
+            return Unauthorized(ErrorResponse.Create(ex.Code, ex.Message));
+        }
     }
 
     /// <summary>

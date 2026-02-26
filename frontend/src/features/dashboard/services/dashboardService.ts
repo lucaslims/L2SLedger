@@ -1,27 +1,35 @@
 import { apiClient } from '@/shared/lib/api/client';
 import { API_ENDPOINTS } from '@/shared/lib/api/endpoints';
+import type { GetTransactionsResponse } from '@/features/transactions/types/transaction.types';
+import { TransactionTypeNameMap } from '@/features/transactions/types/transaction.types';
 
 /**
- * Resposta de saldos consolidados
+ * Resposta de saldos consolidados (contrato do backend - BalanceSummaryDto)
  */
 export interface BalancesResponse {
   totalIncome: number;
   totalExpense: number;
-  currentBalance: number;
-  period: {
-    start: string;
-    end: string;
-  };
+  netBalance: number;
+  startDate: string;
+  endDate: string;
+  byCategory: Array<{
+    categoryId: string;
+    categoryName: string;
+    income: number;
+    expense: number;
+    netBalance: number;
+  }>;
 }
 
 /**
- * Saldo diário para gráficos
+ * Saldo diário para gráficos (contrato do backend - DailyBalanceDto)
  */
 export interface DailyBalance {
   date: string;
+  openingBalance: number;
   income: number;
   expense: number;
-  balance: number;
+  closingBalance: number;
 }
 
 /**
@@ -63,12 +71,18 @@ export const dashboardService = {
    * Buscar transações recentes (últimas 5)
    */
   async getRecentTransactions(): Promise<RecentTransaction[]> {
-    const response = await apiClient.get<{ data: RecentTransaction[] }>(
-      API_ENDPOINTS.TRANSACTIONS,
-      {
-        params: { pageSize: 5, page: 1 },
-      }
-    );
-    return response.data;
+    const response = await apiClient.get<GetTransactionsResponse>(API_ENDPOINTS.TRANSACTIONS, {
+      params: { pageSize: 5, page: 1 },
+    });
+
+    // Mapear TransactionDto para RecentTransaction
+    return response.transactions.map((t) => ({
+      id: t.id,
+      description: t.description,
+      amount: t.amount,
+      type: TransactionTypeNameMap[t.type],
+      categoryName: t.categoryName,
+      date: t.transactionDate,
+    }));
   },
 };

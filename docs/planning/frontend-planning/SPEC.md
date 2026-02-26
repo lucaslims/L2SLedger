@@ -1536,7 +1536,7 @@ VITE_FIREBASE_APP_ID=your-app-id
 | Prioridade | Feature | Dependência |
 |------------|---------|-------------|
 | Alta | Admin - Auditoria | Backend pronto |
-| Alta | Contexto Comercial | Backend /me/commercial-context |
+| Alta | Contexto Comercial | Backend /api/v1/me/commercial-context |
 | Alta | Períodos Financeiros | Fase 4 + Backend |
 | Média | Exportações | Fase 4 + Backend |
 | Média | Relatórios | Dashboard + Backend |
