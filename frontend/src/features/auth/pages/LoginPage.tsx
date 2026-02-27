@@ -12,7 +12,7 @@ export default function LoginPage() {
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
       <div className="w-full max-w-md space-y-6 rounded-lg border bg-card p-8 shadow-sm">
         <div className="text-center">
-          <div className="flex justify-center mb-4">
+          <div className="mb-4 flex justify-center">
             <L2SLogo variant="full" width={250} />
           </div>
           <h2 className="mt-2 text-xl font-semibold">Bem-vindo de volta</h2>
