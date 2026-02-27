@@ -4,6 +4,7 @@ import { Home, CreditCard, FolderOpen, Users } from 'lucide-react';
 import { cn } from '@/shared/lib/utils/cn';
 import { useAuth } from '@/app/providers/useAuth';
 import { Separator } from '@/shared/components/ui/separator';
+import { L2SLogo } from '@/assets/logo';
 
 /**
  * Item de navegação
@@ -34,7 +35,7 @@ export function Sidebar() {
     <aside className="sticky top-0 flex h-screen w-64 flex-col overflow-y-auto border-r bg-card">
       {/* Logo */}
       <div className="flex h-16 shrink-0 items-center border-b px-6">
-        <h1 className="text-2xl font-bold text-primary">L2SLedger</h1>
+        <L2SLogo variant="full" width={150} />
       </div>
 
       {/* Navigation */}

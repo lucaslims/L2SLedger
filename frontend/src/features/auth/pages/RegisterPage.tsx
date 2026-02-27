@@ -1,6 +1,7 @@
 import { RegisterForm } from '../components/RegisterForm';
 import { Link } from 'react-router-dom';
 import { ROUTES } from '@/shared/lib/utils/constants';
+import { L2SLogo } from '@/assets/logo';
 
 /**
  * Página de Registro
@@ -11,7 +12,9 @@ export default function RegisterPage() {
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
       <div className="w-full max-w-md space-y-6 rounded-lg border bg-card p-8 shadow-sm">
         <div className="text-center">
-          <h1 className="text-3xl font-bold text-primary">L2SLedger</h1>
+          <div className="flex justify-center mb-4">
+            <L2SLogo variant="full" width={180} />
+          </div>
           <h2 className="mt-2 text-xl font-semibold">Criar conta</h2>
           <p className="mt-2 text-sm text-muted-foreground">
             Preencha os dados abaixo para começar

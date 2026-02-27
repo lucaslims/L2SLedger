@@ -10,6 +10,30 @@ O formato deve seguir o padrão [Keep a Changelog](https://keepachangelog.com/en
 
 ---
 
+## [2026-02-27] - Implementação do Logo SVG L2SLogo no sistema
+
+### Contexto
+
+O componente `L2SLogo` foi refatorado para suportar três variantes (`icon`, `reduced`, `full`) e integrado em todos os pontos de exibição do sistema onde o nome "L2SLedger" era exibido como texto puro.
+
+### Mudanças
+
+#### Criados
+- `src/assets/logo/index.ts` — Re-export público de `L2SLogo` e `L2SLogoVariant`
+
+#### Atualizados
+- `src/assets/logo/L2SLogo.tsx` — Refatorado: variante `icon | reduced | full`, viewBox dinâmico, atributos Inkscape removidos, JSX válido
+- `src/shared/components/feedback/LoadingScreen.tsx` — Logo `variant="full" width={200}` substituindo `<h1>`
+- `src/features/auth/pages/LoginPage.tsx` — Logo `variant="full" width={180}` no topo do card de login
+- `src/features/auth/pages/RegisterPage.tsx` — Logo `variant="full" width={180}` no topo do card de registro
+- `src/shared/components/layout/Sidebar.tsx` — Logo `variant="full" width={150}` na seção superior da sidebar desktop
+- `src/shared/components/layout/Header.tsx` — Logo `variant="reduced" width={90}` no header mobile (ícone + "L2S")
+
+### Resultado
+Logo SVG vetorial com gradientes em todos os pontos de presença visual do sistema. Sem erros de TypeScript.
+
+---
+
 ## [2026-02-25] - Fix: NullReferenceException no login — Firebase Admin SDK não inicializado
 
 ### Contexto
