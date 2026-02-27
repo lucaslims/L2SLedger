@@ -38,11 +38,11 @@
        gradientUnits="userSpaceOnUse">
       <stop
          offset="0"
-         stop-color="#0f172a"
+         stop-color="#ffffff"
          id="stop1" />
       <stop
          offset="1"
-         stop-color="#1a2540"
+         stop-color="#ffffff"
          id="stop2" />
     </linearGradient>
   </defs>
