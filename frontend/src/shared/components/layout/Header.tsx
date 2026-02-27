@@ -29,7 +29,7 @@ export function Header() {
       <div className="flex h-16 items-center justify-between px-4 md:px-6">
         {/* Logo (mobile only) */}
         <div className="md:hidden">
-          <L2SLogo variant="reduced" width={90} />
+          <L2SLogo variant="reduced" width={120} />
         </div>
 
         {/* Spacer */}

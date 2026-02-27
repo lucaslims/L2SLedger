@@ -13,7 +13,7 @@ export default function RegisterPage() {
       <div className="w-full max-w-md space-y-6 rounded-lg border bg-card p-8 shadow-sm">
         <div className="text-center">
           <div className="flex justify-center mb-4">
-            <L2SLogo variant="full" width={180} />
+            <L2SLogo variant="full" width={250} />
           </div>
           <h2 className="mt-2 text-xl font-semibold">Criar conta</h2>
           <p className="mt-2 text-sm text-muted-foreground">

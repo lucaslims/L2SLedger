@@ -11,7 +11,7 @@ export function LoadingScreen() {
     <div className="flex min-h-screen items-center justify-center bg-background">
       <div className="text-center">
         <div className="mb-4 flex justify-center">
-          <L2SLogo variant="full" width={200} />
+          <L2SLogo variant="full" width={300} />
         </div>
 
         <div className="flex items-center justify-center space-x-2">
