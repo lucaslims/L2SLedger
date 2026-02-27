@@ -1,6 +1,7 @@
 import { useAuth } from '@/app/providers/useAuth';
 import { useLogout } from '@/features/auth/hooks/useLogout';
 import { Button } from '@/shared/components/ui/button';
+import { L2SLogo } from '@/assets/logo';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -28,7 +29,7 @@ export function Header() {
       <div className="flex h-16 items-center justify-between px-4 md:px-6">
         {/* Logo (mobile only) */}
         <div className="md:hidden">
-          <h1 className="text-xl font-bold text-primary">L2SLedger</h1>
+          <L2SLogo variant="reduced" width={120} />
         </div>
 
         {/* Spacer */}

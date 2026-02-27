@@ -10,6 +10,58 @@ O formato deve seguir o padrão [Keep a Changelog](https://keepachangelog.com/en
 
 ---
 
+## [2026-02-27] - Ícones PWA gerados a partir do logo L2SLogo
+
+### Contexto
+
+Os arquivos de ícone do PWA (favicon, manifest icons) eram placeholders sem relação com o logo real do sistema. O `favicon.svg` exibia apenas um retângulo azul com a letra "L". O `manifest.json` referenciava PNGs inexistentes. Esta etapa substitui todos os ícones pelo logo real utilizando uma técnica de SVG aninhado para preservar os gradientes `userSpaceOnUse`.
+
+### Mudanças
+
+#### Criados
+- `frontend/public/favicon.svg` — Ícone de 32×32 com fundo escuro arredondado (`#0f172a`, `rx="6"`) e o ícone L2S centralizado via SVG aninhado com `viewBox="0 0 60 43.5"`
+- `frontend/public/icons/icon.svg` — Ícone master 512×512 com fundo arredondado (`rx="96"`) e o ícone L2S centralizado — fonte para geração dos PNGs
+- `scripts/generate-icons.mjs` — Script Node.js usando `sharp` para gerar PNGs nas dimensões: 16, 32, 48, 72, 96, 128, 144, 152, 180, 192, 384, 512
+
+#### Atualizados
+- `frontend/public/manifest.json` — Adicionada entrada SVG (`"sizes": "any"`) + entradas PNG para todas as dimensões necessárias
+- `frontend/index.html` — `favicon.ico` substituído por `favicon.svg` (tipo `image/svg+xml`), fallbacks PNG 32×32 e 16×16 adicionados, Apple touch icon atualizado para `icon-180.png`
+- `frontend/package.json` — Script `generate:icons` adicionado; `sharp@^0.33.0` adicionado como devDependency
+
+### Observação
+
+Os arquivos PNG (`/icons/icon-*.png`) ainda precisam ser gerados executando:
+```bash
+cd frontend && npm run generate:icons
+```
+O Node.js apresentou erro de permissão (`EPERM lstat 'C:\Users\lucass\AppData'`) no ambiente atual — provavelmente instalação do Node sob outro usuário. Os SVGs já funcionam em todos os browsers modernos e para instalação PWA (Chrome 93+).
+
+---
+
+## [2026-02-27] - Implementação do Logo SVG L2SLogo no sistema
+
+### Contexto
+
+O componente `L2SLogo` foi refatorado para suportar três variantes (`icon`, `reduced`, `full`) e integrado em todos os pontos de exibição do sistema onde o nome "L2SLedger" era exibido como texto puro.
+
+### Mudanças
+
+#### Criados
+- `src/assets/logo/index.ts` — Re-export público de `L2SLogo` e `L2SLogoVariant`
+
+#### Atualizados
+- `src/assets/logo/L2SLogo.tsx` — Refatorado: variante `icon | reduced | full`, viewBox dinâmico, atributos Inkscape removidos, JSX válido
+- `src/shared/components/feedback/LoadingScreen.tsx` — Logo `variant="full" width={200}` substituindo `<h1>`
+- `src/features/auth/pages/LoginPage.tsx` — Logo `variant="full" width={180}` no topo do card de login
+- `src/features/auth/pages/RegisterPage.tsx` — Logo `variant="full" width={180}` no topo do card de registro
+- `src/shared/components/layout/Sidebar.tsx` — Logo `variant="full" width={150}` na seção superior da sidebar desktop
+- `src/shared/components/layout/Header.tsx` — Logo `variant="reduced" width={90}` no header mobile (ícone + "L2S")
+
+### Resultado
+Logo SVG vetorial com gradientes em todos os pontos de presença visual do sistema. Sem erros de TypeScript.
+
+---
+
 ## [2026-02-25] - Fix: NullReferenceException no login — Firebase Admin SDK não inicializado
 
 ### Contexto

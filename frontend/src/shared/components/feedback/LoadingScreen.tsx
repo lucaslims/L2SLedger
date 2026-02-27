@@ -1,3 +1,5 @@
+import { L2SLogo } from '@/assets/logo';
+
 /**
  * LoadingScreen
  *
@@ -8,8 +10,8 @@ export function LoadingScreen() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-background">
       <div className="text-center">
-        <div className="mb-4">
-          <h1 className="text-4xl font-bold text-primary">L2SLedger</h1>
+        <div className="mb-4 flex justify-center">
+          <L2SLogo variant="full" width={300} />
         </div>
 
         <div className="flex items-center justify-center space-x-2">
