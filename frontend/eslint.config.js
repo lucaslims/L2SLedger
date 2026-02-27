@@ -16,6 +16,7 @@ export default [
       '.eslintrc.cjs',
       'storybook-static/**',
       'coverage/**',
+      'scripts/generate-icons.mjs',
     ],
   },
 
