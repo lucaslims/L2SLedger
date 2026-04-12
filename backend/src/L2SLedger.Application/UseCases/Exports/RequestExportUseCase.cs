@@ -1,4 +1,5 @@
 using System.Text.Json;
+using L2SLedger.Application.Common.Logging;
 using L2SLedger.Application.DTOs.Exports;
 using L2SLedger.Application.Interfaces;
 using L2SLedger.Domain.Entities;
@@ -63,7 +64,7 @@ public class RequestExportUseCase
             "Export {ExportId} requested by user {UserId}. Format: {Format}",
             created.Id,
             userId,
-            (ExportFormat)request.Format
+            LogSanitizer.Sanitize(((ExportFormat)request.Format).ToString())
         );
 
         return new ExportDto

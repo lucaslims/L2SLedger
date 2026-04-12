@@ -8,6 +8,35 @@ O formato deve seguir o padrão [Keep a Changelog](https://keepachangelog.com/en
 <!-- BEGIN CHANGELOG -->
 ## [Unreleased]
 
+## [2026-04-12] - Fase P3: padronização adicional de logs (exceções esperadas e exports)
+
+### Contexto
+
+Continuação da padronização para reduzir variabilidade de logs em erros esperados de negócio/validação e uniformizar sanitização em casos de exportação.
+
+### Mudanças
+
+#### Atualizados
+- `backend/src/L2SLedger.API/Controllers/BalancesController.cs`
+- `backend/src/L2SLedger.API/Controllers/ReportsController.cs`
+- `backend/src/L2SLedger.API/Controllers/TransactionsController.cs`
+- `backend/src/L2SLedger.API/Controllers/AdjustmentsController.cs`
+  - Logs de `BusinessRuleException` padronizados para `Code + Message` sanitizada via `LogSanitizer.SanitizeExceptionMessage(...)`, evitando log de exceção bruta em casos esperados.
+
+- `backend/src/L2SLedger.Application/UseCases/Exports/RequestExportUseCase.cs`
+- `backend/src/L2SLedger.Application/UseCases/Exports/GetExportsUseCase.cs`
+- `backend/src/L2SLedger.Application/UseCases/Exports/DownloadExportUseCase.cs`
+  - Campos de log padronizados com sanitização (`Format`, filtros de consulta e `FileName`).
+
+### Validação
+
+- Testes focados (API + Application Exports): **26 passed, 0 failed**.
+- Build da solução backend (`L2SLedger.sln`, Release + warnaserror): **sucesso**.
+
+### Justificativa técnica
+
+Padronização mantém observabilidade com menor risco de injeção em log/ruído semântico, sem alterar contratos públicos da API e preservando comportamento funcional.
+
 ## [2026-04-12] - Fase P2: expansão da sanitização de logs (controllers/usecases)
 
 ### Contexto

@@ -1,4 +1,5 @@
 using L2SLedger.API.Contracts;
+using L2SLedger.Application.Common.Logging;
 using L2SLedger.Application.DTOs.Reports;
 using L2SLedger.Application.UseCases.Reports;
 using L2SLedger.Domain.Exceptions;
@@ -53,7 +54,10 @@ public class ReportsController : ControllerBase
         }
         catch (BusinessRuleException ex)
         {
-            _logger.LogWarning(ex, "Erro de validação ao obter relatório de fluxo de caixa");
+            _logger.LogWarning(
+                "Erro de validação ao obter relatório de fluxo de caixa. Code={Code}, Message={Message}",
+                ex.Code,
+                LogSanitizer.SanitizeExceptionMessage(ex.Message));
             return BadRequest(ErrorResponse.Create(ex.Code, ex.Message, traceId: HttpContext.TraceIdentifier));
         }
         catch (Exception ex)

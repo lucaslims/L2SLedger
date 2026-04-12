@@ -1,4 +1,5 @@
 using L2SLedger.API.Contracts;
+using L2SLedger.Application.Common.Logging;
 using L2SLedger.Application.DTOs.Transaction;
 using L2SLedger.Application.UseCases.Transaction;
 using L2SLedger.Domain.Constants;
@@ -150,7 +151,10 @@ public class TransactionsController : ControllerBase
         }
         catch (BusinessRuleException ex)
         {
-            _logger.LogWarning(ex, "Erro de regra de negócio ao criar transação");
+            _logger.LogWarning(
+                "Erro de regra de negócio ao criar transação. Code={Code}, Message={Message}",
+                ex.Code,
+                LogSanitizer.SanitizeExceptionMessage(ex.Message));
             return BadRequest(ErrorResponse.Create(ex.Code, ex.Message, traceId: HttpContext.TraceIdentifier));
         }
         catch (Exception ex)
@@ -199,7 +203,11 @@ public class TransactionsController : ControllerBase
         }
         catch (BusinessRuleException ex)
         {
-            _logger.LogWarning(ex, "Erro de regra de negócio ao atualizar transação {TransactionId}", id);
+            _logger.LogWarning(
+                "Erro de regra de negócio ao atualizar transação {TransactionId}. Code={Code}, Message={Message}",
+                id,
+                ex.Code,
+                LogSanitizer.SanitizeExceptionMessage(ex.Message));
 
             if (ex.Code == ErrorCodes.FIN_TRANSACTION_NOT_FOUND)
             {
@@ -239,7 +247,11 @@ public class TransactionsController : ControllerBase
         }
         catch (BusinessRuleException ex)
         {
-            _logger.LogWarning(ex, "Erro ao excluir transação {TransactionId}", id);
+            _logger.LogWarning(
+                "Erro ao excluir transação {TransactionId}. Code={Code}, Message={Message}",
+                id,
+                ex.Code,
+                LogSanitizer.SanitizeExceptionMessage(ex.Message));
             return NotFound(ErrorResponse.Create(ex.Code, ex.Message, traceId: HttpContext.TraceIdentifier));
         }
         catch (Exception ex)
