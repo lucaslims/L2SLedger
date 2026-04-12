@@ -14,6 +14,10 @@ public static class MappingExtensions
     public static IServiceCollection AddMappingConfiguration(this IServiceCollection services)
     {
         services.AddAutoMapper(
+            cfg =>
+            {
+                cfg.LicenseKey = Environment.GetEnvironmentVariable("AUTOMAPPER_LICENSE_KEY");
+            },
             typeof(Program).Assembly,
             typeof(AuthProfile).Assembly
         );

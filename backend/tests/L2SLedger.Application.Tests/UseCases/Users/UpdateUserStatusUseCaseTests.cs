@@ -31,7 +31,7 @@ public class UpdateUserStatusUseCaseTests
         var config = new MapperConfiguration(cfg =>
         {
             cfg.AddProfile<UserMappingProfile>();
-        });
+        }, Microsoft.Extensions.Logging.Abstractions.NullLoggerFactory.Instance);
         _mapper = config.CreateMapper();
 
         _currentUserServiceMock

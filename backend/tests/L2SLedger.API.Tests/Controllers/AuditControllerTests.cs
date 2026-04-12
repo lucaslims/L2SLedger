@@ -37,7 +37,7 @@ public class AuditControllerTests
         var config = new MapperConfiguration(cfg =>
         {
             cfg.AddProfile<AuditProfile>();
-        });
+        }, Microsoft.Extensions.Logging.Abstractions.NullLoggerFactory.Instance);
         _mapper = config.CreateMapper();
         _validator = new GetAuditEventsRequestValidator();
 

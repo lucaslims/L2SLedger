@@ -27,7 +27,7 @@ public class GetAuditEventByIdUseCaseTests
         var config = new MapperConfiguration(cfg =>
         {
             cfg.AddProfile<AuditProfile>();
-        });
+        }, Microsoft.Extensions.Logging.Abstractions.NullLoggerFactory.Instance);
         _mapper = config.CreateMapper();
 
         _sut = new GetAuditEventByIdUseCase(
