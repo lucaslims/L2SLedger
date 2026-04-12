@@ -141,7 +141,7 @@ jobs:
       - name: Scan Docker image with Trivy
         id: trivy
         if: steps.docker-build.outcome == 'success'
-        uses: aquasecurity/trivy-action@0.35.0
+        uses: aquasecurity/trivy-action@v0.35.0
         with:
           image-ref: ${{ fromJSON(steps.meta.outputs.json).tags[0] }}
           format: 'sarif'
