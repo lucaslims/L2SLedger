@@ -49,9 +49,13 @@ public class AuditController : ControllerBase
     {
         try
         {
+            var sanitizedEventType = SanitizeForLog(request.EventType);
+            var sanitizedEntityType = SanitizeForLog(request.EntityType);
+            var sanitizedUserId = SanitizeForLog(request.UserId);
+
             _logger.LogInformation(
                 "Admin consultando eventos de auditoria. Filtros: EventType={EventType}, EntityType={EntityType}, UserId={UserId}",
-                request.EventType, request.EntityType, request.UserId);
+                sanitizedEventType, sanitizedEntityType, sanitizedUserId);
 
             var response = await _getAuditEventsUseCase.ExecuteAsync(request, cancellationToken);
             return Ok(response);
@@ -73,6 +77,11 @@ public class AuditController : ControllerBase
             _logger.LogError(ex, "Erro ao listar eventos de auditoria");
             throw;
         }
+    }
+
+    private static string SanitizeForLog(object? value)
+    {
+        return value?.ToString()?.Replace("\r", string.Empty).Replace("\n", string.Empty) ?? string.Empty;
     }
 
     /// <summary>
