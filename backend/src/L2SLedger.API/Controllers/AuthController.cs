@@ -1,5 +1,6 @@
 using System.Security.Claims;
 using L2SLedger.API.Contracts;
+using L2SLedger.Application.Common.Logging;
 using L2SLedger.Application.DTOs.Auth;
 using L2SLedger.Application.Interfaces;
 using L2SLedger.Application.UseCases.Auth;
@@ -80,7 +81,7 @@ public class AuthController : ControllerBase
         }
         catch (AuthenticationException ex)
         {
-            _logger.LogWarning("Falha na autenticação: {Message}", ex.Message);
+            _logger.LogWarning("Falha na autenticação: {Message}", LogSanitizer.SanitizeExceptionMessage(ex.Message));
 
             return ex.Code switch
             {
@@ -129,8 +130,9 @@ public class AuthController : ControllerBase
     public async Task<IActionResult> Logout()
     {
         var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        var sanitizedUserId = LogSanitizer.Sanitize(userIdClaim);
 
-        _logger.LogInformation("Logout realizado para usuário {UserId}", userIdClaim);
+        _logger.LogInformation("Logout realizado para usuário {UserId}", sanitizedUserId);
 
         // SignOut do esquema de autenticação
         await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
@@ -210,7 +212,7 @@ public class AuthController : ControllerBase
         }
         catch (AuthenticationException ex)
         {
-            _logger.LogWarning("Refresh de sessão falhou: {Message}", ex.Message);
+            _logger.LogWarning("Refresh de sessão falhou: {Message}", LogSanitizer.SanitizeExceptionMessage(ex.Message));
             return Unauthorized(ErrorResponse.Create(ex.Code, ex.Message));
         }
     }
@@ -259,7 +261,7 @@ public class AuthController : ControllerBase
         }
         catch (AuthenticationException ex)
         {
-            _logger.LogWarning("Firebase login falhou: {Message}", ex.Message);
+            _logger.LogWarning("Firebase login falhou: {Message}", LogSanitizer.SanitizeExceptionMessage(ex.Message));
             return Unauthorized(ErrorResponse.Create(ex.Code, ex.Message));
         }
     }
