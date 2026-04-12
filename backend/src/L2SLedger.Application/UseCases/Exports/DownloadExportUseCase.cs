@@ -78,7 +78,7 @@ public class DownloadExportUseCase
         var fileName = $"transactions_{userIdFull}_{timestamp}_{uniqueSuffix}.{extension}";
 
         _logger.LogInformation(
-            "Export {ExportId} downloaded by user {UserId}. FileName={FileName}",
+            "Exportação {ExportId} baixada pelo usuário {UserId}. FileName={FileName}",
             exportId,
             userId,
             LogSanitizer.Sanitize(fileName)

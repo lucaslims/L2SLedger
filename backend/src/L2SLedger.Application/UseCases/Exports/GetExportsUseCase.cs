@@ -70,7 +70,7 @@ public class GetExportsUseCase
         );
 
         _logger.LogInformation(
-            "User {UserId} retrieved {Count} exports (Page {Page}/{TotalPages}). Filters: Status={Status}, Format={Format}",
+            "Usuário {UserId} consultou {Count} exportações (Página {Page}/{TotalPages}). Filtros: Status={Status}, Formato={Format}",
             userId,
             exports.Count,
             request.Page,

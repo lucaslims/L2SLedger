@@ -50,18 +50,18 @@ public class DeleteExportUseCase
         if (!isAdmin)
         {
             _logger.LogWarning(
-                "User {UserId} attempted to delete export {ExportId} without Admin role",
+                "Usuário {UserId} tentou excluir a exportação {ExportId} sem role Admin",
                 userId,
                 exportId
             );
-            throw new AuthorizationException(ErrorCodes.EXPORT_DELETE_UNAUTHORIZED, "Only Admin users can delete exports");
+            throw new AuthorizationException(ErrorCodes.EXPORT_DELETE_UNAUTHORIZED, "Apenas usuários Admin podem excluir exportações");
         }
 
         var export = await _exportRepository.GetByIdAsync(exportId);
 
         if (export == null)
         {
-            _logger.LogWarning("Export {ExportId} not found for deletion", exportId);
+            _logger.LogWarning("Exportação {ExportId} não encontrada para exclusão", exportId);
             throw new NotFoundException(ErrorCodes.EXPORT_NOT_FOUND, exportId.ToString());
         }
 
@@ -74,7 +74,7 @@ public class DeleteExportUseCase
             {
                 await _fileStorageService.DeleteExportFileAsync(export.FilePath);
                 _logger.LogInformation(
-                    "Physical file deleted for export {ExportId}: {FilePath}",
+                    "Arquivo físico removido para exportação {ExportId}: {FilePath}",
                     exportId,
                     sanitizedFilePath
                 );
@@ -83,7 +83,7 @@ public class DeleteExportUseCase
             {
                 _logger.LogWarning(
                     ex,
-                    "Failed to delete physical file for export {ExportId}: {FilePath}",
+                    "Falha ao remover arquivo físico da exportação {ExportId}: {FilePath}",
                     exportId,
                     sanitizedFilePath
                 );
@@ -95,7 +95,7 @@ public class DeleteExportUseCase
         await _exportRepository.DeleteAsync(export);
 
         _logger.LogInformation(
-            "Export {ExportId} soft deleted by Admin user {UserId}",
+            "Exportação {ExportId} marcada para exclusão (soft delete) por Admin {UserId}",
             exportId,
             userId
         );

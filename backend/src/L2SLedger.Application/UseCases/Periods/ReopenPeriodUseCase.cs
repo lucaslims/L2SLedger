@@ -75,8 +75,8 @@ public class ReopenPeriodUseCase
         // 6. CRITICAL audit log (ADR-014) - Reopening is an exceptional operation
         var sanitizedReason = LogSanitizer.Sanitize(request.Reason);
         _logger.LogError(
-            "Financial period REOPENED: {PeriodName} by user {UserId}. " +
-            "Reason: {Reason}",
+            "Período financeiro REABERTO: {PeriodName} pelo usuário {UserId}. " +
+            "Motivo: {Reason}",
             period.GetPeriodName(), userId, sanitizedReason);
 
         // 7. Return DTO

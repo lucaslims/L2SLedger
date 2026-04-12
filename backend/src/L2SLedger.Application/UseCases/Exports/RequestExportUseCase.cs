@@ -61,7 +61,7 @@ public class RequestExportUseCase
         var created = await _exportRepository.AddAsync(export);
 
         _logger.LogInformation(
-            "Export {ExportId} requested by user {UserId}. Format: {Format}",
+            "Exportação {ExportId} solicitada pelo usuário {UserId}. Formato: {Format}",
             created.Id,
             userId,
             LogSanitizer.Sanitize(((ExportFormat)request.Format).ToString())

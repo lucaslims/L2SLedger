@@ -48,7 +48,7 @@ public class FirebaseLoginUseCase
 
             // 3. Log informativo (não logar senha!)
             _logger.LogInformation(
-                "Firebase direct login successful for email: {Email}",
+                "Login direto no Firebase realizado com sucesso para email: {Email}",
                 sanitizedEmail);
 
             return response;
@@ -62,7 +62,7 @@ public class FirebaseLoginUseCase
         {
             _logger.LogWarning(
                 ex,
-                "Firebase direct login failed for email: {Email}",
+                "Falha no login direto no Firebase para email: {Email}",
                 sanitizedEmail);
 
             throw new AuthenticationException(

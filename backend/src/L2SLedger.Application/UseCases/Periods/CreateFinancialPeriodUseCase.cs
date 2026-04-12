@@ -65,7 +65,7 @@ public class CreateFinancialPeriodUseCase
 
         // 5. Audit log (ADR-014)
         _logger.LogInformation(
-            "Financial period created: {Year}/{Month} (ID: {PeriodId})",
+            "Período financeiro criado: {Year}/{Month} (ID: {PeriodId})",
             created.Year, created.Month, created.Id);
 
         // 6. Return DTO

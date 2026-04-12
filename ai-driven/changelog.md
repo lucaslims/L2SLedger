@@ -8,6 +8,38 @@ O formato deve seguir o padrão [Keep a Changelog](https://keepachangelog.com/en
 <!-- BEGIN CHANGELOG -->
 ## [Unreleased]
 
+## [2026-04-12] - Lint semântico de logs (padronização pt-BR)
+
+### Contexto
+
+Execução da etapa opcional de lint semântico para padronizar idioma e estilo de mensagens de log, sem alterar contratos, regras de negócio ou fluxo de execução.
+
+### Mudanças
+
+#### Atualizados
+- `backend/src/L2SLedger.Application/UseCases/Exports/RequestExportUseCase.cs`
+- `backend/src/L2SLedger.Application/UseCases/Exports/GetExportsUseCase.cs`
+- `backend/src/L2SLedger.Application/UseCases/Exports/DownloadExportUseCase.cs`
+- `backend/src/L2SLedger.Application/UseCases/Exports/DeleteExportUseCase.cs`
+- `backend/src/L2SLedger.Application/UseCases/Auth/FirebaseLoginUseCase.cs`
+- `backend/src/L2SLedger.Application/UseCases/Periods/CreateFinancialPeriodUseCase.cs`
+- `backend/src/L2SLedger.Application/UseCases/Periods/ClosePeriodUseCase.cs`
+- `backend/src/L2SLedger.Application/UseCases/Periods/ReopenPeriodUseCase.cs`
+
+Padronizações aplicadas:
+- Mensagens de log mistas EN/PT convertidas para PT-BR.
+- Terminologia alinhada (`Exportação`, `Período financeiro`, `Usuário`, `Formato`, `Motivo`).
+- Preservação dos mesmos placeholders estruturados e níveis de log.
+
+### Validação
+
+- Testes focados (UseCases Exports/Periods/Auth): **49 passed, 0 failed**.
+- Build da solução backend (`L2SLedger.sln`, Release + warnaserror): **sucesso**.
+
+### Justificativa técnica
+
+Melhora consistência operacional e legibilidade de observabilidade, sem impacto funcional e mantendo compatibilidade com correlações de log já existentes.
+
 ## [2026-04-12] - Full scan final: normalização de contrato de erro remanescente
 
 ### Contexto
