@@ -8,6 +8,45 @@ O formato deve seguir o padrão [Keep a Changelog](https://keepachangelog.com/en
 <!-- BEGIN CHANGELOG -->
 ## [Unreleased]
 
+## [2026-04-12] - Fase P2: expansão da sanitização de logs (controllers/usecases)
+
+### Contexto
+
+Continuação da centralização de sanitização de logs para cobrir pontos remanescentes com potencial entrada controlada por usuário e exposição excessiva em observabilidade.
+
+### Mudanças
+
+#### Atualizados
+- `backend/src/L2SLedger.API/Controllers/AuthController.cs`
+  - Sanitização do `UserId` também no log de refresh de sessão.
+
+- `backend/src/L2SLedger.API/Controllers/AuditController.cs`
+- `backend/src/L2SLedger.API/Controllers/PeriodsController.cs`
+- `backend/src/L2SLedger.API/Controllers/AdjustmentsController.cs`
+- `backend/src/L2SLedger.API/Controllers/TransactionsController.cs`
+  - Substituição de logs com `{Errors}` por `ValidationErrorsCount`, evitando serialização de coleções de validação completas no log.
+
+- `backend/src/L2SLedger.API/Controllers/ExportsController.cs`
+  - Sanitização de `Format` e `FileName` antes de logging.
+
+- `backend/src/L2SLedger.API/Controllers/UsersController.cs`
+  - Sanitização de `request.Status` antes de logging.
+
+- `backend/src/L2SLedger.Application/UseCases/Exports/DeleteExportUseCase.cs`
+  - Sanitização de `FilePath` em logs de sucesso/falha de remoção física.
+
+- `backend/src/L2SLedger.Application/UseCases/Users/UpdateUserRolesUseCase.cs`
+  - Sanitização/máscara de e-mail e sanitização das listas de roles no log de auditoria.
+
+### Validação
+
+- Testes focados (API + Application): **30 passed, 0 failed**.
+- Build backend Release com `-warnaserror`: **sucesso**.
+
+### Justificativa técnica
+
+Reduz superfície de log forging e vazamento de dados operacionais, mantendo rastreabilidade e sem alterar contratos públicos de API.
+
 ## [2026-04-12] - Centralização de sanitização de logs (Controllers + UseCases)
 
 ### Contexto

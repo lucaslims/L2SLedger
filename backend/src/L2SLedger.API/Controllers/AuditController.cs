@@ -63,7 +63,9 @@ public class AuditController : ControllerBase
         }
         catch (ValidationException ex)
         {
-            _logger.LogWarning("Erro de validação ao listar eventos de auditoria: {Errors}", ex.Errors);
+            _logger.LogWarning(
+                "Erro de validação ao listar eventos de auditoria. ValidationErrorsCount={ValidationErrorsCount}",
+                ex.Errors.Count());
             return BadRequest(new
             {
                 errors = ex.Errors.Select(e => new

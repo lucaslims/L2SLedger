@@ -206,7 +206,9 @@ public class AuthController : ControllerBase
                     ExpiresUtc = DateTimeOffset.UtcNow.Add(CookieExpiration)
                 });
 
-            _logger.LogInformation("Sessão renovada (refresh) para usuário {UserId}", userIdClaim);
+            _logger.LogInformation(
+                "Sessão renovada (refresh) para usuário {UserId}",
+                LogSanitizer.Sanitize(userIdClaim));
 
             return Ok();
         }

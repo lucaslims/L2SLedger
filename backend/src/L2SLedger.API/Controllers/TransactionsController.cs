@@ -139,7 +139,9 @@ public class TransactionsController : ControllerBase
         }
         catch (ValidationException ex)
         {
-            _logger.LogWarning("Erro de validação ao criar transação: {Errors}", ex.Errors);
+            _logger.LogWarning(
+                "Erro de validação ao criar transação. ValidationErrorsCount={ValidationErrorsCount}",
+                ex.Errors.Count());
             return BadRequest(ErrorResponse.Create(
                 ErrorCodes.VAL_VALIDATION_FAILED,
                 "Erro de validação",
@@ -185,7 +187,10 @@ public class TransactionsController : ControllerBase
         }
         catch (ValidationException ex)
         {
-            _logger.LogWarning("Erro de validação ao atualizar transação {TransactionId}: {Errors}", id, ex.Errors);
+            _logger.LogWarning(
+                "Erro de validação ao atualizar transação {TransactionId}. ValidationErrorsCount={ValidationErrorsCount}",
+                id,
+                ex.Errors.Count());
             return BadRequest(ErrorResponse.Create(
                 ErrorCodes.VAL_VALIDATION_FAILED,
                 "Erro de validação",

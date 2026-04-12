@@ -1,4 +1,5 @@
 using L2SLedger.Application.Interfaces;
+using L2SLedger.Application.Common.Logging;
 using L2SLedger.Domain.Constants;
 using L2SLedger.Domain.Exceptions;
 using Microsoft.Extensions.Logging;
@@ -67,13 +68,15 @@ public class DeleteExportUseCase
         // Deletar arquivo físico se existir
         if (!string.IsNullOrEmpty(export.FilePath))
         {
+            var sanitizedFilePath = LogSanitizer.Sanitize(export.FilePath);
+
             try
             {
                 await _fileStorageService.DeleteExportFileAsync(export.FilePath);
                 _logger.LogInformation(
                     "Physical file deleted for export {ExportId}: {FilePath}",
                     exportId,
-                    export.FilePath
+                    sanitizedFilePath
                 );
             }
             catch (Exception ex)
@@ -82,7 +85,7 @@ public class DeleteExportUseCase
                     ex,
                     "Failed to delete physical file for export {ExportId}: {FilePath}",
                     exportId,
-                    export.FilePath
+                    sanitizedFilePath
                 );
                 // Continua com soft delete mesmo se falhar a deleção do arquivo
             }

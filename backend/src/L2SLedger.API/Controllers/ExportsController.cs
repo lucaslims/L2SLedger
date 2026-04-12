@@ -1,4 +1,5 @@
 using L2SLedger.Application.DTOs.Exports;
+using L2SLedger.Application.Common.Logging;
 using L2SLedger.Application.UseCases.Exports;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -51,7 +52,10 @@ public class ExportsController : ControllerBase
     public async Task<IActionResult> RequestExport([FromBody] RequestExportRequest request)
     {
         var export = await _requestExportUseCase.ExecuteAsync(request);
-        _logger.LogInformation("Exportação solicitada: {ExportId}, formato: {Format}", export.Id, request.Format);
+        _logger.LogInformation(
+            "Exportação solicitada: {ExportId}, formato: {Format}",
+            export.Id,
+            LogSanitizer.Sanitize(request.Format));
 
         return CreatedAtAction(nameof(GetExportById), new { id = export.Id }, export);
     }
@@ -97,7 +101,10 @@ public class ExportsController : ControllerBase
     {
         var (fileBytes, fileName, contentType) = await _downloadExportUseCase.ExecuteAsync(id);
 
-        _logger.LogInformation("Download da exportação {ExportId} - {FileName}", id, fileName);
+        _logger.LogInformation(
+            "Download da exportação {ExportId} - {FileName}",
+            id,
+            LogSanitizer.Sanitize(fileName));
 
         return File(fileBytes, contentType, fileName);
     }

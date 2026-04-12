@@ -59,7 +59,9 @@ public class AdjustmentsController : ControllerBase
         }
         catch (ValidationException ex)
         {
-            _logger.LogWarning("Erro de validação ao listar ajustes: {Errors}", ex.Errors);
+            _logger.LogWarning(
+                "Erro de validação ao listar ajustes. ValidationErrorsCount={ValidationErrorsCount}",
+                ex.Errors.Count());
 
             return BadRequest(ErrorResponse.Create(
                 ErrorCodes.VAL_VALIDATION_FAILED,
@@ -144,7 +146,9 @@ public class AdjustmentsController : ControllerBase
         }
         catch (ValidationException ex)
         {
-            _logger.LogWarning("Erro de validação ao criar ajuste: {Errors}", ex.Errors);
+            _logger.LogWarning(
+                "Erro de validação ao criar ajuste. ValidationErrorsCount={ValidationErrorsCount}",
+                ex.Errors.Count());
             return BadRequest(ErrorResponse.Create(
                 ErrorCodes.VAL_VALIDATION_FAILED,
                 "Erro de validação",

@@ -131,7 +131,9 @@ public class PeriodsController : ControllerBase
         }
         catch (ValidationException ex)
         {
-            _logger.LogWarning("Erro de validação ao criar período: {Errors}", ex.Errors);
+            _logger.LogWarning(
+                "Erro de validação ao criar período. ValidationErrorsCount={ValidationErrorsCount}",
+                ex.Errors.Count());
 
             var details = string.Join("; ", ex.Errors.Select(e => $"{e.PropertyName}: {e.ErrorMessage}"));
             return BadRequest(ErrorResponse.Create(
@@ -270,8 +272,9 @@ public class PeriodsController : ControllerBase
         catch (ValidationException ex)
         {
             _logger.LogWarning(
-                "Erro de validação ao reabrir período {PeriodId}: {Errors}",
-                id, ex.Errors);
+                "Erro de validação ao reabrir período {PeriodId}. ValidationErrorsCount={ValidationErrorsCount}",
+                id,
+                ex.Errors.Count());
 
             var details = string.Join("; ", ex.Errors.Select(e => $"{e.PropertyName}: {e.ErrorMessage}"));
             return BadRequest(ErrorResponse.Create(
