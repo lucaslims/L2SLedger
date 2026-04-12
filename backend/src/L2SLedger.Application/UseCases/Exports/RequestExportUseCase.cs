@@ -1,4 +1,5 @@
 using System.Text.Json;
+using L2SLedger.Application.Common.Logging;
 using L2SLedger.Application.DTOs.Exports;
 using L2SLedger.Application.Interfaces;
 using L2SLedger.Domain.Entities;
@@ -60,10 +61,10 @@ public class RequestExportUseCase
         var created = await _exportRepository.AddAsync(export);
 
         _logger.LogInformation(
-            "Export {ExportId} requested by user {UserId}. Format: {Format}",
+            "Exportação {ExportId} solicitada pelo usuário {UserId}. Formato: {Format}",
             created.Id,
             userId,
-            (ExportFormat)request.Format
+            LogSanitizer.Sanitize(((ExportFormat)request.Format).ToString())
         );
 
         return new ExportDto

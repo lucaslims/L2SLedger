@@ -1,5 +1,6 @@
 using System.Security.Claims;
 using L2SLedger.API.Contracts;
+using L2SLedger.Application.Common.Logging;
 using L2SLedger.Application.DTOs.Periods;
 using L2SLedger.Application.UseCases.Periods;
 using L2SLedger.Domain.Constants;
@@ -130,7 +131,9 @@ public class PeriodsController : ControllerBase
         }
         catch (ValidationException ex)
         {
-            _logger.LogWarning("Erro de validação ao criar período: {Errors}", ex.Errors);
+            _logger.LogWarning(
+                "Erro de validação ao criar período. ValidationErrorsCount={ValidationErrorsCount}",
+                ex.Errors.Count());
 
             var details = string.Join("; ", ex.Errors.Select(e => $"{e.PropertyName}: {e.ErrorMessage}"));
             return BadRequest(ErrorResponse.Create(
@@ -258,18 +261,20 @@ public class PeriodsController : ControllerBase
             }
 
             var result = await useCase.ExecuteAsync(id, userId, request, cancellationToken);
+            var sanitizedReason = LogSanitizer.Sanitize(request.Reason);
 
             _logger.LogInformation(
                 "Período financeiro reaberto: {PeriodName} por usuário {UserId}. Justificativa: {Reason}",
-                result.PeriodName, userId, request.Reason);
+                result.PeriodName, userId, sanitizedReason);
 
             return Ok(result);
         }
         catch (ValidationException ex)
         {
             _logger.LogWarning(
-                "Erro de validação ao reabrir período {PeriodId}: {Errors}",
-                id, ex.Errors);
+                "Erro de validação ao reabrir período {PeriodId}. ValidationErrorsCount={ValidationErrorsCount}",
+                id,
+                ex.Errors.Count());
 
             var details = string.Join("; ", ex.Errors.Select(e => $"{e.PropertyName}: {e.ErrorMessage}"));
             return BadRequest(ErrorResponse.Create(

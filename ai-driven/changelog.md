@@ -8,6 +8,181 @@ O formato deve seguir o padrão [Keep a Changelog](https://keepachangelog.com/en
 <!-- BEGIN CHANGELOG -->
 ## [Unreleased]
 
+## [2026-04-12] - Lint semântico de logs (padronização pt-BR)
+
+### Contexto
+
+Execução da etapa opcional de lint semântico para padronizar idioma e estilo de mensagens de log, sem alterar contratos, regras de negócio ou fluxo de execução.
+
+### Mudanças
+
+#### Atualizados
+- `backend/src/L2SLedger.Application/UseCases/Exports/RequestExportUseCase.cs`
+- `backend/src/L2SLedger.Application/UseCases/Exports/GetExportsUseCase.cs`
+- `backend/src/L2SLedger.Application/UseCases/Exports/DownloadExportUseCase.cs`
+- `backend/src/L2SLedger.Application/UseCases/Exports/DeleteExportUseCase.cs`
+- `backend/src/L2SLedger.Application/UseCases/Auth/FirebaseLoginUseCase.cs`
+- `backend/src/L2SLedger.Application/UseCases/Periods/CreateFinancialPeriodUseCase.cs`
+- `backend/src/L2SLedger.Application/UseCases/Periods/ClosePeriodUseCase.cs`
+- `backend/src/L2SLedger.Application/UseCases/Periods/ReopenPeriodUseCase.cs`
+
+Padronizações aplicadas:
+- Mensagens de log mistas EN/PT convertidas para PT-BR.
+- Terminologia alinhada (`Exportação`, `Período financeiro`, `Usuário`, `Formato`, `Motivo`).
+- Preservação dos mesmos placeholders estruturados e níveis de log.
+
+### Validação
+
+- Testes focados (UseCases Exports/Periods/Auth): **49 passed, 0 failed**.
+- Build da solução backend (`L2SLedger.sln`, Release + warnaserror): **sucesso**.
+
+### Justificativa técnica
+
+Melhora consistência operacional e legibilidade de observabilidade, sem impacto funcional e mantendo compatibilidade com correlações de log já existentes.
+
+## [2026-04-12] - Full scan final: normalização de contrato de erro remanescente
+
+### Contexto
+
+Execução de full scan para localizar divergências finais de padronização após fases P1/P2/P3.
+
+### Mudanças
+
+#### Atualizados
+- `backend/src/L2SLedger.API/Controllers/CategoriesController.cs`
+  - Substituído retorno anônimo `NotFound(new { error = ex.Message })` por contrato padronizado `ErrorResponse.Create(...)` com `traceId`.
+
+### Validação
+
+- Testes focados de categorias (Application): **18 passed, 0 failed**.
+- Build da solução backend (`L2SLedger.sln`, Release + warnaserror): **sucesso**.
+
+### Justificativa técnica
+
+Elimina inconsistência de contrato de erro e conclui a padronização global de respostas de falha no backend API.
+
+## [2026-04-12] - Fase P3: padronização adicional de logs (exceções esperadas e exports)
+
+### Contexto
+
+Continuação da padronização para reduzir variabilidade de logs em erros esperados de negócio/validação e uniformizar sanitização em casos de exportação.
+
+### Mudanças
+
+#### Atualizados
+- `backend/src/L2SLedger.API/Controllers/BalancesController.cs`
+- `backend/src/L2SLedger.API/Controllers/ReportsController.cs`
+- `backend/src/L2SLedger.API/Controllers/TransactionsController.cs`
+- `backend/src/L2SLedger.API/Controllers/AdjustmentsController.cs`
+  - Logs de `BusinessRuleException` padronizados para `Code + Message` sanitizada via `LogSanitizer.SanitizeExceptionMessage(...)`, evitando log de exceção bruta em casos esperados.
+
+- `backend/src/L2SLedger.Application/UseCases/Exports/RequestExportUseCase.cs`
+- `backend/src/L2SLedger.Application/UseCases/Exports/GetExportsUseCase.cs`
+- `backend/src/L2SLedger.Application/UseCases/Exports/DownloadExportUseCase.cs`
+  - Campos de log padronizados com sanitização (`Format`, filtros de consulta e `FileName`).
+
+### Validação
+
+- Testes focados (API + Application Exports): **26 passed, 0 failed**.
+- Build da solução backend (`L2SLedger.sln`, Release + warnaserror): **sucesso**.
+
+### Justificativa técnica
+
+Padronização mantém observabilidade com menor risco de injeção em log/ruído semântico, sem alterar contratos públicos da API e preservando comportamento funcional.
+
+## [2026-04-12] - Fase P2: expansão da sanitização de logs (controllers/usecases)
+
+### Contexto
+
+Continuação da centralização de sanitização de logs para cobrir pontos remanescentes com potencial entrada controlada por usuário e exposição excessiva em observabilidade.
+
+### Mudanças
+
+#### Atualizados
+- `backend/src/L2SLedger.API/Controllers/AuthController.cs`
+  - Sanitização do `UserId` também no log de refresh de sessão.
+
+- `backend/src/L2SLedger.API/Controllers/AuditController.cs`
+- `backend/src/L2SLedger.API/Controllers/PeriodsController.cs`
+- `backend/src/L2SLedger.API/Controllers/AdjustmentsController.cs`
+- `backend/src/L2SLedger.API/Controllers/TransactionsController.cs`
+  - Substituição de logs com `{Errors}` por `ValidationErrorsCount`, evitando serialização de coleções de validação completas no log.
+
+- `backend/src/L2SLedger.API/Controllers/ExportsController.cs`
+  - Sanitização de `Format` e `FileName` antes de logging.
+
+- `backend/src/L2SLedger.API/Controllers/UsersController.cs`
+  - Sanitização de `request.Status` antes de logging.
+
+- `backend/src/L2SLedger.Application/UseCases/Exports/DeleteExportUseCase.cs`
+  - Sanitização de `FilePath` em logs de sucesso/falha de remoção física.
+
+- `backend/src/L2SLedger.Application/UseCases/Users/UpdateUserRolesUseCase.cs`
+  - Sanitização/máscara de e-mail e sanitização das listas de roles no log de auditoria.
+
+### Validação
+
+- Testes focados (API + Application): **30 passed, 0 failed**.
+- Build backend Release com `-warnaserror`: **sucesso**.
+
+### Justificativa técnica
+
+Reduz superfície de log forging e vazamento de dados operacionais, mantendo rastreabilidade e sem alterar contratos públicos de API.
+
+## [2026-04-12] - Centralização de sanitização de logs (Controllers + UseCases)
+
+### Contexto
+
+Implementação da centralização de sanitização para logs estruturados, removendo sanitização local ad-hoc e aplicando política única para mitigação de log forging e exposição de PII em pontos críticos de API e Application.
+
+### Mudanças
+
+#### Criados
+- `backend/src/L2SLedger.Application/Common/Logging/LogSanitizer.cs`
+  - Classe estática com sanitização padrão de logs:
+    - remoção de CR/LF/TAB e caracteres de controle
+    - normalização de whitespace
+    - truncamento padrão em 256 caracteres com sufixo `...[truncated]`
+    - mascaramento de e-mail (`jo***@dominio.com`)
+    - método dedicado para sanitização de mensagens de exceção
+
+- `backend/tests/L2SLedger.Application.Tests/Common/Logging/LogSanitizerTests.cs`
+  - Testes unitários cobrindo: `null`, CRLF/control chars, máscara de e-mail e truncamento.
+
+#### Atualizados
+- `backend/src/L2SLedger.API/Controllers/AuditController.cs`
+  - Removida sanitização local e migrado para `LogSanitizer`.
+
+- `backend/src/L2SLedger.API/Controllers/PeriodsController.cs`
+  - Sanitização da justificativa em log de reabertura de período.
+
+- `backend/src/L2SLedger.API/Controllers/AuthController.cs`
+  - Sanitização de `ex.Message` nos logs de autenticação/refresh/firebase login.
+  - Sanitização de `UserId` no log de logout.
+
+- `backend/src/L2SLedger.Application/UseCases/Periods/ReopenPeriodUseCase.cs`
+  - Sanitização da justificativa no log crítico de reabertura.
+
+- `backend/src/L2SLedger.Application/UseCases/Users/UpdateUserStatusUseCase.cs`
+  - Sanitização de e-mail (mascarado) e motivo nos logs de alteração de status.
+
+- `backend/src/L2SLedger.Application/UseCases/Auth/FirebaseLoginUseCase.cs`
+  - Sanitização + máscara de e-mail nos logs de sucesso/falha.
+
+- `backend/src/L2SLedger.Application/UseCases/Auth/AuthenticationService.cs`
+  - Sanitização + máscara de e-mail em log de e-mail não verificado.
+
+### Validação
+
+- Testes Application focados: **37 passed, 0 failed**.
+- Testes API focados (`AuthControllerTests`, `AuditControllerTests`): **17 passed, 0 failed**.
+- Verificação de erros de compilação/lint nos arquivos alterados: **sem erros**.
+
+### Justificativa técnica
+
+Mudança alinhada a ADR-006 (observabilidade), ADR-013 (proteção de dados), ADR-014 (auditoria) e ADR-019 (auditoria de acessos), promovendo consistência, segurança e rastreabilidade sem alterar contratos públicos da API.
+
+
 ## [2026-04-12] - Adequação para AutoMapper 15.1.1 (API + testes)
 
 ### Contexto

@@ -87,7 +87,7 @@ public class CategoriesController : ControllerBase
         }
         catch (BusinessRuleException ex) when (ex.Code == ErrorCodes.FIN_CATEGORY_NOT_FOUND)
         {
-            return NotFound(new { error = ex.Message });
+            return NotFound(ErrorResponse.Create(ex.Code, ex.Message, traceId: HttpContext.TraceIdentifier));
         }
         catch (Exception ex)
         {

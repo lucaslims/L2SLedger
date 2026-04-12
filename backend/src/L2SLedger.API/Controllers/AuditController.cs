@@ -1,4 +1,5 @@
 using L2SLedger.API.Contracts;
+using L2SLedger.Application.Common.Logging;
 using L2SLedger.Application.DTOs.Audit;
 using L2SLedger.Application.UseCases.Audit;
 using L2SLedger.Domain.Constants;
@@ -49,9 +50,9 @@ public class AuditController : ControllerBase
     {
         try
         {
-            var sanitizedEventType = SanitizeForLog(request.EventType);
-            var sanitizedEntityType = SanitizeForLog(request.EntityType);
-            var sanitizedUserId = SanitizeForLog(request.UserId);
+            var sanitizedEventType = LogSanitizer.Sanitize(request.EventType);
+            var sanitizedEntityType = LogSanitizer.Sanitize(request.EntityType);
+            var sanitizedUserId = LogSanitizer.Sanitize(request.UserId, maskEmail: true);
 
             _logger.LogInformation(
                 "Admin consultando eventos de auditoria. Filtros: EventType={EventType}, EntityType={EntityType}, UserId={UserId}",
@@ -62,7 +63,9 @@ public class AuditController : ControllerBase
         }
         catch (ValidationException ex)
         {
-            _logger.LogWarning("Erro de validação ao listar eventos de auditoria: {Errors}", ex.Errors);
+            _logger.LogWarning(
+                "Erro de validação ao listar eventos de auditoria. ValidationErrorsCount={ValidationErrorsCount}",
+                ex.Errors.Count());
             return BadRequest(new
             {
                 errors = ex.Errors.Select(e => new
@@ -77,11 +80,6 @@ public class AuditController : ControllerBase
             _logger.LogError(ex, "Erro ao listar eventos de auditoria");
             throw;
         }
-    }
-
-    private static string SanitizeForLog(object? value)
-    {
-        return value?.ToString()?.Replace("\r", string.Empty).Replace("\n", string.Empty) ?? string.Empty;
     }
 
     /// <summary>

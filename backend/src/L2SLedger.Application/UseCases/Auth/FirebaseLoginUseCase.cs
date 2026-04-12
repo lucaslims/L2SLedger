@@ -1,4 +1,5 @@
 using FluentValidation;
+using L2SLedger.Application.Common.Logging;
 using L2SLedger.Application.DTOs.Auth;
 using L2SLedger.Application.Interfaces;
 using L2SLedger.Domain.Exceptions;
@@ -35,6 +36,8 @@ public class FirebaseLoginUseCase
         if (!validationResult.IsValid)
             throw new ValidationException(validationResult.Errors);
 
+        var sanitizedEmail = LogSanitizer.Sanitize(request.Email, maskEmail: true);
+
         try
         {
             // 2. Chamar Firebase Authentication REST API
@@ -45,8 +48,8 @@ public class FirebaseLoginUseCase
 
             // 3. Log informativo (não logar senha!)
             _logger.LogInformation(
-                "Firebase direct login successful for email: {Email}",
-                request.Email);
+                "Login direto no Firebase realizado com sucesso para email: {Email}",
+                sanitizedEmail);
 
             return response;
         }
@@ -59,8 +62,8 @@ public class FirebaseLoginUseCase
         {
             _logger.LogWarning(
                 ex,
-                "Firebase direct login failed for email: {Email}",
-                request.Email);
+                "Falha no login direto no Firebase para email: {Email}",
+                sanitizedEmail);
 
             throw new AuthenticationException(
                 "AUTH_INVALID_CREDENTIALS",

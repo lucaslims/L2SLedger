@@ -1,4 +1,5 @@
 using L2SLedger.API.Contracts;
+using L2SLedger.Application.Common.Logging;
 using L2SLedger.Application.DTOs.Adjustments;
 using L2SLedger.Application.UseCases.Adjustments;
 using L2SLedger.Domain.Constants;
@@ -59,7 +60,9 @@ public class AdjustmentsController : ControllerBase
         }
         catch (ValidationException ex)
         {
-            _logger.LogWarning("Erro de validação ao listar ajustes: {Errors}", ex.Errors);
+            _logger.LogWarning(
+                "Erro de validação ao listar ajustes. ValidationErrorsCount={ValidationErrorsCount}",
+                ex.Errors.Count());
 
             return BadRequest(ErrorResponse.Create(
                 ErrorCodes.VAL_VALIDATION_FAILED,
@@ -144,7 +147,9 @@ public class AdjustmentsController : ControllerBase
         }
         catch (ValidationException ex)
         {
-            _logger.LogWarning("Erro de validação ao criar ajuste: {Errors}", ex.Errors);
+            _logger.LogWarning(
+                "Erro de validação ao criar ajuste. ValidationErrorsCount={ValidationErrorsCount}",
+                ex.Errors.Count());
             return BadRequest(ErrorResponse.Create(
                 ErrorCodes.VAL_VALIDATION_FAILED,
                 "Erro de validação",
@@ -153,7 +158,10 @@ public class AdjustmentsController : ControllerBase
         }
         catch (BusinessRuleException ex)
         {
-            _logger.LogWarning(ex, "Erro de regra de negócio ao criar ajuste");
+            _logger.LogWarning(
+                "Erro de regra de negócio ao criar ajuste. Code={Code}, Message={Message}",
+                ex.Code,
+                LogSanitizer.SanitizeExceptionMessage(ex.Message));
             return BadRequest(ErrorResponse.Create(ex.Code, ex.Message, traceId: HttpContext.TraceIdentifier));
         }
         catch (Exception ex)
@@ -200,7 +208,10 @@ public class AdjustmentsController : ControllerBase
         }
         catch (BusinessRuleException ex)
         {
-            _logger.LogWarning(ex, "Erro de regra de negócio ao deletar ajuste");
+            _logger.LogWarning(
+                "Erro de regra de negócio ao deletar ajuste. Code={Code}, Message={Message}",
+                ex.Code,
+                LogSanitizer.SanitizeExceptionMessage(ex.Message));
             return BadRequest(ErrorResponse.Create(ex.Code, ex.Message, traceId: HttpContext.TraceIdentifier));
         }
         catch (Exception ex)

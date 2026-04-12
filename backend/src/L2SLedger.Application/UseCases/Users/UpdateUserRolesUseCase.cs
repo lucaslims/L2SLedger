@@ -1,4 +1,5 @@
 using AutoMapper;
+using L2SLedger.Application.Common.Logging;
 using L2SLedger.Application.DTOs.Users;
 using L2SLedger.Application.Interfaces;
 using L2SLedger.Domain.Constants;
@@ -71,12 +72,15 @@ public class UpdateUserRolesUseCase
         await _userRepository.UpdateAsync(user, cancellationToken);
 
         // 8. Log de auditoria (ADR-014)
+        var sanitizedEmail = LogSanitizer.Sanitize(user.Email, maskEmail: true);
+        var sanitizedOldRoles = LogSanitizer.Sanitize(string.Join(", ", oldRoles));
+        var sanitizedNewRoles = LogSanitizer.Sanitize(string.Join(", ", request.Roles));
         _logger.LogInformation(
             "Roles do usuário {UserId} ({Email}) atualizados de [{OldRoles}] para [{NewRoles}] por Admin {AdminId}",
             userId,
-            user.Email,
-            string.Join(", ", oldRoles),
-            string.Join(", ", request.Roles),
+            sanitizedEmail,
+            sanitizedOldRoles,
+            sanitizedNewRoles,
             currentUserId);
 
         return _mapper.Map<UserDetailDto>(user);

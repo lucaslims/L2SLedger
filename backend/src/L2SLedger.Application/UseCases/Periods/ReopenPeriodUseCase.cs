@@ -1,5 +1,6 @@
 using AutoMapper;
 using FluentValidation;
+using L2SLedger.Application.Common.Logging;
 using L2SLedger.Application.DTOs.Periods;
 using L2SLedger.Application.Interfaces;
 using L2SLedger.Domain.Constants;
@@ -72,10 +73,11 @@ public class ReopenPeriodUseCase
         await _periodRepository.UpdateAsync(period, cancellationToken);
 
         // 6. CRITICAL audit log (ADR-014) - Reopening is an exceptional operation
+        var sanitizedReason = LogSanitizer.Sanitize(request.Reason);
         _logger.LogError(
-            "Financial period REOPENED: {PeriodName} by user {UserId}. " +
-            "Reason: {Reason}",
-            period.GetPeriodName(), userId, request.Reason);
+            "Período financeiro REABERTO: {PeriodName} pelo usuário {UserId}. " +
+            "Motivo: {Reason}",
+            period.GetPeriodName(), userId, sanitizedReason);
 
         // 7. Return DTO
         return _mapper.Map<FinancialPeriodDto>(period);
