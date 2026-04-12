@@ -8,6 +8,27 @@ O formato deve seguir o padrão [Keep a Changelog](https://keepachangelog.com/en
 <!-- BEGIN CHANGELOG -->
 ## [Unreleased]
 
+## [2026-04-12] - Full scan final: normalização de contrato de erro remanescente
+
+### Contexto
+
+Execução de full scan para localizar divergências finais de padronização após fases P1/P2/P3.
+
+### Mudanças
+
+#### Atualizados
+- `backend/src/L2SLedger.API/Controllers/CategoriesController.cs`
+  - Substituído retorno anônimo `NotFound(new { error = ex.Message })` por contrato padronizado `ErrorResponse.Create(...)` com `traceId`.
+
+### Validação
+
+- Testes focados de categorias (Application): **18 passed, 0 failed**.
+- Build da solução backend (`L2SLedger.sln`, Release + warnaserror): **sucesso**.
+
+### Justificativa técnica
+
+Elimina inconsistência de contrato de erro e conclui a padronização global de respostas de falha no backend API.
+
 ## [2026-04-12] - Fase P3: padronização adicional de logs (exceções esperadas e exports)
 
 ### Contexto
