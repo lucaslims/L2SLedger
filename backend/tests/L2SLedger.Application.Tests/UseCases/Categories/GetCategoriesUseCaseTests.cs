@@ -23,7 +23,7 @@ public class GetCategoriesUseCaseTests
         var config = new MapperConfiguration(cfg =>
         {
             cfg.AddProfile<CategoryMappingProfile>();
-        });
+        }, Microsoft.Extensions.Logging.Abstractions.NullLoggerFactory.Instance);
         _mapper = config.CreateMapper();
 
         _sut = new GetCategoriesUseCase(_categoryRepositoryMock.Object, _mapper);

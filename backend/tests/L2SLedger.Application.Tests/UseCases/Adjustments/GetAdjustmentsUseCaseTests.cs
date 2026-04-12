@@ -30,7 +30,7 @@ public class GetAdjustmentsUseCaseTests
         var config = new MapperConfiguration(cfg =>
         {
             cfg.AddProfile<AdjustmentProfile>();
-        });
+        }, Microsoft.Extensions.Logging.Abstractions.NullLoggerFactory.Instance);
         _mapper = config.CreateMapper();
 
         _currentUserServiceMock.Setup(x => x.GetUserId()).Returns(_userId);
