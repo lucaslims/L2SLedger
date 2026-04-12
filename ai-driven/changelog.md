@@ -8,6 +8,33 @@ O formato deve seguir o padrão [Keep a Changelog](https://keepachangelog.com/en
 <!-- BEGIN CHANGELOG -->
 ## [Unreleased]
 
+## [2026-04-12] - Adequação para AutoMapper 15.1.1 (API + testes)
+
+### Contexto
+
+Após upgrade do pacote `AutoMapper` de `13.0.1` para `15.1.1`, o backend passou a falhar por mudança de assinatura em `AddAutoMapper` e mudança no construtor de `MapperConfiguration` usado nos testes.
+
+### Mudanças
+
+#### Atualizados
+- `backend/src/L2SLedger.API/Configuration/MappingExtensions.cs`
+  - Adequação para assinatura v15 de `AddAutoMapper` com `configAction`.
+  - Configuração de licença via variável de ambiente `AUTOMAPPER_LICENSE_KEY`.
+
+- `backend/tests/L2SLedger.Application.Tests/UseCases/**` (10 arquivos)
+- `backend/tests/L2SLedger.API.Tests/Controllers/AuditControllerTests.cs`
+  - Adequação de `MapperConfiguration(...)` para assinatura v15 com `ILoggerFactory`.
+  - Substituição de `null` por `Microsoft.Extensions.Logging.Abstractions.NullLoggerFactory.Instance`.
+
+### Validação
+
+- Build Release com warnings como erro: **sucesso** (`backend/L2SLedger.sln`).
+- Testes impactados por AutoMapper: **76 passed, 0 failed**.
+
+### Observação operacional
+
+Para ambientes DEV/DEMO/PROD, garantir configuração da variável `AUTOMAPPER_LICENSE_KEY` no runtime da API.
+
 ---
 
 ## [2026-02-27] - Ícones PWA gerados a partir do logo L2SLogo

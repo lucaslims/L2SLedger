@@ -29,7 +29,7 @@ public class AuthenticationServiceTests
         var config = new MapperConfiguration(cfg =>
         {
             cfg.AddProfile<AuthProfile>();
-        });
+        }, Microsoft.Extensions.Logging.Abstractions.NullLoggerFactory.Instance);
         _mapper = config.CreateMapper();
 
         _sut = new AuthenticationService(
