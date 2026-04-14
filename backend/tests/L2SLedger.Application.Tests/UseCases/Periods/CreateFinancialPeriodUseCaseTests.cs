@@ -178,7 +178,7 @@ public class CreateFinancialPeriodUseCaseTests
             l => l.Log(
                 LogLevel.Information,
                 It.IsAny<EventId>(),
-                It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains("Financial period created")),
+                It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains("Período financeiro criado")),
                 null,
                 It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
             Times.Once);

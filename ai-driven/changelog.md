@@ -8,6 +8,31 @@ O formato deve seguir o padrão [Keep a Changelog](https://keepachangelog.com/en
 <!-- BEGIN CHANGELOG -->
 ## [Unreleased]
 
+## [2026-04-13] - Correção de testes de logs de períodos (backend)
+
+### Contexto
+
+Execução da suíte completa de testes do backend para estabilização após padronização semântica de logs em PT-BR.
+
+### Mudanças
+
+#### Atualizados
+- `backend/tests/L2SLedger.Application.Tests/UseCases/Periods/CreateFinancialPeriodUseCaseTests.cs`
+- `backend/tests/L2SLedger.Application.Tests/UseCases/Periods/ClosePeriodUseCaseTests.cs`
+- `backend/tests/L2SLedger.Application.Tests/UseCases/Periods/ReopenPeriodUseCaseTests.cs`
+
+Ajustes aplicados:
+- Atualização das expectativas de `Contains(...)` nos asserts de logger para refletir mensagens atuais em português.
+- Nenhuma mudança em regras de negócio, contratos públicos ou código de produção.
+
+### Validação
+
+- Suíte backend completa: **453 passed, 0 failed**.
+
+### Justificativa técnica
+
+As falhas eram regressões de testes causadas por divergência entre mensagens esperadas (inglês) e mensagens emitidas (PT-BR). A correção mantém os testes alinhados ao comportamento real, preservando intenção de auditoria sem impacto funcional.
+
 ## [2026-04-12] - Lint semântico de logs (padronização pt-BR)
 
 ### Contexto
