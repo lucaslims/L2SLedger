@@ -1,4 +1,5 @@
 using AutoMapper;
+using L2SLedger.Application.Common.Logging;
 using L2SLedger.Application.DTOs.Users;
 using L2SLedger.Application.Interfaces;
 using L2SLedger.Domain.Constants;
@@ -90,13 +91,15 @@ public class UpdateUserStatusUseCase
         await _auditService.LogUpdateAsync(auditContext, auditContext, cancellationToken);
 
         // 8. Log estruturado
+        var sanitizedEmail = LogSanitizer.Sanitize(user.Email, maskEmail: true);
+        var sanitizedReason = LogSanitizer.Sanitize(request.Reason);
         _logger.LogInformation(
             "Status do usuário {UserId} ({Email}) alterado de {OldStatus} para {NewStatus}. Motivo: {Reason}. Executado por Admin {AdminId}",
             userId,
-            user.Email,
+            sanitizedEmail,
             oldStatus,
             user.Status,
-            request.Reason,
+            sanitizedReason,
             currentUserId);
 
         return _mapper.Map<UserDetailDto>(user);

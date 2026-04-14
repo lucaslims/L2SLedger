@@ -1,4 +1,5 @@
 using AutoMapper;
+using L2SLedger.Application.Common.Logging;
 using L2SLedger.Application.DTOs.Auth;
 using L2SLedger.Application.Interfaces;
 using L2SLedger.Domain.Constants;
@@ -45,7 +46,9 @@ public class AuthenticationService : IAuthenticationService
         // Verificar se email está verificado (ADR-002)
         if (!firebaseUser.EmailVerified)
         {
-            _logger.LogWarning("Tentativa de login com email não verificado: {Email}", firebaseUser.Email);
+            _logger.LogWarning(
+                "Tentativa de login com email não verificado: {Email}",
+                LogSanitizer.Sanitize(firebaseUser.Email, maskEmail: true));
             throw new AuthenticationException(
                 ErrorCodes.AUTH_EMAIL_NOT_VERIFIED,
                 "Email não verificado. Verifique seu email antes de fazer login.");

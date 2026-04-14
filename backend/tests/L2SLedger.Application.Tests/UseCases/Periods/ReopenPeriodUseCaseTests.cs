@@ -227,7 +227,7 @@ public class ReopenPeriodUseCaseTests
             l => l.Log(
                 LogLevel.Error,
                 It.IsAny<EventId>(),
-                It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains("Financial period REOPENED")),
+                It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains("Período financeiro REABERTO")),
                 null,
                 It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
             Times.Once);

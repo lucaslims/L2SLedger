@@ -1,4 +1,5 @@
 using L2SLedger.API.Contracts;
+using L2SLedger.Application.Common.Logging;
 using L2SLedger.Application.DTOs.Users;
 using L2SLedger.Application.UseCases.Users;
 using L2SLedger.Domain.Constants;
@@ -189,7 +190,10 @@ public class UsersController : ControllerBase
         {
             var user = await _updateUserStatusUseCase.ExecuteAsync(id, request, cancellationToken);
 
-            _logger.LogInformation("Status do usuário {UserId} atualizado para {Status}", id, request.Status);
+            _logger.LogInformation(
+                "Status do usuário {UserId} atualizado para {Status}",
+                id,
+                LogSanitizer.Sanitize(request.Status));
 
             return Ok(user);
         }

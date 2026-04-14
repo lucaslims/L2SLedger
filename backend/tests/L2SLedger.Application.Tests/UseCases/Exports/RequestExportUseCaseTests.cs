@@ -150,7 +150,7 @@ public class RequestExportUseCaseTests
             x => x.Log(
                 LogLevel.Information,
                 It.IsAny<EventId>(),
-                It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains($"Export {createdExport.Id} requested by user {userId}")),
+                It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains($"Exportação {createdExport.Id} solicitada pelo usuário {userId}")),
                 It.IsAny<Exception>(),
                 It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
             Times.Once);

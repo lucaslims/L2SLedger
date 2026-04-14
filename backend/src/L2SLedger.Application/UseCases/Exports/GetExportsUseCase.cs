@@ -1,5 +1,6 @@
 using L2SLedger.Application.DTOs.Exports;
 using L2SLedger.Application.Interfaces;
+using L2SLedger.Application.Common.Logging;
 using Microsoft.Extensions.Logging;
 
 namespace L2SLedger.Application.UseCases.Exports;
@@ -69,11 +70,13 @@ public class GetExportsUseCase
         );
 
         _logger.LogInformation(
-            "User {UserId} retrieved {Count} exports (Page {Page}/{TotalPages})",
+            "Usuário {UserId} consultou {Count} exportações (Página {Page}/{TotalPages}). Filtros: Status={Status}, Formato={Format}",
             userId,
             exports.Count,
             request.Page,
-            (int)Math.Ceiling((double)totalCount / request.PageSize)
+            (int)Math.Ceiling((double)totalCount / request.PageSize),
+            LogSanitizer.Sanitize(request.Status),
+            LogSanitizer.Sanitize(request.Format)
         );
 
         return new GetExportsResponse

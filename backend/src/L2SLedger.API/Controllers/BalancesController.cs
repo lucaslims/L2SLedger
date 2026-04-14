@@ -1,4 +1,5 @@
 using L2SLedger.API.Contracts;
+using L2SLedger.Application.Common.Logging;
 using L2SLedger.Application.DTOs.Balances;
 using L2SLedger.Application.UseCases.Balances;
 using L2SLedger.Domain.Exceptions;
@@ -58,7 +59,10 @@ public class BalancesController : ControllerBase
         }
         catch (BusinessRuleException ex)
         {
-            _logger.LogWarning(ex, "Erro de validação ao obter saldos");
+            _logger.LogWarning(
+                "Erro de validação ao obter saldos. Code={Code}, Message={Message}",
+                ex.Code,
+                LogSanitizer.SanitizeExceptionMessage(ex.Message));
             return BadRequest(ErrorResponse.Create(ex.Code, ex.Message, traceId: HttpContext.TraceIdentifier));
         }
         catch (Exception ex)
@@ -94,7 +98,10 @@ public class BalancesController : ControllerBase
         }
         catch (BusinessRuleException ex)
         {
-            _logger.LogWarning(ex, "Erro de validação ao obter saldos diários");
+            _logger.LogWarning(
+                "Erro de validação ao obter saldos diários. Code={Code}, Message={Message}",
+                ex.Code,
+                LogSanitizer.SanitizeExceptionMessage(ex.Message));
             return BadRequest(ErrorResponse.Create(ex.Code, ex.Message, traceId: HttpContext.TraceIdentifier));
         }
         catch (Exception ex)

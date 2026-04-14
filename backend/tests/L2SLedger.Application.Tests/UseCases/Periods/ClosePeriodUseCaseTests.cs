@@ -313,7 +313,7 @@ public class ClosePeriodUseCaseTests
             l => l.Log(
                 LogLevel.Warning,
                 It.IsAny<EventId>(),
-                It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains("Financial period CLOSED")),
+                It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains("Período financeiro FECHADO")),
                 null,
                 It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
             Times.Once);

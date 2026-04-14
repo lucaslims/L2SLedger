@@ -73,8 +73,8 @@ public class ClosePeriodUseCase
 
         // 6. Critical audit log (ADR-014) - Period closure is a critical operation
         _logger.LogWarning(
-            "Financial period CLOSED: {PeriodName} by user {UserId}. " +
-            "Income: {Income:C}, Expense: {Expense:C}, Balance: {Balance:C}",
+            "Período financeiro FECHADO: {PeriodName} pelo usuário {UserId}. " +
+            "Receita: {Income:C}, Despesa: {Expense:C}, Saldo: {Balance:C}",
             period.GetPeriodName(), userId, snapshot.TotalIncome,
             snapshot.TotalExpense, snapshot.NetBalance);
 

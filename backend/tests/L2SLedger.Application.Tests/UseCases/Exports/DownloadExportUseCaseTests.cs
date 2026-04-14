@@ -264,7 +264,7 @@ public class DownloadExportUseCaseTests
             x => x.Log(
                 LogLevel.Information,
                 It.IsAny<EventId>(),
-                It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains($"Export {exportId} downloaded by user {userId}")),
+                It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains($"Exportação {exportId} baixada pelo usuário {userId}")),
                 It.IsAny<Exception>(),
                 It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
             Times.Once);
