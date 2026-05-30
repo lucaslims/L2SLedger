@@ -11,6 +11,7 @@ on:
   pull_request:
     branches: [ "main" ]
   schedule:
+    # Weekly scan on Mondays to complement push/PR scans
     - cron: '36 7 * * 1'
 
 permissions:
@@ -33,6 +34,7 @@ jobs:
           docker build -t l2sledger-backend:${{ github.sha }} ./backend
 
       - name: Run Trivy vulnerability scanner (backend)
+        # Pinned to commit SHA for supply-chain integrity
         uses: aquasecurity/trivy-action@7b7aa264d83dc58691451798b4d117d53d21edfe
         with:
           image-ref: 'l2sledger-backend:${{ github.sha }}'
@@ -52,6 +54,7 @@ jobs:
           docker build -t l2sledger-frontend:${{ github.sha }} ./frontend
 
       - name: Run Trivy vulnerability scanner (frontend)
+        # Pinned to commit SHA for supply-chain integrity
         uses: aquasecurity/trivy-action@7b7aa264d83dc58691451798b4d117d53d21edfe
         with:
           image-ref: 'l2sledger-frontend:${{ github.sha }}'
