@@ -7,7 +7,7 @@ const config: StorybookConfig = {
     name: '@storybook/react-vite',
     options: {},
   },
-  viteFinal: (config) => {
+  viteFinal: (config, { configType }) => {
     // vite-plugin-pwa fails during Storybook builds because Storybook's internal
     // assets (e.g. sb-manager/globals-runtime.js ~3 MB) exceed the Workbox 2 MiB
     // precache limit. PWA is not needed for Storybook, so we remove it entirely.
@@ -26,6 +26,11 @@ const config: StorybookConfig = {
       ?.flat(Infinity)
       .filter((p: unknown) => !isPwaPlugin(p));
 
+    // Config for GitHubPages
+    if (configType === 'PRODUCTION') {
+      config.base = '/L2SLedger/';
+    }
+    
     return config;
   },
 };
