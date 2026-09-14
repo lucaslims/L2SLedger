@@ -5361,6 +5361,37 @@ app.UseSerilogConfiguration();
   - `npm run build`
 - Resultado: build concluído com sucesso.
 
+---
+
+## [2026-09-14] - Correção de falha no job "Lint, Test & Build" (npm ci)
+
+### Problema
+- O job `Lint, Test & Build` falhava logo na etapa `npm ci` com `ERESOLVE`.
+- Erro apontava conflito de peer dependency entre:
+  - `vitest@5.0.0`
+  - `@vitest/coverage-v8@4.1.8` (peer `vitest@4.1.8`)
+
+### Causa raiz
+- As dependências do ecossistema Vitest estavam desalinhadas em major versions.
+- O npm bloqueava a instalação no CI por conflito de peer dependency.
+
+### Correção aplicada
+- Alinhadas as versões no frontend para a mesma linha estável:
+  - `vitest` → `^4.1.11`
+  - `@vitest/coverage-v8` → `^4.1.11`
+  - `@vitest/ui` → `^4.1.11`
+- `frontend/package-lock.json` regenerado para refletir a resolução correta.
+
+### Validação
+- Execução local em `/frontend`:
+  - `npm ci`
+  - `npm run lint`
+  - `npm run type-check`
+  - `npm run format:check`
+  - `npm run test:coverage`
+  - `npm run build`
+- Resultado: todas as etapas concluíram com sucesso.
+
 
 <!-- END CHANGELOG -->
 <!-- EOF -->
