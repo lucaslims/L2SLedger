@@ -5335,6 +5335,32 @@ app.UseSerilogConfiguration();
 - **Status:** ✅ Aprovado
 - **Justificativa:** Planejamento elaborado seguindo rigorosamente todos os ADRs, Clean Architecture, DDD, e governança do projeto
 
+---
+
+## [2026-09-14] - Correção de falha no build do Frontend no GitHub Actions
+
+### Problema
+- Job do GitHub Actions falhava durante `npm run build` no frontend com:
+  - `TypeError: manualChunks is not a function`
+  - Aviso de configuração inválida: `manualChunks` com tipo `Object`.
+
+### Causa raiz
+- A configuração `build.rollupOptions.output.manualChunks` em `/frontend/vite.config.ts` usava formato de objeto.
+- Com a cadeia de build atual (Vite 8 + Rolldown), `manualChunks` precisa ser fornecido como função.
+
+### Correção aplicada
+- Atualizada a configuração em `/frontend/vite.config.ts` para `manualChunks(id)`.
+- Mantidos os agrupamentos funcionais existentes:
+  - `vendor` para dependências centrais (`react`, `react-dom`, `react-router-dom`).
+  - `public` para páginas públicas de autenticação.
+- Demais chunks continuam sendo definidos automaticamente.
+
+### Validação
+- Execução local em `/frontend`:
+  - `npm ci`
+  - `npm run build`
+- Resultado: build concluído com sucesso.
+
 
 <!-- END CHANGELOG -->
 <!-- EOF -->
