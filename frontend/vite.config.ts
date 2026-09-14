@@ -70,20 +70,29 @@ export default defineConfig({
   build: {
     rollupOptions: {
       output: {
-        manualChunks: {
+        manualChunks(id) {
           // Core bundle - loaded first
-          vendor: ['react', 'react-dom', 'react-router-dom'],
-          
+          if (
+            id.includes('node_modules/react/') ||
+            id.includes('node_modules/react-dom/') ||
+            id.includes('node_modules/react-router-dom/')
+          ) {
+            return 'vendor';
+          }
+
           // Public pages (login, register)
-          public: [
-            './src/features/auth/pages/LoginPage',
-            './src/features/auth/pages/RegisterPage',
-            './src/features/auth/pages/VerifyEmailPage',
-            './src/features/auth/pages/PendingApprovalPage',
-          ],
-          
+          if (
+            id.includes('/src/features/auth/pages/LoginPage') ||
+            id.includes('/src/features/auth/pages/RegisterPage') ||
+            id.includes('/src/features/auth/pages/VerifyEmailPage') ||
+            id.includes('/src/features/auth/pages/PendingApprovalPage')
+          ) {
+            return 'public';
+          }
+
           // Protected pages (lazy loaded after auth)
           // Will be split automatically by dynamic imports
+          return undefined;
         },
       },
     },
